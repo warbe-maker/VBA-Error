@@ -31,6 +31,10 @@ Option Explicit
 '             of the dedicate UserForm lErrMsg which provideds a better readability.
 '
 ' Methods:
+' - AppErr   Converts a positive number into a negative error number
+'            ensuring it not conflicts with a VB error. A negative error
+'            number is turned back into the original positive Application
+'            Error Number.
 ' - ErrHndlr Either passes on the error to the caller or when the entry procedure is
 '            reached, displays the error with a complete path from the entry procedure
 '            to the procedure with the error.
@@ -96,10 +100,27 @@ Public CallStack    As clsCallStack
 Public dicTrace     As Dictionary       ' Procedure execution trancing records
 Private cllErrPath  As Collection
 
+' Used with Err.Raise AppErr() to convert a positive application error number
+' into a negative number to avoid any conflict with a VB error. Used when the
+' error is displayed to turn the negative number back into the original
+' positive application number.
+' The function ensures that a programmed (application) error numbers never
+' conflicts with VB error numbers by adding vbObjectError which turns it
+' into a negative value. In return, translates a negative error number
+' back into an Application error number. The latter is the reason why this
+' function must never be used with a true VB error number.
+' ------------------------------------------------------------------------
+Public Function AppErr(ByVal lNo As Long) As Long
+    If lNo < 0 Then
+        AppErr = lNo - vbObjectError
+    Else
+        AppErr = vbObjectError + lNo
+    End If
+End Function
+
+' Keep record of the Begin of a Procedure by maintaining a call stack.
+' --------------------------------------------------------------------
 Public Sub BoP(ByVal sErrSource As String)
-' ---------------------------------------------
-' Begin of Procedure. Maintains the call stack.
-' ---------------------------------------------
     If CallStack Is Nothing Then
         Set CallStack = New clsCallStack
     ElseIf CallStack.StackIsEmpty Then
