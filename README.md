@@ -55,8 +55,12 @@ Download and import to you VBA project:
 - clsExecTrace
 - clsCallStack
 ### Usage
-#### The _Entry Procedure_
-The identification of the _Entry Procedure_ is the key to some of the key features of the _Common VBA Error Handler_ and it requires only two extra lines of code:
+ - The identification of the _Entry Procedure_ is the key to some of the key features of the _Common VBA Error Handler_. It requires  a BoP Begin of Procedure and a EoP (End of Procedure statement.
+ - For the identification of the _Error Source_ have a ```Const PROC ="...." ``` statement in each procedure which has an ```On Error Goto on_error``` statement and copy the following function into each module:
+```vbscript
+```
+The usage of the _Common VBS Error Handler_  in a procedure with an error handling will look as follows:
+
 ```vbscript
 Private Sub Any
    On Error Go-to on_error
@@ -72,7 +76,7 @@ on_error:
 #If Test Then
    Debug.Print Err.Description: Stop: Resume
 #Else
-   <the production error banking see chapter Usage>
+   mErrHndlr.ErrHndlr Err.Number, ErrSrc(PROC), Err.Description, Erl
 #End If
 End Sub
 ```
