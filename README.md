@@ -1,20 +1,22 @@
 # Common VBA Error Handler
 ### Coverage
-What the error handling provides differs between development and test and production
+The error handling approach significantly differs between development/test and production.
 #### Development and Test
-The following is turned off in production  by the Conditional Compile Argument _Debugging=0_
 - Debug.Print of the Error Description
 - Stop when the error occurs within the procedure it occurred
-- Manual _Resume_ of the code line which caused the error providing the chance to change the code on the fly.
-- 
+- Manual _Resume_ of the code line which caused the error providing the chance to change the code on the fly - what somebody called a "godsend" when needed.
+
+Because this for sure is something unwanted in production it will be turned off in production by the Conditional Compile Argument _Debugging=0_
 #### Production
-When the _Entry Procedure is known, the error is passed on back up to it and finally the error is displayed with:
+When the [_Entry Procedure_](#the-entry-procedure) is known, the error is passed on back up to it and finally displayed with:
 - The error number with the distinction of an _Application Error_ from a _Visual Basic Run Time Error_
 - The _Error Description_ which is either the description of the _Visual Basic Run Time Error_ or the description of the error provided by means of the Err.Raise statement 
 - The _Error Source_ in the form  <module>.<procedure>
 - The _Error Line_ provided the procedure where the error occurred has line numbers
-- The _Error Path_ as the call stack from the procedure where the error occurred back up to the _Entry Procedure_ provided it is known
-- Each time when an _Entry Procedure_ is reached an _Execution Trace_ which includes the _Execution Time_ of each [traced procedure](#execution-traced-procedures) is displayed - provided the  Conditional Compile Argument _ExecTrace=1_.
+- The _Error Source_ in the form <module>.<procedure>
+- Provided the [_Entry Procedure_](#the-entry-procedure) is known - the _Error Path_ indicating the call stack from the procedure where the error occurred back up to the [_Entry Procedure_](#the-entry-procedure)
+
+In addition - each time an _Entry Procedure_ is reached - the _Execution Trace_  including the _Execution Time_ of each [traced procedure](#execution-traced-procedures) is displayed - provided the  Conditional Compile Argument _ExecTrace=1_.
 
 Note: When the [_Entry Procedure_](#the-entry-procedure) is unknown  the error is immediately displayed in the procedure where the error occurred or in the calling procedure which has an On Error Goto statement
 
