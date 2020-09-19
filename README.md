@@ -35,7 +35,7 @@ Download and import to you VBA project:
 - Download and import [_clsCallStack_](https://www.dropbox.com/s/43enzf4bb3797ix/clsCallStack.cls?dl=1)
 - Download and import [_clsCallStackItem_](https://www.dropbox.com/s/sj3bj3zrhsm5itx/clsCallStackItem.cls?dl=1)
 
-Only in case you want to use a more appealing kind of error message:
+Only in case you want to use a more appealing kind of error message (see the [difference in the display](#difference-in-display-of-the-error-message)):
 - Download [fMsg.frm](https://www.dropbox.com/s/qc9kuqlah5tziov/fMsg.frm?dl=1) and [fMsg.frx](https://www.dropbox.com/s/ceisq7azcj5zsx0/fMsg.frx?dl=1) and import _fMsg.frm_
 Set the local Conditional Compile Argument in the mErrHndlr module
 ```vbscript
@@ -76,4 +76,11 @@ Any procedure with an BoP/EoP statement will be included in the trace of its exe
 
 Example:
 ![](Assets/ExectionTrace.png)
-####
+
+#### Difference in display of the error message
+##### Using the VB MsgBox
+![](Assets/ErrorMsgMsgBox.png)
+##### Using the Alternative VB MsgBox
+![](Assets/ErrMsgAlternativeMsgBox.png)
+
+#### 
