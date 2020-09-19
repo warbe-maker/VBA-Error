@@ -45,7 +45,7 @@ Set the local Conditional Compile Argument in the mErrHndlr module
 
 ### Usage
 1. The identification of the _Entry Procedure_ is crucial for some of the key features of the _Common VBA Error Handler_. It only requires a BoP Begin of Procedure and an EoP (End of Procedure statement.
-2. The identification of the _Error Source_ requires a ```Const PROC ="...." ``` statement in each procedure which has an ```On Error Goto on_error``` statement and the following function copied into the module:
+2. The identification of the _Error Source_ requires a ```Const PROC ="<procedurename>" ``` statement in each procedure which has an ```On Error Goto on_error``` statement and the following function copied into the module:
 ```vbscript
 Private Property Get ErrSrc(Optional ByVal s As String) As String:  ErrSrc = "<modulename>." & s:   End Property
 ```
