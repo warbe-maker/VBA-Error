@@ -1,6 +1,6 @@
 # Common VBA Error Handler
 ### Introduction
-At first this implementation of an error handling may look as a kind of overkill. However it is an enormous time saver for the investigation and elimination of coding errors as well as for any performance flaws. The error handling approach significantly differs between development/test and production. During development and test the following very basic approach may suffice:
+At first this implementation may appear as a kind of overkill. The use of it however is an enormous time saver for the investigation and elimination of coding errors as well as for any performance flaws. The error handling approach significantly differs between development/test and production. During development and test the following very basic approach may suffice:
 ```vbscript
 Private Sub Any
    On Error Go-to on_error
@@ -17,7 +17,7 @@ End Sub
 ```
 The error description is printed in the VBE immediate window and execution stops allowing to manually resume the line of code which caused the error. A true "godsend" allowing to eliminate the cause for the error on the fly.
 
-One may be tempted to stop here having experienced the enormous benefit of this simple kind of error handling. But perfectly suited for development and test is it absolutely inappropriate in production - except you the developer are the only user. And that's why it can be turned off by the Conditional Compile Argument ```Debugging=0```. Implementing the full error handling approach offers not only a user friendly error message but also - with very little effort - the means to trace the execution time to find and solve performance flaws.
+One may be tempted to stop here having experienced the enormous benefit of this simple kind of error handling. Though perfectly suited for development and test is it absolutely inappropriate in production - except the developer is the only user ever. And that's why it can be turned off by the _Conditional Compile Argument_  ```Debugging=0```. Implementing the full error handling approach offers not only a user friendly error message but also - with very little extra effort - the means to trace the execution time to solve possible performance flaws.
 
 #### Production
 When the [_Entry Procedure_](#the-entry-procedure) is known, the error is passed on back up to it and finally displays a message with:
