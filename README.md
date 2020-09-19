@@ -8,20 +8,18 @@ The error handling approach significantly differs between development/test and p
 
 Because this for sure is something unwanted in production it will be turned off in production by the Conditional Compile Argument _Debugging=0_
 #### Production
-When the [_Entry Procedure_](#the-entry-procedure) is known, the error is passed on back up to it and finally displayed with:
-- The error number with the distinction of an _Application Error_ from a _Visual Basic Run Time Error_
-- The _Error Description_ which is either the description of the _Visual Basic Run Time Error_ or the description of the error provided by means of the Err.Raise statement 
-- The _Error Source_ in the form  <module>.<procedure>
-- The _Error Line_ provided the procedure where the error occurred has line numbers
-- The _Error Source_ in the form <module>.<procedure>
-- Provided the [_Entry Procedure_](#the-entry-procedure) is known - the _Error Path_ indicating the call stack from the procedure where the error occurred back up to the [_Entry Procedure_](#the-entry-procedure)
+When the [_Entry Procedure_](#the-entry-procedure) is known, the error is passed on back up to it and finally displays a message with:
+- A title which considers whether it is an _Application Error_ or a _Visual Basic Run Time Error_ in the form<br>Application|VB error [number] in <module>.<procedure> [at line <line number>] 
+- The _Error Description_ which is either the description of the _Visual Basic Run Time Error_ (```Err.Description```) or the description of the error provided by means of the ```Err.Raise``` statement 
+- The _Error Path_ (provided the [_Entry Procedure_](#the-entry-procedure) is known) indicating the call stack from the procedure where the error occurred (the _Error Source_ back up to the [_Entry Procedure_](#the-entry-procedure)
 
-In addition - each time an _Entry Procedure_ is reached - the _Execution Trace_  including the _Execution Time_ of each [traced procedure](#execution-traced-procedures) is displayed - provided the  Conditional Compile Argument _ExecTrace=1_.
 
-Note: When the [_Entry Procedure_](#the-entry-procedure) is unknown  the error is immediately displayed in the procedure where the error occurred or in the calling procedure which has an On Error Goto statement
+Provided the  Conditional Compile Argument _ExecTrace=1_, each time an _Entry Procedure_ is reached, the _Execution Trace_  including the _Execution Time_ of each [traced procedure](#execution-traced-procedures) is printed in the VBE immediate window.
+
+Note: When the [_Entry Procedure_](#the-entry-procedure) is unknown  the error is immediately displayed in the procedure where the error occurred or in the first calling procedure which has an ```On Error Goto ...``` statement.
 
 ### Basic error handling
-When an error occurred during development/test the best what can happen is a stop with the chance to re-execute the line which caused the error and that happens with:
+The below approach is absolutely recommendable. Its wise to have it coded before an error occurs but can be added then as well. :
 
 ```vbscript
 Private Sub Any
@@ -32,7 +30,9 @@ exit_proc:
    Exit Sub
    
 on_error:
+#If Debugging Then
    Debug.Print Err.Description: Stop: Resume
+#End If
 End Sub
 ```
 Of course this is absolutely inappropriate when the project runs productive. The above should only be active for development and test and the complete common error handling should run in production as follows:
