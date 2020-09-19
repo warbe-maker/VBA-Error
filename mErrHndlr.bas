@@ -1,74 +1,48 @@
 Attribute VB_Name = "mErrHndlr"
 Option Explicit
-#Const ErrMsg = "Custom"    ' System = Error displayed by MsgBox,
-                            ' Custom = Error displayed by fMsgFrm which is
-                            '          without the message box's limitations in size
-                            '          and with automated adjustment in width and height
-' --------------------------------------------------------------------------------------
-' Standard  Module mErrHndlr
-'           Global error handling for any VBA Project.
-'           - When a call stack is maintained - at least by BoP/EoP statements in the
-'             entry procedure (subsequent BoP/EoP are helpfull to maintain an execution
-'             trace only):
-'             - The full error path, i.e. from the error causing procedure up to the
-'               entry procedure is displayed along with the error message
-'             - Error number and description are passed on from the error causing
-'               procedure up to the entry procedure - an advantage specifically for
-'               an unatended regression test as follows:
+#Const AlternateMsgBox = 0  ' 1 = Error displayed by means of the Alternative MsgBox fMsg
+                            ' 0 = Error displayed by means of the VBA MsgBox
+' -----------------------------------------------------------------------------------------------
+' Standard  Module mErrHndlr: Global error handling for any VBA Project.
 '
-'               BoP ErrSrc(PROC)
-'               On Error Resume Next
-'               <tested procedure>
-'               Debug.Assert Err.Number = n or in case the error is a programmed
-'               application error: Debug.Asser AppErr(Err.Number) = n
-'               EoP ErrSrc(PROC)
+' Methods: - AppErr   Converts a positive number into a negative error number ensuring it not
+'                     conflicts with a VB error. A negative error number is turned back into the
+'                     original positive Application  Error Number.
+'          - ErrHndlr Either passes on the error to the caller or when the entry procedure is
+'                     reached, displays the error with a complete path from the entry procedure
+'                     to the procedure with the error.
+'          - BoP      Maintains the call stack at the Begin of a Procedure (optional when using
+'                     this common error handler)
+'          - EoP      Maintains the call stack at the End of a Procedure, triggers the display of
+'                     the Execution Trace when the entry procedure is finished and the
+'                     Conditional Compile Argument ExecTrace = 1
+'          - BoT      Begin of Trace. In contrast to BoP this is for any group of code lines
+'                     within a procedure
+'          - EoT      End of trace corresponding with the BoT.
+'          - ErrMsg   Displays the error message in a proper formated manner
+'                     The local Conditional Compile Constant 'ErrMsg = "Custom" enforces the use
+'                     of the Alternative VBA MsgBox which provideds a significantly better
+'                     readability. The method may be used with or without a call stack.
 '
-'           - With the Conditional Compile Argument "ExecTrace = 1", an execution
-'             trace is displayed in the imediate window - whereby the extent depends
-'             on the use of BoP/EoP and BoT/EoT statements - with the highest possible
-'             precision.
-'           - The local Conditional Compile Constant 'ErrMsg = "Custom"' allows the use
-'             of the dedicate UserForm lErrMsg which provideds a better readability.
+' Usage:   Private/Public Sub/Function any()
+'             Const PROC = "any"  ' procedure's name as error source
 '
-' Methods:
-' - AppErr   Converts a positive number into a negative error number
-'            ensuring it not conflicts with a VB error. A negative error
-'            number is turned back into the original positive Application
-'            Error Number.
-' - ErrHndlr Either passes on the error to the caller or when the entry procedure is
-'            reached, displays the error with a complete path from the entry procedure
-'            to the procedure with the error.
-' - BoP      Maintains the call stack at the Begin of a Procedure (optional when using
-'            this common error handler)
-' - EoP      Maintains the call stack at the End of a Procedure, triggers the display
-'            of the Execution Trace when the entry procedure is finished and the
-'            Conditional Compile Argument ExecTrace = 1
-' - BoT      Begin of Trace. In contrast to BoP this is for any group of code lines
-'            within a procedure
-' - EoT      End of trace corresponding with the BoT.
-' - ErrMsg   Displays the error message in a proper formated manner
-'                           The local Conditional Compile Constant 'ErrMsg = "Custom"'
-'                           allows the use of the dedicate UserForm fErrMsg which
-'                           provideds a significant better readability.
-'                           ErrMsg may be used with or without a call stack.
+'             On Error GoTo on_error
+'             BoP ErrSrc(PROC)   ' puts the procedure on the call stack
 '
-' Usage:                    Private/Public Sub/Function any()
-'                           Const PROC = "any"  ' procedure's name as error source
+'             ' <any code>
 '
-'                              On Error GoTo on_error
-'                              BoP ErrSrc(PROC)   ' puts the procedure on the call stack
-'
-'                              ' <any code>
-'
-' exit_proc:
+'          exit_proc:
 '                               ' <any "finally" code like re-protecting an unprotected sheet for instance>
 '                               EoP ErrSrc(PROC)   ' takes the procedure off from the call stack
 '                               Exit Sub/Function
 '
-' on_error:
-'                            #If Debugging = 1 Then
-'                                Stop: Resume    ' allows to exactly locate the line where the error occurs
-'                            #End If
+'          on_error:
+'          #If Debugging = 1 Then
+'             Debug.Print Err.Description: Stop: Resume    ' allows to exactly locate the line where the error occurs
+'          #Else
+'             mErrHndlr.ErrHndlr Err.Number, ErrSrc(PROC), Err.Description, Erl
+'          #End If
 '
 ' Note: When the call stack is not maintained the ErrHndlr will display the message
 '       immediately with the procedure the error occours. When the call stack is
@@ -76,13 +50,12 @@ Option Explicit
 '       with the first (entry) procedure in which the call stack is maintained all the
 '       call sequence down to the procedure where the error occoured.
 '
-' Uses: mBasic - regarded available through the CompMan Addin. When the Addin is not used
-'                the module must be imported into this project
+' Uses: fMsg (only when the Conditional Compile Argument AlternateMsgBox = 1)
 '
 ' Requires: Reference to "Microsoft Scripting Runtime"
 '
-' W. Rauschenberger, Berlin January 2020
-' -----------------------------------------------------------------------------
+' W. Rauschenberger, Berlin January 2020, https://github.com/warbe-maker/Common-VBA-Error-Handler
+' -----------------------------------------------------------------------------------------------
 ' ~~ Begin of Declarations for withdrawing the title bar ------------------------------------
 'Private Declare PtrSafe Function GetForegroundWindow Lib "User32.dll" () As LongPtr
 'Private Declare PtrSafe Function GetWindowLong Lib "User32.dll" _
@@ -96,6 +69,24 @@ Option Explicit
 'Private Const GWL_STYLE  As Long = (-16)
 'Private Const WS_CAPTION As Long = &HC00000
 ' ~~ End of Declarations for withdrawing the title bar --------------------------------------
+
+Public Enum StartupPosition         ' ---------------------------
+    Manual = 0                      ' Used to position the
+    CenterOwner = 1                 ' final setup message form
+    CenterScreen = 2                ' horizontally and vertically
+    WindowsDefault = 3              ' centered on the screen
+End Enum                            ' ---------------------------
+
+Public Type tSection                ' ------------------
+       sLabel As String             ' Structure of the
+       sText As String              ' UserForm's
+       bMonspaced As Boolean        ' message area which
+End Type                            ' consists of
+
+Public Type tMessage                ' three message
+       section(1 To 3) As tSection  ' sections
+End Type
+
 Public CallStack    As clsCallStack
 Public dicTrace     As Dictionary       ' Procedure execution trancing records
 Private cllErrPath  As Collection
@@ -241,17 +232,13 @@ Public Sub ErrMsg(ByVal lErrNo As Long, _
                   ByVal sErrSrc As String, _
                   ByVal sErrDesc As String, _
                   ByVal sErrLine As String)
-' -------------------------------------------
-' Displays the error message either by means
-' of MsgBox or, when the Conditional Compile
-' Argument ErrMsg = "Custom", by means of the
-' Common Component fMsg. In any case the path
-' to the error may be displayed, provided
-' BoP/EoP statements had been executed with
-' the entry procedure.
+' -----------------------------------------------------------------------------------------
+' Displays the error message either by means of VBA MsgBox or, when the Conditional Compile
+' Argument AlternateMsgBox = 1 by means of the Alternate VBA MsgBox (fMsg). In any case the
+' path to the error may be displayed, provided the entry procedure has BoP/EoP code lines.
 '
-' W. Rauschenberger, Berlin, June 2020
-' -------------------------------------------
+' W. Rauschenberger, Berlin, Sept 2020
+' -----------------------------------------------------------------------------------------
 Dim sErrMsg     As String
 Dim sTitle      As String
 Dim sErrPath    As String
@@ -306,20 +293,24 @@ Dim iIndent     As Long
         sErrInfo = vbNullString
     End If
                        
-#If ErrMsg = "Custom" Then
+#If AlternateMsgBox Then
     '~~ Display the error message by means of the Common UserForm fMsg
-    mBasic.ErrMsg lErrNo:=lErrNo, sTitle:=sTitle, sErrDesc:=sErrText, sErrPath:=sErrPath, sErrInfo:=sErrInfo
+    ErrMsgAlternate _
+       errnumber:=lErrNo, _
+       errsource:=sErrSrc, _
+       errdescription:=sErrText, _
+       errline:="", _
+       errtitle:=sTitle, _
+       errpath:=sErrPath, _
+       errinfo:=sErrInfo
 #Else
     '~~ Assemble error message to be displayed by MsgBox
-    sErrMsg = "Source: " & vbLf & sErrSrc & sIndicate & vbLf & vbLf & _
-              "Error: " & vbLf & sErrText
-    If sErrPath <> vbNullString Then
-        sErrMsg = sErrMsg & vbLf & vbLf & "Call Stack:" & vbLf & sErrPath
-    End If
-    If sErrInfo <> vbNullString Then
-        sErrMsg = sErrMsg & vbLf & "About: " & vbLf & sErrInfo
-    End If
-    MsgBox sErrMsg, vbCritical, sTitle
+    ErrMsgBox _
+       errnumber:=lErrNo, _
+       errsource:=sErrSrc, _
+       errdescription:=sErrDesc, _
+       errline:=sErrLine, _
+       errpath:=sErrPath
 #End If
 End Sub
 
@@ -356,6 +347,136 @@ Dim s As String
     End If
     ErrorDetails = s
 End Function
+
+#If AlternateMsgBox Then
+' Elaborated error message using fMsg which supports the display of
+' up to 3 message sections, optionally monospaced (here used for the
+' error path) and each optionally with a label (here used to specify
+' the message sections).
+' Note: The error title is automatically assembled.
+' -------------------------------------------------------------------
+Public Sub ErrMsgAlternate(Optional ByVal errnumber As Long = 0, _
+                  Optional ByVal errsource As String = vbNullString, _
+                  Optional ByVal errdescription As String = vbNullString, _
+                  Optional ByVal errline As String = vbNullString, _
+                  Optional ByVal errtitle As String = vbNullString, _
+                  Optional ByVal errpath As String = vbNullString, _
+                  Optional ByVal errinfo As String = vbNullString)
+
+    Const PROC      As String = "ErrMsgAlternate"
+    Dim sIndicate   As String
+    Dim sErrText    As String   ' May be a first part of the errdescription
+    
+    If errnumber = 0 _
+    Then MsgBox "Apparently there is no exit statement line above the error handling! Error number is 0!", vbCritical, "Application error in " & ErrSrc(PROC) & "!"
+
+    '~~ Error line info in case one had been provided - additionally integrated in the assembled error title
+    If errline = vbNullString Or errline = "0" Then
+        sIndicate = vbNullString
+    Else
+        sIndicate = " (at line " & errline & ")"
+    End If
+
+    If errtitle = vbNullString Then
+        '~~ When no title is provided, one is assembled by the provided info
+        errtitle = errtitle & sIndicate
+        '~~ Distinguish between VBA and Application error
+        Select Case errnumber
+            Case Is > 0:    errtitle = "VBA Error " & errnumber
+            Case Is < 0:    errtitle = "Application Error " & AppErr(errnumber)
+        End Select
+        errtitle = errtitle & " in:  " & errsource & sIndicate
+    End If
+
+    If errinfo = vbNullString Then
+        '~~ When no error information is provided one may be within the error description
+        '~~ which is only possible with an application error raised by Err.Raise
+        If InStr(errdescription, "||") <> 0 Then
+            sErrText = Split(errdescription, "||")(0)
+            errinfo = Split(errdescription, "||")(1)
+        Else
+            sErrText = errdescription
+            errinfo = vbNullString
+        End If
+    Else
+        sErrText = errdescription
+    End If
+
+    '~~ Display error message by UserForm fErrMsg
+    With fMsg
+        .MsgTitle = errtitle
+        .MsgLabel(1) = "Error Message/Description:"
+        .MsgText(1) = sErrText
+        If errpath <> vbNullString Then
+            .MsgLabel(2) = "Error path (call stack):"
+            .MsgText(2) = errpath
+            .MsgMonoSpaced(2) = True
+        End If
+        If errinfo <> vbNullString Then
+            .MsgLabel(3) = "Info:"
+            .MsgText(3) = errinfo
+        End If
+        .MsgButtons = vbOKOnly
+        
+        '~~ Setup prior activating/displaying the message form is essential!
+        '~~ To aviod flickering, the whole setup process must be done before the form is displayed.
+        '~~ This  m u s t  be the method called after passing the arguments and before .show
+        .Setup
+        .Show
+    End With
+
+End Sub
+
+#Else
+Public Sub ErrMsgBox(ByVal errnumber As Long, _
+                     ByVal errsource As String, _
+                     ByVal errdescription As String, _
+                     ByVal errline As String, _
+            Optional ByVal errpath As String = vbNullString)
+' ----------------------------------------------------------
+' Error message displayed by means of the VBA MsgBox.
+' ----------------------------------------------------------
+    Const PROC          As String = "ErrMsgBox"
+    Dim sMsg            As String
+    Dim sMsgTitle       As String
+    Dim sDescription    As String
+    Dim sInfo           As String
+
+    If errnumber = 0 _
+    Then MsgBox "Exit statement before error handling missing! Error number is 0!", vbCritical, "Application error in " & ErrSrc(PROC) & "!"
+
+    '~~ Prepare Title
+    If errnumber < 0 Then
+        sMsgTitle = "Application Error " & AppErr(errnumber)
+    Else
+        sMsgTitle = "VB Error " & errnumber
+    End If
+    sMsgTitle = sMsgTitle & " in " & errsource
+    If errline <> 0 Then sMsgTitle = sMsgTitle & " (at line " & errline & ")"
+
+    '~~ Prepare message
+    If InStr(errdescription, "||") <> 0 Then
+        '~~ Split error description/message and info
+        sDescription = Split(errdescription, "||")(0)
+        sInfo = Split(errdescription, "||")(1)
+    Else
+        sDescription = errdescription
+    End If
+    sMsg = "Description: " & vbLf & sDescription & vbLf & vbLf & _
+           "Source:" & vbLf & errsource
+    If errline <> 0 Then sMsg = sMsg & " (at line " & errline & ")"
+    If errpath <> vbNullString Then
+        sMsg = sMsg & vbLf & vbLf & _
+               "Path:" & vbLf & errpath
+    End If
+    If sInfo <> vbNullString Then
+        sMsg = sMsg & vbLf & vbLf & _
+               "Info:" & vbLf & sInfo
+    End If
+    MsgBox sMsg, vbCritical, sMsgTitle
+
+End Sub
+#End If
 
 Private Function ErrSrc(ByVal sProc As String) As String
     ErrSrc = ThisWorkbook.Name & ">mErrHndlr" & ">" & sProc
