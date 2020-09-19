@@ -1,12 +1,31 @@
 # Common VBA Error Handler
-### Coverage
+### Introduction
+At first this approach implementated may appear as a kind of overkill. However it is an enormous time saver for the investigation and elimination of coding errors as well as performance flaws. 
+
 The error handling approach significantly differs between development/test and production.
 #### Development and Test
 - Debug.Print of the Error Description
 - Stop when the error occurs within the procedure it occurred
 - Manual _Resume_ of the code line which caused the error providing the chance to change the code on the fly - what somebody called a "godsend" when needed.
 
-Because this for sure is something unwanted in production it will be turned off in production by the Conditional Compile Argument _Debugging=0_
+The below code scheme does it:
+```vbscript
+Private Sub Any
+   On Error Go-to on_error
+   ....
+   
+exit_proc:
+   Exit Sub
+   
+on_error:
+#If Debugging Then ' to be turned off in production!
+   Debug.Print Err.Description: Stop: Resume
+#End If
+End Sub
+```
+One may be tempted to stop here having experienced the enormous benefit of this simple kind of error handling. But perfectly suited for development and test is it absolutely inappropriate in production - except you the developer are the only user.
+
+
 #### Production
 When the [_Entry Procedure_](#the-entry-procedure) is known, the error is passed on back up to it and finally displays a message with:
 - A title which considers whether it is an _Application Error_ or a _Visual Basic Run Time Error_ in the form<br>Application|VB error [number] in <module>.<procedure> [at line <line number>] 
@@ -21,20 +40,7 @@ Note: When the [_Entry Procedure_](#the-entry-procedure) is unknown  the error i
 ### Basic error handling
 The below approach is absolutely recommendable. Its wise to have it coded before an error occurs but can be added then as well. :
 
-```vbscript
-Private Sub Any
-   On Error Go-to on_error
-   ....
-   
-exit_proc:
-   Exit Sub
-   
-on_error:
-#If Debugging Then
-   Debug.Print Err.Description: Stop: Resume
-#End If
-End Sub
-```
+
 Of course this is absolutely inappropriate when the project runs productive. The above should only be active for development and test and the complete common error handling should run in production as follows:
 ```vbscript
 Private Sub Any
