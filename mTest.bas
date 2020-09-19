@@ -325,6 +325,4 @@ on_error:
     mErrHndlr.ErrHndlr Err.Number, ErrSrc(PROC), Err.Description, Erl
 End Sub
 
-Private Function ErrSrc(ByVal sProc As String) As String
-    ErrSrc = ThisWorkbook.Name & ">mTest" & ">" & sProc
-End Function
+Private Property Get ErrSrc(Optional ByVal sProc As String) As String:   ErrSrc = "mTest." & sProc: End Property

@@ -1,6 +1,6 @@
 Attribute VB_Name = "mErrHndlr"
 Option Explicit
-#Const AlternateMsgBox = 0  ' 1 = Error displayed by means of the Alternative MsgBox fMsg
+#Const AlternateMsgBox = 1  ' 1 = Error displayed by means of the Alternative MsgBox fMsg
                             ' 0 = Error displayed by means of the VBA MsgBox
 ' -----------------------------------------------------------------------------------------------
 ' Standard  Module mErrHndlr: Global error handling for any VBA Project.
