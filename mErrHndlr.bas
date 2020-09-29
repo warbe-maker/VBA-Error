@@ -166,12 +166,12 @@ Public Sub EoT(ByVal s As String)
     CallStack.TraceEnd s
 End Sub
 
-Public Sub ErrHndlr(ByVal lErrNo As Long, _
-                    ByVal sErrSource As String, _
-                    ByVal sErrText As String, _
-                    ByVal sErrLine As String)
+Public Sub ErrHndlr(ByVal errnumber As Long, _
+                    ByVal errsource As String, _
+                    ByVal errdscrptn As String, _
+                    ByVal errline As String)
 ' -----------------------------------------------
-' When the caller (sErrSource) is the entry
+' When the caller (errsource) is the entry
 ' procedure the error is displayed with the path
 ' to the error. Otherwise the error is raised
 ' again to pass it on to the calling procedure.
@@ -182,50 +182,50 @@ Const PROC      As String = "ErrHndlr"
 Static sLine    As String   ' provided error line (if any) for the the finally displayed message
    
    
-    If lErrNo = 0 Then
+    If errnumber = 0 Then
         MsgBox "Apparently an ""Exit ..."" statement before the error handling is missing! The error handling has been aproached with a 0 error number!", vbExclamation, _
                "Problem deteced with " & ErrSrc(PROC)
         Exit Sub
     End If
     
     If CallStack Is Nothing Then Set CallStack = New clsCallStack
-    If sErrLine <> 0 Then sLine = sErrLine
+    If errline <> 0 Then sLine = errline
     
     With CallStack
         If .ErrorSource = vbNullString Then
             '~~ When the ErrorSource property is still empty, this indicates that the
             '~~ error handler is executed the first time This is the error raising procedure. Backtracking to the entry procedure is due
             Set cllErrPath = Nothing: Set cllErrPath = New Collection
-            .ErrorSource = sErrSource
-            .SourceErrorNo = lErrNo
-            .ErrorNumber = lErrNo
-            .ErrorDescription = sErrText
-            .ErrorPath = .ErrorPath & sErrSource & " (" & ErrorDetails(lErrNo, sErrLine) & ")" & vbLf
-            .TraceError sErrSource & ": " & ErrorDetails(lErrNo, sErrLine) & " """ & sErrText & """"
-        ElseIf .ErrorNumber <> lErrNo Then
+            .ErrorSource = errsource
+            .SourceErrorNo = errnumber
+            .ErrorNumber = errnumber
+            .ErrorDescription = errdscrptn
+            .ErrorPath = .ErrorPath & errsource & " (" & ErrorDetails(errnumber, errline) & ")" & vbLf
+            .TraceError errsource & ": " & ErrorDetails(errnumber, errline) & " """ & errdscrptn & """"
+        ElseIf .ErrorNumber <> errnumber Then
             '~~ The error number had changed during the process
             '~~ of passing the error on to the entry procedure
-            .ErrorPath = .ErrorPath & sErrSource & " (" & ErrorDetails(lErrNo, sErrLine) & ")" & vbLf
-            .TraceError sErrSource & ": " & ErrorDetails(lErrNo, sErrLine) & " """ & sErrText & """"
-            .ErrorNumber = lErrNo
+            .ErrorPath = .ErrorPath & errsource & " (" & ErrorDetails(errnumber, errline) & ")" & vbLf
+            .TraceError errsource & ": " & ErrorDetails(errnumber, errline) & " """ & errdscrptn & """"
+            .ErrorNumber = errnumber
         Else
             '~~ This is the error handling called during the "backtracing" process,
             '~~ i.e. the process when the error is passed on up to the entry procedure
-            .ErrorPath = .ErrorPath & sErrSource & vbLf
+            .ErrorPath = .ErrorPath & errsource & vbLf
         End If
         
-        If .EntryProc <> sErrSource Then ' And Not .ErrorPath <> vbNullString Then
+        If .EntryProc <> errsource Then ' And Not .ErrorPath <> vbNullString Then
             '~~ This is the call of the error handling for the error causing procedure or
             '~~ any of the procedures up to the entry procedure which has yet not been reached.
             '~~ The "backtrace" error path is maintained ....
-            cllErrPath.Add sErrSource
+            cllErrPath.Add errsource
             '~~ ... and the error is passed on to the calling procedure.
-            Err.Raise lErrNo, sErrSource, sErrText
+            Err.Raise errnumber, errsource, errdscrptn
         
-        ElseIf .EntryProc = sErrSource Then
+        ElseIf .EntryProc = errsource Then
             '~~ The entry procedure has been reached
             '~~ The "backtrace" error path is maintained ....
-            cllErrPath.Add sErrSource
+            cllErrPath.Add errsource
             '~~ .. and the error is displayed
             ErrMsg .SourceErrorNo, .ErrorSource, .ErrorDescription, sLine
             
@@ -335,16 +335,16 @@ Private Function ErrMsgInfo(ByVal s As String) As String
     Else ErrMsgInfo = vbNullString
 End Function
 
-Private Function ErrorDetails(ByVal lErrNo As Long, _
+Private Function ErrorDetails(ByVal errnumber As Long, _
                               ByVal sErrLine As String) As String
 ' -----------------------------------------------------------------
 ' Returns kind of error, error number, and error line if available.
 ' -----------------------------------------------------------------
 Dim s As String
-    If lErrNo < 0 Then
-        s = "App error " & AppErr(lErrNo)
+    If errnumber < 0 Then
+        s = "App error " & AppErr(errnumber)
     Else
-        s = "VB error " & lErrNo
+        s = "VB error " & errnumber
     End If
     If sErrLine <> 0 Then
         s = s & " at line " & sErrLine

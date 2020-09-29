@@ -9,7 +9,7 @@ Const PROC As String = "ErrHndlr_Test_No_Exit_Statement"
 '    Exit Sub
     
 on_error:
-    mErrHndlr.ErrHndlr Err.Number, ErrSrc(PROC), Err.Description, Erl
+    mErrHndlr.ErrHndlr errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl
 End Sub
 
 Sub ErrHndlr_Test_1()
@@ -37,7 +37,7 @@ exit_proc:
     Exit Sub
 
 on_error:
-    mErrHndlr.ErrHndlr Err.Number, ErrSrc(PROC), Err.Description, Erl
+    mErrHndlr.ErrHndlr errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl
 End Sub
 
 Sub ErrHndlr_Test_2()
@@ -70,7 +70,7 @@ exit_proc:
     Exit Sub
 
 on_error:
-    mErrHndlr.ErrHndlr Err.Number, ErrSrc(PROC), Err.Description, Erl
+    mErrHndlr.ErrHndlr errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl
 End Sub
 
 Sub ErrHndlr_Test_3()
@@ -99,7 +99,7 @@ exit_proc:
     Exit Sub
 
 on_error:
-    mErrHndlr.ErrHndlr Err.Number, ErrSrc(PROC), Err.Description, Erl
+    mErrHndlr.ErrHndlr errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl
 End Sub
 
 Sub TestProc_7()
@@ -126,7 +126,7 @@ exit_proc:
     Exit Sub
 
 on_error:
-    mErrHndlr.ErrHndlr Err.Number, ErrSrc(PROC), Err.Description, Erl
+    mErrHndlr.ErrHndlr errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl
 End Sub
 
 Sub TestProc_7_1()
@@ -146,7 +146,7 @@ exit_proc:
     Exit Sub
 
 on_error:
-    mErrHndlr.ErrHndlr Err.Number, ErrSrc(PROC), Err.Description, Erl
+    mErrHndlr.ErrHndlr errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl
 End Sub
 
 Sub TestProc_7_1a()
@@ -165,7 +165,7 @@ exit_proc:
     Exit Sub
 
 on_error:
-    mErrHndlr.ErrHndlr Err.Number, ErrSrc(PROC), Err.Description, Erl
+    mErrHndlr.ErrHndlr errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl
 End Sub
 
 Sub TestProc_7_2a()
@@ -179,7 +179,7 @@ exit_proc:
     Exit Sub
 
 on_error:
-    mErrHndlr.ErrHndlr Err.Number, ErrSrc(PROC), Err.Description, Erl
+    mErrHndlr.ErrHndlr errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl
 End Sub
 
 Sub TestProc_7_2b()
@@ -193,7 +193,7 @@ exit_proc:
     Exit Sub
 
 on_error:
-    mErrHndlr.ErrHndlr Err.Number, ErrSrc(PROC), Err.Description, Erl
+    mErrHndlr.ErrHndlr errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl
 End Sub
 
 Sub TestProc_1()
@@ -212,7 +212,7 @@ exit_proc:
     Exit Sub
 
 on_error:
-    mErrHndlr.ErrHndlr Err.Number, ErrSrc(PROC), Err.Description, Erl
+    mErrHndlr.ErrHndlr errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl
 End Sub
 
 Sub TestProc_2()
@@ -232,7 +232,7 @@ exit_proc:
     Exit Sub
 
 on_error:
-    mErrHndlr.ErrHndlr Err.Number, ErrSrc(PROC), Err.Description, Erl
+    mErrHndlr.ErrHndlr errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl
 End Sub
 
 Sub TestProc_3()
@@ -252,7 +252,7 @@ exit_proc:
     Exit Sub
 
 on_error:
-    mErrHndlr.ErrHndlr Err.Number, ErrSrc(PROC), Err.Description, Erl
+    mErrHndlr.ErrHndlr errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl
 End Sub
 
 Sub TestProc_4()
@@ -272,7 +272,7 @@ exit_proc:
     Exit Sub
 
 on_error:
-    mErrHndlr.ErrHndlr Err.Number, ErrSrc(PROC), Err.Description, Erl
+    mErrHndlr.ErrHndlr errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl
 End Sub
 
 
@@ -293,7 +293,7 @@ exit_proc:
     Exit Sub
 
 on_error:
-    mErrHndlr.ErrHndlr Err.Number, ErrSrc(PROC), Err.Description, Erl
+    mErrHndlr.ErrHndlr errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl
 End Sub
 
 Sub TestProc_6()
@@ -322,7 +322,7 @@ exit_proc:
     Exit Sub
 
 on_error:
-    mErrHndlr.ErrHndlr Err.Number, ErrSrc(PROC), Err.Description, Erl
+    mErrHndlr.ErrHndlr errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl
 End Sub
 
 Private Property Get ErrSrc(Optional ByVal sProc As String) As String:   ErrSrc = "mTest." & sProc: End Property
