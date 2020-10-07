@@ -2,8 +2,46 @@ Attribute VB_Name = "mTest"
 Option Explicit
 Public bVBAError    As Boolean
 
+Private Sub ErrHndlr_Test_5()
+
+    On Error GoTo on_error
+    Const PROC = "ErrHndlr_Test_5"
+      
+    BoP ErrSrc(PROC)
+    ErrHndlr_Test_5a
+    EoP ErrSrc(PROC)
+    Exit Sub
+
+on_error:
+    mErrHndlr.ErrHndlr errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl
+End Sub
+
+Private Sub ErrHndlr_Test_5a()
+
+    Const PROC = "ErrHndlr_Test_5a"
+    On Error GoTo on_error
+    Dim sResumeButton As String
+   
+#If Debugging Then
+    sResumeButton = "Resume error" & vbLf & "code line"
+#End If
+    
+    BoP ErrSrc(PROC)
+15  Dim l As Long: l = l / 0
+
+end_proc:
+    EoP ErrSrc(PROC)
+    Exit Sub
+    
+on_error:
+    Select Case mErrHndlr.ErrHndlr(errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl, buttons:="Ok," & sResumeButton)
+        Case sResumeButton: Stop: Resume ' Continue with F8 to end up at the code line which caused the error
+    End Select
+End Sub
+
 Sub ErrHndlr_Test_No_Exit_Statement()
-Const PROC As String = "ErrHndlr_Test_No_Exit_Statement"
+    
+    Const PROC = "ErrHndlr_Test_No_Exit_Statement"
     
     On Error GoTo on_error
 '    Exit Sub
@@ -30,7 +68,7 @@ Const PROC      As String = "ErrHndlr_Test_1"
     '~~ provideded the conditional compile argument ExecTrace = 1.
     
     '~~ Test 1: Unpaired BoP/EoP (A BoP without an EoP and vice versa)
-    TestProc_7
+    TestProc_4
     
 exit_proc:
     EoP ErrSrc(PROC)
@@ -102,23 +140,23 @@ on_error:
     mErrHndlr.ErrHndlr errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl
 End Sub
 
-Sub TestProc_7()
+Sub TestProc_4()
 ' ----------------------------------------------------------------
 ' The error handler is trying its very best not to confuse with
 ' unpaired BoP/EoP code lines. However, it depends at which level
 ' this is the case.
 ' ----------------------------------------------------------------
-Const PROC = "Test_7"
+Const PROC = "Test_4"
     
 '    On Error GoTo on_error
     
-    TestProc_7_1 ' missing End of Procedure statement
+    TestProc_4_1 ' missing End of Procedure statement
     
 #If BopEop Then
     BoP ErrSrc(PROC)
 #End If
-    TestProc_7_2b   ' missing Begin of Procedure statement
-    TestProc_7_2a   ' missing Begin of Procedure statement
+    TestProc_4_2b   ' missing Begin of Procedure statement
+    TestProc_4_2a   ' missing Begin of Procedure statement
 #If BopEop Then
     EoP ErrSrc(PROC)
 #End If
@@ -129,28 +167,30 @@ on_error:
     mErrHndlr.ErrHndlr errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl
 End Sub
 
-Sub TestProc_7_1()
-Const PROC = "Test_7_1"
+Sub TestProc_4_1()
+Const PROC = "Test_4_1"
     
     On Error GoTo on_error
     
 #If BopEop Then
     BoP ErrSrc(PROC)
 #End If
-    TestProc_7_1a
+    TestProc_4_1a
     
 exit_proc:
 #If BopEop Then
     EoP ErrSrc(PROC)
 #End If
     Exit Sub
-
 on_error:
+#If Debugging Then
+    Debug.Print Err.Description: Stop: Resume
+#End If
     mErrHndlr.ErrHndlr errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl
 End Sub
 
-Sub TestProc_7_1a()
-Const PROC = "Test_7_1a"
+Sub TestProc_4_1a()
+Const PROC = "Test_4_1a"
     
     On Error GoTo on_error
 #If BopEop Then
@@ -163,13 +203,15 @@ exit_proc:
     EoP ErrSrc(PROC)
 #End If
     Exit Sub
-
 on_error:
+#If Debugging Then
+    Debug.Print Err.Description: Stop: Resume
+#End If
     mErrHndlr.ErrHndlr errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl
 End Sub
 
-Sub TestProc_7_2a()
-Const PROC = "Test_7_2a"
+Sub TestProc_4_2a()
+Const PROC = "Test_4_2a"
     
     On Error GoTo on_error
     BoP ErrSrc(PROC) & " (missing EoP)"
@@ -179,11 +221,14 @@ exit_proc:
     Exit Sub
 
 on_error:
+#If Debugging Then
+    Debug.Print Err.Description: Stop: Resume
+#End If
     mErrHndlr.ErrHndlr errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl
 End Sub
 
-Sub TestProc_7_2b()
-Const PROC = "Test_7_2b"
+Sub TestProc_4_2b()
+Const PROC = "Test_4_2b"
     
     On Error GoTo on_error
 '    BoP ErrSrc(PROC) & " (missing BoP)"
@@ -193,6 +238,9 @@ exit_proc:
     Exit Sub
 
 on_error:
+#If Debugging Then
+    Debug.Print Err.Description: Stop: Resume
+#End If
     mErrHndlr.ErrHndlr errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl
 End Sub
 
@@ -236,14 +284,15 @@ on_error:
 End Sub
 
 Sub TestProc_3()
-Const PROC      As String = "Test_3"
+
+    Const PROC      As String = "Test_3"
 
 #If BopEop Then
     BoP ErrSrc(PROC)
 #End If
     On Error GoTo on_error
     
-    TestProc_4
+    TestProc_3a
     
 exit_proc:
 #If BopEop Then
@@ -252,18 +301,22 @@ exit_proc:
     Exit Sub
 
 on_error:
+#If Debugging Then
+    Debug.Print Err.Description: Stop: Resume
+#End If
     mErrHndlr.ErrHndlr errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl
 End Sub
 
-Sub TestProc_4()
-Const PROC      As String = "Test_4"
+Sub TestProc_3a()
+
+    Const PROC = "Test_4"
 
 #If BopEop Then
     BoP ErrSrc(PROC)
 #End If
     On Error GoTo on_error
     
-    TestProc_5
+    TestProc_3b
     
 exit_proc:
 #If BopEop Then
@@ -272,19 +325,23 @@ exit_proc:
     Exit Sub
 
 on_error:
+#If Debugging Then
+    Debug.Print Err.Description: Stop: Resume
+#End If
     mErrHndlr.ErrHndlr errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl
 End Sub
 
 
-Sub TestProc_5()
-Const PROC      As String = "Test_5"
+Sub TestProc_3b()
+
+    Const PROC = "Test_3b"
 
 #If BopEop Then
     BoP ErrSrc(PROC)
 #End If
     On Error GoTo on_error
     
-    TestProc_6
+    TestProc_3c
     
 exit_proc:
 #If BopEop Then
@@ -293,11 +350,15 @@ exit_proc:
     Exit Sub
 
 on_error:
+#If Debugging Then
+'    Debug.Print Err.Description: Stop: Resume
+#End If
     mErrHndlr.ErrHndlr errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl
 End Sub
 
-Sub TestProc_6()
-Const PROC      As String = "Test_6"
+Sub TestProc_3c()
+    
+    Const PROC = "Test_3c"
 
     BoP ErrSrc(PROC)
     On Error GoTo on_error
@@ -322,6 +383,9 @@ exit_proc:
     Exit Sub
 
 on_error:
+#If Debugging Then
+    ' Debug.Print Err.Description: Stop: Resume
+#End If
     mErrHndlr.ErrHndlr errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl
 End Sub
 
