@@ -20,22 +20,17 @@ Private Sub ErrHndlr_Test_5a()
 
     Const PROC = "ErrHndlr_Test_5a"
     On Error GoTo on_error
-    Dim sResumeButton As String
-   
-#If Debugging Then
-    sResumeButton = "Resume error" & vbLf & "code line"
-#End If
-    
+       
     BoP ErrSrc(PROC)
-15  Dim l As Long: l = l / 0
+15  Debug.Print ThisWorkbook.Named
 
 end_proc:
     EoP ErrSrc(PROC)
     Exit Sub
     
 on_error:
-    Select Case mErrHndlr.ErrHndlr(errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl, buttons:="Ok," & sResumeButton)
-        Case sResumeButton: Stop: Resume ' Continue with F8 to end up at the code line which caused the error
+    Select Case mErrHndlr.ErrHndlr(errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl)
+        Case ResumeButton: Stop: Resume ' Continue with F8 to end up at the code line which caused the error
     End Select
 End Sub
 
