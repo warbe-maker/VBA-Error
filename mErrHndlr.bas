@@ -91,15 +91,13 @@ Public CallStack    As clsCallStack
 Public dicTrace     As Dictionary       ' Procedure execution trancing records
 Private cllErrPath  As Collection
 
-Public Property Get ResumeButton() As String: ResumeButton = "Resume error" & vbLf & "code line":   End Property
+Private dctStack            As Dictionary
+Private sErrHndlrEntryProc  As String
+Private lSourceErrorNo      As Long
+Private sErrorSource        As String
+Private sErrorDescription   As String
 
-Public Function Space(ByVal l As Long) As String
-' --------------------------------------------------
-' Unifies the VB differences SPACE$ and Space$ which
-' lead to code diferences where there aren't any.
-' --------------------------------------------------
-    Space = VBA.Space$(l)
-End Function
+Public Property Get ResumeButton() As String: ResumeButton = "Resume error" & vbLf & "code line":   End Property
 
 Public Function AppErr(ByVal lNo As Long) As Long
 ' -----------------------------------------------------------------
@@ -117,6 +115,8 @@ Public Sub BoP(ByVal sErrSource As String)
 ' --------------------------------------------------------------------
 ' Keep record of the Begin of a Procedure by maintaining a call stack.
 ' --------------------------------------------------------------------
+    
+    StackPush sErrSource
     
     If CallStack Is Nothing Then
         Set CallStack = New clsCallStack
@@ -148,17 +148,22 @@ Private Sub DsplyTrace()
 '       case along with the process of passing on the error
 '       to the calling procedure.
 ' ------------------------------------------------------------
+#If ExecTrace Then
     If CallStack Is Nothing Then
         Set CallStack = New clsCallStack
     End If
     CallStack.TraceDsply
     Set CallStack = Nothing
+#End If
 End Sub
 
 Public Sub EoP(ByVal sErrSource As String)
 ' -------------------------------------------
 ' End of Procedure. Maintains the call stack.
 ' -------------------------------------------
+    
+'    StackPop sErrSource
+    
     If Not CallStack Is Nothing Then
         CallStack.TraceEnd sErrSource
         CallStack.StackPop sErrSource
@@ -214,54 +219,63 @@ Public Function ErrHndlr(ByVal errnumber As Long, _
             '~~ error handler is executed the first time This is the error raising procedure. Backtracking to the entry procedure is due
             ErrHndlrErrPathAdd errsource & " (" & ErrorDetails(errnumber, errline) & ")"
             .TraceError errsource & ": " & ErrorDetails(errnumber, errline) & " """ & errdscrptn & """"
-            .SourceErrorNo = errnumber
-            .ErrorSource = errsource
-            .ErrorDescription = errdscrptn
+            lSourceErrorNo = errnumber
+            sErrorSource = errsource
+            sErrorDescription = errdscrptn
         ElseIf .ErrorNumber <> errnumber Then
-            '~~ The error number had changed during the process
-            '~~ of passing the error on to the entry procedure
-            ErrHndlrErrPathAdd errsource & " (" & ErrorDetails(errnumber, errline) & ")"
+            '~~ The error number had changed during the process of passing it on to the entry procedure
+'            ErrHndlrErrPathAdd errsource & " (" & ErrorDetails(errnumber, errline) & ")"
             .TraceError errsource & ": " & ErrorDetails(errnumber, errline) & " """ & errdscrptn & """"
             .ErrorNumber = errnumber
         Else
             '~~ This is the error handling called during the "backtracing" process,
             '~~ i.e. the process when the error is passed on up to the entry procedure
-            ErrHndlrErrPathAdd errsource
+'            ErrHndlrErrPathAdd errsource
         End If
         
-        If .EntryProc <> errsource And ErrHndlrNumberOfButtons(buttons) = 1 Then
-            '~~ Either this is the call of the error handling for the error causing procedure or
-            '~~ any of the procedures up to the entry procedure which has yet not been reached.
-            '~~ The "backtrace" error path is maintained ....
+        '~~ When the user has no choice for the user to press any button but the only one displayed
+        '~~ and the Entry Procedure is known but yet not reached the path back up to the Entry Procedure
+        '~~ is maintained and the error is passed on to the caller
+        If ErrHndlrNumberOfButtons(buttons) = 1 _
+        And sErrHndlrEntryProc <> vbNullString _
+        And .EntryProc <> errsource Then
             ErrHndlrErrPathAdd errsource
-            '~~ ... and the error is passed on to the calling procedure.
             Err.Raise errnumber, errsource, errdscrptn
-        
-        ElseIf .EntryProc = errsource Or .EntryProc = vbNullString Or ErrHndlrNumberOfButtons(buttons) > 1 Then
-            '~~ Either the "Entry Procedure" has been reached, or there is no known "Entry Procedure"
-            '~~ or the number of reply button is greater 1 which means that a user choice is due
-            ErrHndlrErrPathAdd errsource
-            '~~ .. and the error is displayed
-            ErrHndlr = ErrMsg(errnumber:=.SourceErrorNo, errsource:=.ErrorSource, errdscrptn:=.ErrorDescription, errline:=errline, errpath:=.ErrorPath, buttons:=buttons)
-            
-#If ExecTrace Then
-            '~~ Display of the full execution trace which had been maintained by
-            '~~ the BoP and EoP and the BoT and EoT statements executed
-            DsplyTrace
-#End If
         End If
+        
+        '~~ When more than one button is displayed for the user to choose one
+        '~~ or the Entry Procedure is unknown or has been reached
+        '~~ the error is displayed
+        If ErrHndlrNumberOfButtons(buttons) > 1 _
+        Or .EntryProc = errsource _
+        Or .EntryProc = vbNullString Then
+            ErrHndlrErrPathAdd errsource
+            ErrHndlr = ErrMsg(errnumber:=lSourceErrorNo, errsource:=sErrorSource, errdscrptn:=sErrorDescription, errline:=errline, errpath:=ErrMsgErrPath, buttons:=buttons)
+            StackErase
+            Set cllErrPath = Nothing
+        End If
+        
+        '~~ Each time a known Entry Procedure is reached the execution trace
+        '~~ maintained by the BoP and EoP and the BoT and EoT statements is displayed
+        If .EntryProc = errsource _
+        Or .EntryProc = vbNullString Then
+            DsplyTrace
+        End If
+            
     End With
 
 End Function
 
 Private Sub ErrHndlrErrPathAdd(ByVal s As String)
+' -----------------------------------------------
+' Adds s to the collection of procedures provided
+' the procedure has not already been eadded.
+' -----------------------------------------------
+
     If cllErrPath Is Nothing Then Set cllErrPath = New Collection
-    If cllErrPath.Count = 0 Then
-        cllErrPath.Add s
-    Else
-        If InStr(1, cllErrPath(cllErrPath.Count), s) = 0 _
-        Then cllErrPath.Add s
-    End If
+    If cllErrPath.Count = 0 _
+    Then cllErrPath.Add s _
+    Else If InStr(1, cllErrPath(cllErrPath.Count), s & " ") = 0 Then cllErrPath.Add s
 
 End Sub
 
@@ -343,13 +357,15 @@ Private Function ErrMsgErrPath() As String
 ' ---------------------------------------------------------------
 ' Returns errpath as indented list.
 ' ---------------------------------------------------------------
-    Dim i   As Long
+    Dim i       As Long
+    Dim lIndent As Long: lIndent = 0
     
-    For i = 1 To cllErrPath.Count
-        If i = 1 Then
+    For i = cllErrPath.Count To 1 Step -1
+        If i = cllErrPath.Count Then
             ErrMsgErrPath = cllErrPath(i)
         Else
-            ErrMsgErrPath = ErrMsgErrPath & vbLf & Space((i - 1) * 2) & "|_" & cllErrPath(i) & vbLf
+            lIndent = lIndent + 1
+            ErrMsgErrPath = ErrMsgErrPath & vbLf & Space((lIndent - 1) * 3) & "'- " & cllErrPath(i)
         End If
     Next i
 
@@ -401,4 +417,49 @@ End Function
 Private Function ErrSrc(ByVal sProc As String) As String
     ErrSrc = ThisWorkbook.Name & ">mErrHndlr" & ">" & sProc
 End Function
+
+Public Function Space(ByVal l As Long) As String
+' --------------------------------------------------
+' Unifies the VB differences SPACE$ and Space$ which
+' lead to code diferences where there aren't any.
+' --------------------------------------------------
+    Space = VBA.Space$(l)
+End Function
+
+Private Sub StackErase()
+    If Not dctStack Is Nothing Then dctStack.RemoveAll
+End Sub
+
+Private Sub StackInit()
+    If dctStack Is Nothing Then Set dctStack = New Dictionary Else dctStack.RemoveAll
+End Sub
+
+Private Function StackIsEmpty() As Boolean
+    StackIsEmpty = dctStack Is Nothing
+    If Not StackIsEmpty Then StackIsEmpty = dctStack.Count = 0
+End Function
+
+Private Sub StackPop(ByVal s As String)
+
+    Const PROC = "ErrHandlrStackPop"
+
+    If StackIsEmpty _
+    Then Err.Raise AppErr(1), ErrSrc(PROC), "No item '" & s & "' on the stack!"
+    If dctStack.Items()(dctStack.Count - 1) <> s _
+    Then Err.Raise AppErr(1), ErrSrc(PROC), "No item '" & s & "' on the stack!"
+
+    '~~ Remove item s from stack
+    dctStack.Remove dctStack.Count
+
+End Sub
+
+Private Sub StackPush(ByVal s As String)
+
+    If dctStack Is Nothing Then Set dctStack = New Dictionary
+    If dctStack.Count = 0 Then
+        sErrHndlrEntryProc = s ' First pushed = bottom item = entry procedure
+    End If
+    dctStack.Add dctStack.Count + 1, s
+
+End Sub
 
