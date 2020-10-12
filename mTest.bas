@@ -258,7 +258,10 @@ on_error:
 End Sub
 
 Public Sub Test_4_Debugging_with_ErrHndlr()
-
+' -----------------------------------------
+' This test the Conditional Compile
+' Argument Debugging = 1 is required.
+' -----------------------------------------
     On Error GoTo on_error
     Const PROC = "Test_4_Debugging_with_ErrHndlr"
       
