@@ -12,7 +12,6 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
-
 Option Explicit
 ' -------------------------------------------------------------------------------
 ' UserForm fMsg
@@ -126,6 +125,8 @@ Dim wVirtualScreenHeight        As Single
 Dim wVirtualScreenLeft          As Single
 Dim wVirtualScreenTop           As Single
 Dim wVirtualScreenWidth         As Single
+Dim lSetupRowButtons            As Long ' number of buttons setup in a row
+Dim lSetupRows                  As Long ' number of setup button rows
 
 Private Sub UserForm_Initialize()
         
@@ -159,7 +160,7 @@ exit_sub:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume Next
+    Debug.Print Err.Description: Stop: Resume
 End Sub
 
 Private Sub CollectDesignControls()
@@ -203,7 +204,7 @@ exit_proc:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume Next
+    Debug.Print Err.Description: Stop: Resume
 End Sub
 
 Private Sub ProvideCollection(ByRef cll As Collection)
@@ -517,8 +518,8 @@ Public Sub AdjustStartupPosition(ByRef pUserForm As Object, _
 End Sub
 
 Public Function AppErr(ByVal lNo As Long) As Long
-' ---------------------------------------------------------------------------
-' Converts a positive (programmed "application") error number into a negative
+' -----------------------------------------------------------------------
+' Converts a positive (i.e. an "application" error number into a negative
 ' number by adding vbObjectError. Converts a negative number back into a
 ' positive i.e. the original programmed application error number.
 ' Usage example:
@@ -526,9 +527,9 @@ Public Function AppErr(ByVal lNo As Long) As Long
 '    If Err.Number < 0 Then    ' when the error is displayed
 '       MsgBox "Application error " & AppErr(Err.Number)
 '    Else
-'       MsgBox "VB error " & Err.Number
+'       MsgBox "VB Rutime Error " & Err.Number
 '    End If
-' ---------------------------------------------------------------------------
+' -----------------------------------------------------------------------
     AppErr = IIf(lNo < 0, AppErr = lNo - vbObjectError, AppErr = vbObjectError + lNo)
 End Function
 
@@ -771,7 +772,7 @@ exit_proc:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume Next
+    Debug.Print Err.Description: Stop: Resume
 End Sub
 
  
@@ -952,7 +953,7 @@ exit_proc:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume Next
+    Debug.Print Err.Description: Stop: Resume
 
 End Sub
 
@@ -1029,7 +1030,7 @@ exit_proc:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume Next
+    Debug.Print Err.Description: Stop: Resume
 End Sub
 
 Private Sub ResizeAndRepositionButtons()
@@ -1069,7 +1070,7 @@ exit_proc:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume Next
+    Debug.Print Err.Description: Stop: Resume
 End Sub
 
 Private Sub ResizeAndRepositionButtonsArea()
@@ -1113,7 +1114,7 @@ exit_proc:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume Next
+    Debug.Print Err.Description: Stop: Resume
 End Sub
 
 Private Sub ResizeAndRepositionButtonsFrame()
@@ -1142,7 +1143,7 @@ exit_proc:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume Next
+    Debug.Print Err.Description: Stop: Resume
 End Sub
 
 Private Sub ResizeAndRepositionMsgArea()
@@ -1167,7 +1168,7 @@ exit_proc:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume Next
+    Debug.Print Err.Description: Stop: Resume
 End Sub
 
 Private Sub ResizeAndRepositionMsgSections()
@@ -1252,7 +1253,7 @@ exit_proc:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume Next
+    Debug.Print Err.Description: Stop: Resume
 End Sub
 
 Public Sub Setup()
@@ -1315,7 +1316,7 @@ exit_proc:
     Exit Sub
 
 on_error:
-    Debug.Print Err.Description: Stop: Resume Next
+    Debug.Print Err.Description: Stop: Resume
 End Sub
 
 Private Sub SetupButton(ByVal buttonrow As Long, _
@@ -1350,7 +1351,7 @@ exit_proc:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume Next
+    Debug.Print Err.Description: Stop: Resume
 End Sub
 
 Private Sub SetupButtons(ByVal vButtons As Variant)
@@ -1367,10 +1368,11 @@ Private Sub SetupButtons(ByVal vButtons As Variant)
     
     AppliedControl = frArea
     AppliedControl = DsgnButtonsFrame
-
+    lSetupRows = 1
+    
     '~~ Setup all reply button by calculatig their maximum width and height
     Select Case TypeName(vButtons)
-        Case "Long":        SetupButtonsFromValue vButtons
+        Case "Long":        SetupButtonsFromValue vButtons ' buttons are specified by an MsgBox buttons value only
         Case "String":      SetupButtonsFromString vButtons
         Case "Collection":  SetupButtonsFromCollection vButtons
         Case "Dictionary":  SetupButtonsFromCollection vButtons
@@ -1398,7 +1400,7 @@ exit_proc:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume Next
+    Debug.Print Err.Description: Stop: Resume
 End Sub
 
 ' Setup the reply buttons based on the comma delimited string of button captions
@@ -1408,39 +1410,46 @@ Private Sub SetupButtonsFromCollection(ByVal cllButtons As Collection)
 
     On Error GoTo on_error
     
-    Dim lRow        As Long
-    Dim lButton     As Long
     Dim v           As Variant
     
-    lRow = 1
-    lButton = 0
+    lSetupRows = 1
+    lSetupRowButtons = 0
     
     For Each v In cllButtons
-        If v <> vbNullString Then
-            If v = vbLf Or v = vbCr Or v = vbCrLf Then
-                '~~ prepare for the next row
-                If lRow <= 7 Then ' ignore exceeding rows
-                    dctApplButtonRows.Add DsgnButtonRow(lRow), lRow
-                    AppliedControl = DsgnButtonRow(lRow)
-                    lRow = lRow + 1
-                    lButton = 0
-                Else
-                    MsgBox "Setup of button row " & lRow & " ignored! The maximimum applicable rows is 7."
+        Select Case v
+            Case vbOKOnly
+                SetupButtonsFromValue v
+            Case vbOKCancel, vbYesNo, vbRetryCancel
+                SetupButtonsFromValue v
+            Case vbYesNoCancel, vbAbortRetryIgnore
+                SetupButtonsFromValue v
+            Case Else
+                If v <> vbNullString Then
+                    If v = vbLf Or v = vbCr Or v = vbCrLf Then
+                        '~~ prepare for the next row
+                        If lSetupRows <= 7 Then ' ignore exceeding rows
+                            If Not dctApplButtonRows.Exists(DsgnButtonRow(lSetupRows)) Then dctApplButtonRows.Add DsgnButtonRow(lSetupRows), lSetupRows
+                            AppliedControl = DsgnButtonRow(lSetupRows)
+                            lSetupRows = lSetupRows + 1
+                            lSetupRowButtons = 0
+                        Else
+                            MsgBox "Setup of button row " & lSetupRows & " ignored! The maximimum applicable rows is 7."
+                        End If
+                    Else
+                        lSetupRowButtons = lSetupRowButtons + 1
+                        If lSetupRowButtons <= 7 Then
+                            DsgnButtonRow(lSetupRows).Visible = True
+                            SetupButton buttonrow:=lSetupRows, buttonindex:=lSetupRowButtons, buttoncaption:=v, buttonreturnvalue:=v
+                        Else
+                            MsgBox "Setup of a button " & lSetupRowButtons & " in row " & lSetupRows & " ignored! The maximimum applicable buttons per row is 7."
+                        End If
+                    End If
                 End If
-            Else
-                lButton = lButton + 1
-                If lButton <= 7 Then
-                    DsgnButtonRow(lRow).Visible = True
-                    SetupButton buttonrow:=lRow, buttonindex:=lButton, buttoncaption:=v, buttonreturnvalue:=v
-                Else
-                    MsgBox "Setup of a button " & lButton & " in row " & lRow & " ignored! The maximimum applicable buttons per row is 7."
-                End If
-            End If
-        End If
+        End Select
     Next v
-    If lRow <= 7 Then
-        dctApplButtonRows.Add DsgnButtonRow(lRow), lRow
-        AppliedControl = DsgnButtonRow(lRow)
+    If lSetupRows <= 7 Then
+        If Not dctApplButtonRows.Exists(DsgnButtonRow(lSetupRows)) Then dctApplButtonRows.Add DsgnButtonRow(lSetupRows), lSetupRows
+        AppliedControl = DsgnButtonRow(lSetupRows)
     End If
     DsgnButtonsArea.Visible = True
     
@@ -1448,7 +1457,7 @@ exit_proc:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume Next
+    Debug.Print Err.Description: Stop: Resume
 End Sub
 
 Private Sub SetupButtonsFromString(ByVal sButtons As String)
@@ -1464,46 +1473,58 @@ Private Sub SetupButtonsFromString(ByVal sButtons As String)
 End Sub
 
 Private Sub SetupButtonsFromValue(ByVal lButtons As Long)
-' -----------------------------------------------------------
+' -------------------------------------------------------
 ' Setup a row of standard VB MsgBox reply command buttons
-' -----------------------------------------------------------
+' -------------------------------------------------------
     On Error GoTo on_error
     
     Select Case lButtons
         Case vbOKOnly
-            SetupButton buttonrow:=1, buttonindex:=1, buttoncaption:="Ok", buttonreturnvalue:=vbOK
+            lSetupRowButtons = lSetupRowButtons + 1
+            SetupButton buttonrow:=lSetupRows, buttonindex:=lSetupRowButtons, buttoncaption:="Ok", buttonreturnvalue:=vbOK
         Case vbOKCancel
-            SetupButton buttonrow:=1, buttonindex:=1, buttoncaption:="Ok", buttonreturnvalue:=vbOK
-            SetupButton buttonrow:=1, buttonindex:=2, buttoncaption:="Cancel", buttonreturnvalue:=vbCancel
+            lSetupRowButtons = lSetupRowButtons + 1
+            SetupButton buttonrow:=lSetupRows, buttonindex:=lSetupRowButtons, buttoncaption:="Ok", buttonreturnvalue:=vbOK
+            lSetupRowButtons = lSetupRowButtons + 1
+            SetupButton buttonrow:=lSetupRows, buttonindex:=lSetupRowButtons, buttoncaption:="Cancel", buttonreturnvalue:=vbCancel
         Case vbYesNo
-            SetupButton buttonrow:=1, buttonindex:=1, buttoncaption:="Yes", buttonreturnvalue:=vbYes
-            SetupButton buttonrow:=1, buttonindex:=2, buttoncaption:="No", buttonreturnvalue:=vbNo
+            lSetupRowButtons = lSetupRowButtons + 1
+            SetupButton buttonrow:=lSetupRows, buttonindex:=lSetupRowButtons, buttoncaption:="Yes", buttonreturnvalue:=vbYes
+            lSetupRowButtons = lSetupRowButtons + 1
+            SetupButton buttonrow:=lSetupRows, buttonindex:=lSetupRowButtons, buttoncaption:="No", buttonreturnvalue:=vbNo
         Case vbRetryCancel
-            SetupButton buttonrow:=1, buttonindex:=1, buttoncaption:="Retry", buttonreturnvalue:=vbRetry
-            SetupButton buttonrow:=1, buttonindex:=2, buttoncaption:="Cancel", buttonreturnvalue:=vbCancel
+            lSetupRowButtons = lSetupRowButtons + 1
+            SetupButton buttonrow:=lSetupRows, buttonindex:=lSetupRowButtons, buttoncaption:="Retry", buttonreturnvalue:=vbRetry
+            lSetupRowButtons = lSetupRowButtons + 1
+            SetupButton buttonrow:=lSetupRows, buttonindex:=lSetupRowButtons, buttoncaption:="Cancel", buttonreturnvalue:=vbCancel
         Case vbYesNoCancel
-            SetupButton buttonrow:=1, buttonindex:=1, buttoncaption:="Yes", buttonreturnvalue:=vbYes
-            SetupButton buttonrow:=1, buttonindex:=2, buttoncaption:="No", buttonreturnvalue:=vbNo
-            SetupButton buttonrow:=1, buttonindex:=3, buttoncaption:="Cancel", buttonreturnvalue:=vbCancel
+            lSetupRowButtons = lSetupRowButtons + 1
+            SetupButton buttonrow:=lSetupRows, buttonindex:=lSetupRowButtons, buttoncaption:="Yes", buttonreturnvalue:=vbYes
+            lSetupRowButtons = lSetupRowButtons + 1
+            SetupButton buttonrow:=lSetupRows, buttonindex:=lSetupRowButtons, buttoncaption:="No", buttonreturnvalue:=vbNo
+            lSetupRowButtons = lSetupRowButtons + 1
+            SetupButton buttonrow:=lSetupRows, buttonindex:=lSetupRowButtons, buttoncaption:="Cancel", buttonreturnvalue:=vbCancel
         Case vbAbortRetryIgnore
-            SetupButton buttonrow:=1, buttonindex:=1, buttoncaption:="Abort", buttonreturnvalue:=vbAbort
-            SetupButton buttonrow:=1, buttonindex:=2, buttoncaption:="Retry", buttonreturnvalue:=vbRetry
-            SetupButton buttonrow:=1, buttonindex:=3, buttoncaption:="Ignore", buttonreturnvalue:=vbIgnore
+            lSetupRowButtons = lSetupRowButtons + 1
+            SetupButton buttonrow:=lSetupRows, buttonindex:=lSetupRowButtons, buttoncaption:="Abort", buttonreturnvalue:=vbAbort
+            lSetupRowButtons = lSetupRowButtons + 1
+            SetupButton buttonrow:=lSetupRows, buttonindex:=lSetupRowButtons, buttoncaption:="Retry", buttonreturnvalue:=vbRetry
+            lSetupRowButtons = lSetupRowButtons + 1
+            SetupButton buttonrow:=lSetupRows, buttonindex:=lSetupRowButtons, buttoncaption:="Ignore", buttonreturnvalue:=vbIgnore
         Case Else
             MsgBox "The value provided for the ""buttons"" argument is not a known VB MsgBox value"
     End Select
     DsgnButtonsArea.Visible = True
-    DsgnButtonRow(1).Visible = True
-    dctApplButtonRows.Add DsgnButtonRow(1), 1
-    AppliedControl = DsgnButtonRow(1)
+    DsgnButtonRow(lSetupRows).Visible = True
+    If Not dctApplButtonRows.Exists(DsgnButtonRow(lSetupRows)) Then dctApplButtonRows.Add DsgnButtonRow(lSetupRows), lSetupRows
+    AppliedControl = DsgnButtonRow(lSetupRows)
     AppliedControl = DsgnButtonsFrame
     
 exit_proc:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume Next
-    
+    Debug.Print Err.Description: Stop: Resume
 End Sub
 
 ' Setup a message section with its label when one is specified
@@ -1570,7 +1591,7 @@ exit_proc:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume Next
+    Debug.Print Err.Description: Stop: Resume
 End Sub
 
 ' Setup the applied monospaced message section (section) with the text (text),
@@ -1601,8 +1622,8 @@ Private Sub SetupMsgSectionMonoSpaced(ByVal section As Long, _
         .left = siHmarginFrames
         .Height = .Height + 2 ' ensure text is not squeeced
         frText.width = .width + (siHmarginFrames * 2)
-        Debug.Print "tbText.Width = " & .width
-        Debug.Print "frText.width = " & frText.width
+'        Debug.Print "tbText.Width = " & .width
+'        Debug.Print "frText.width = " & frText.width
         frText.left = siHmarginFrames
                    
         frSection.width = frText.width + (siHmarginFrames * 2)
@@ -1612,7 +1633,7 @@ Private Sub SetupMsgSectionMonoSpaced(ByVal section As Long, _
         frArea.width = Max(frArea.width, frSection.left + frSection.width + siHmarginFrames + HSPACE_SCROLLBAR)
         FormWidth = frArea.width + siHmarginFrames + 7
         
-        Debug.Print "MaxTextBoxWidth = " & MaxTextBoxWidth
+'        Debug.Print "MaxTextBoxWidth = " & MaxTextBoxWidth
         If .width > MaxTextBoxWidth Then
             frSection.width = MaxSectionWidth
             frArea.width = MaxMsgAreaWidth
@@ -1635,7 +1656,7 @@ exit_proc:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume Next
+    Debug.Print Err.Description: Stop: Resume
 End Sub
 
 ' Setup the proportional spaced Message Section (section) with the text (text)
@@ -1700,7 +1721,7 @@ exit_proc:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume Next
+    Debug.Print Err.Description: Stop: Resume
 End Sub
 
 Private Sub SetupMsgSectionsPropSpaced()
@@ -1716,7 +1737,7 @@ exit_proc:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume Next
+    Debug.Print Err.Description: Stop: Resume
 End Sub
 
 ' When a specific font name and/or size is specified, the extra title label is actively used

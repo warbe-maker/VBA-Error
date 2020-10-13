@@ -27,9 +27,13 @@ Option Explicit
 Const HOSTED_COMMON_COMPS = "mErrHndlr, clsCallStack, clsCallStackItem"
 
 Private Sub Workbook_Open()
+#If CompMan Then
     mCompMan.UpdateUsedCommCompsTheOriginHasChanged wbTarget:=ThisWorkbook, sHosted:=HOSTED_COMMON_COMPS
+#End If
 End Sub
 
 Private Sub Workbook_BeforeSave(ByVal SaveAsUI As Boolean, Cancel As Boolean)
+#If CompMan Then
     mCompMan.ExportChangedComponents wb:=ThisWorkbook, sHosted:=HOSTED_COMMON_COMPS
+#End If
 End Sub
