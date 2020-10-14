@@ -157,19 +157,15 @@ Private Sub Test_2_Application_Error_TestProc_2c()
 
     BoP ErrSrc(PROC)
 199 Err.Raise AppErr(1), ErrSrc(PROC), _
-        "This is a programmed error!" & DCONCAT & _
-        "Attention: This is not a VBA error!" & vbLf & _
-        "The function AppErr() adds the 'vbObjectError' variable to assure non-conflicting programmed (Application) error numbers " & _
-        "which allows programmed error numbers 1 to n for each individual procedure." & vbLf & _
-        "Furthermore the error line has been added manually to the code to demonstrate its use when available." & vbLf & _
-        "This additional info had been concatenated with the error description by two vertical bars indicating it as additional message."
+        "This is a programmed i.e. an ""Application Error""!" & DCONCAT & _
+        "The function AppErr() has been used to turn the positive into a negative number by adding the VB constant 'vbObjectError' to assure an error number which does not conflict with a VB Runtime error. " & _
+        "The ErrHndlr identified the negative number as an ""Application Error"" and converted it back to the orginal positive number by means of the AppErr() function." & vbLf & _
+        vbLf & _
+        "Also note that this information is part of the raised error message but concatenated with two vertical bars indicating that it is an additional information regarding this error."
     EoP ErrSrc(PROC)
     Exit Sub
 
 on_error:
-#If Debugging Then
-    ' Debug.Print Err.Description: Stop: Resume
-#End If
     mErrHndlr.ErrHndlr errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl
 End Sub
 

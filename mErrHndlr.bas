@@ -1,7 +1,5 @@
 Attribute VB_Name = "mErrHndlr"
 Option Explicit
-#Const AlternateMsgBox = 1  ' 1 = Error displayed by means of the Alternative MsgBox fMsg
-                            ' 0 = Error displayed by means of the VBA MsgBox
 ' -----------------------------------------------------------------------------------------------
 ' Standard  Module mErrHndlr: Global error handling for any VBA Project.
 '
@@ -100,16 +98,17 @@ Private sErrorPath          As String
 
 Public Property Get ResumeButton() As String: ResumeButton = "Resume error" & vbLf & "code line":   End Property
 
-Public Function AppErr(ByVal lNo As Long) As Long
+Public Function AppErr(ByVal l As Long) As Long
 ' -----------------------------------------------------------------
-' Used with Err.Raise AppErr().
-' When lNo is > 0 it is considered an Application error number and
-' vbObjectErrro is added to it to turn it into a negative number
-' in order not to confuse with a VB runtime error. When lNo is
-' negative it is considered an Application error and vbObjectError
-' is added to convert it back into its origin positive number.
+' Used with Err.Raise AppErr(<l>).
+' When the error number <l> is > 0 it is considered an "Application
+' Error Number and vbObjectErrror is added to it into a negative
+' number in order not to confuse with a VB runtime error.
+' When the error number <l> is negative it is considered an
+' Application Error and vbObjectError is added to convert it back
+' into its origin positive number.
 ' ------------------------------------------------------------------
-    IIf lNo < 0, AppErr = lNo - vbObjectError, AppErr = vbObjectError + lNo
+    AppErr = IIf(l < 0, l - vbObjectError, vbObjectError - l)
 End Function
 
 Public Sub BoP(ByVal sErrSource As String)
@@ -197,6 +196,8 @@ Public Function ErrHndlr(ByVal errnumber As Long, _
 ' else the error is passed on to the "Entry Procedure" whereby the
 ' .ErrorPath string is assebled.
 ' ----------------------------------------------------------------------
+#Const AlternateMsgBox = 1  ' 1 = Error displayed by means of the Alternative MsgBox fMsg
+                            ' 0 = Error displayed by means of the VBA MsgBox
     
     Const PROC      As String = "ErrHndlr"
     Static sLine    As String   ' provided error line (if any) for the the finally displayed message
@@ -241,7 +242,7 @@ Public Function ErrHndlr(ByVal errnumber As Long, _
         '~~ When the user has no choice for the user to press any button but the only one displayed
         '~~ and the Entry Procedure is known but yet not reached the path back up to the Entry Procedure
         '~~ is maintained and the error is passed on to the caller
-        If ErrHndlrNumberOfButtons(buttons) = 1 _
+        If ErrHndlrButtonsNumber(buttons) = 1 _
         And sErrHndlrEntryProc <> vbNullString _
         And .EntryProc <> errsource Then
             ErrPathAdd errsource
@@ -251,7 +252,7 @@ Public Function ErrHndlr(ByVal errnumber As Long, _
         '~~ When more than one button is displayed for the user to choose one
         '~~ or the Entry Procedure is unknown or has been reached
         '~~ the error is displayed
-        If ErrHndlrNumberOfButtons(buttons) > 1 _
+        If ErrHndlrButtonsNumber(buttons) > 1 _
         Or .EntryProc = errsource _
         Or .EntryProc = vbNullString Then
             ErrPathAdd errsource
@@ -272,26 +273,28 @@ Public Function ErrHndlr(ByVal errnumber As Long, _
 
 End Function
 
-Private Sub ErrHndlrErrPathAdd(ByVal s As String)
-' -----------------------------------------------
-' Adds s to the collection of procedures provided
-' the procedure has not already been eadded.
-' -----------------------------------------------
-
-    If cllErrPath Is Nothing Then Set cllErrPath = New Collection
-    If cllErrPath.Count = 0 _
-    Then cllErrPath.Add s _
-    Else If InStr(1, cllErrPath(cllErrPath.Count), s & " ") = 0 Then cllErrPath.Add s
-
-End Sub
-
-Private Function ErrHndlrNumberOfButtons(ByVal buttons As Variant) As Long
-    ErrHndlrNumberOfButtons = UBound(Split(buttons, ",")) + 1
-    If ErrHndlrNumberOfButtons = 2 Then
-        If Split(buttons, ",")(1) = vbNullString Then
-            ErrHndlrNumberOfButtons = 1
+Private Function ErrHndlrButtonsNumber( _
+                 ByVal buttons As Variant) As Long
+' ------------------------------------------------
+' Returns the number of specified buttons
+' ------------------------------------------------
+    Dim v As Variant
+    
+    For Each v In Split(buttons, ",")
+        If IsNumeric(v) Then
+            Select Case v
+                Case vbOKOnly:                              ErrHndlrButtonsNumber = ErrHndlrButtonsNumber + 1
+                Case vbOKCancel, vbYesNo, vbRetryCancel:    ErrHndlrButtonsNumber = ErrHndlrButtonsNumber + 2
+                Case vbAbortRetryIgnore, vbYesNoCancel:     ErrHndlrButtonsNumber = ErrHndlrButtonsNumber + 3
+            End Select
+        Else
+            Select Case v
+                Case vbNullString, vbLf, vbCr, vbCrLf
+                Case Else:  ErrHndlrButtonsNumber = ErrHndlrButtonsNumber + 1
+            End Select
         End If
-    End If
+    Next v
+
 End Function
 
 Public Function ErrMsg( _
@@ -321,7 +324,7 @@ Public Function ErrMsg( _
         .MsgButtons = buttons
         .Setup
         .Show
-        If ErrHndlrNumberOfButtons(buttons) = 1 Then
+        If ErrHndlrButtonsNumber(buttons) = 1 Then
             ErrMsg = buttons ' a single reply buttons return value cannot be obtained since the form is unloaded with its click
         Else
             ErrMsg = .ReplyValue ' when more than one button is displayed the form is unloadhen the return value is obtained
