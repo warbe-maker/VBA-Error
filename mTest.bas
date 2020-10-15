@@ -12,11 +12,11 @@ Public Sub Test_1_Unpaired_BoP_EoP()
 ' ---------------------------------------------------
     
     Const PROC = "Test_1_Unpaired_BoP_EoP"
-'    BoP ErrSrc(PROC)
-    Test_1_Unpaired_BoP_EoP_TestProc_1a
+    BoP ErrSrc(PROC)
+    Test_1_Unpaired_BoP_EoP_TestProc_1a ' without BoP
     
 exit_proc:
-    EoP ErrSrc(PROC) ' unpaired code line! BoP is missing
+    EoP ErrSrc(PROC)
     Exit Sub
 
 on_error:
@@ -33,14 +33,12 @@ Private Sub Test_1_Unpaired_BoP_EoP_TestProc_1a()
 
     Const PROC = "Test_1_Unpaired_BoP_EoP_TestProc_1a"
     
-    Test_1_Unpaired_BoP_EoP_TestProc_1b ' missing End of Procedure statement
-    
-    BoP ErrSrc(PROC)
-    
-    Test_1_Unpaired_BoP_EoP_TestProc_1d   ' missing Begin of Procedure statement
-    Test_1_Unpaired_BoP_EoP_TestProc_1e   ' missing Begin of Procedure statement
-    
+'    BoP ErrSrc(PROC)
+    Test_1_Unpaired_BoP_EoP_TestProc_1b     ' with BoP/EoP
+    Test_1_Unpaired_BoP_EoP_TestProc_1d     ' without EoP
+    Test_1_Unpaired_BoP_EoP_TestProc_1e     ' without BoP
     EoP ErrSrc(PROC)
+    
     Exit Sub
 
 on_error:
@@ -79,7 +77,7 @@ Private Sub Test_1_Unpaired_BoP_EoP_TestProc_1d()
     Const PROC = "Test_1_Unpaired_BoP_EoP_TestProc_1d"
     On Error GoTo on_error
     
-    BoP ErrSrc(PROC) & " (missing EoP)"
+    BoP ErrSrc(PROC)
     Exit Sub
 
 on_error:
@@ -95,7 +93,7 @@ Private Sub Test_1_Unpaired_BoP_EoP_TestProc_1e()
     On Error GoTo on_error
 
 exit_proc:
-    EoP ErrSrc(PROC) & " (missing BoP)"
+    EoP ErrSrc(PROC)
     Exit Sub
 
 on_error:
@@ -306,4 +304,68 @@ Public Sub Test_5_No_Exit_Statement()
 on_error:
     If mErrHndlr.ErrHndlr(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
+
+Public Sub Test_6_Execution_Trace()
+' ------------------------------------------------------
+' White-box- and regression-test procedure obligatory
+' to be performed after any code modification.
+' Display of an execution trace along with this test
+' requires a conditional compile argument ExecTrace = 1.
+' ------------------------------------------------------
+    
+    Const PROC = "Test_6_Execution_Trace"
+    On Error GoTo on_error
+    
+    BoP ErrSrc(PROC)
+    Test_6_Execution_Trace_TestProc_6a
+    EoP ErrSrc(PROC)
+    Exit Sub
+
+on_error:
+    If mErrHndlr.ErrHndlr(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
+End Sub
+
+Private Sub Test_6_Execution_Trace_TestProc_6a()
+
+    Const PROC = "Test_6_Execution_Trace_TestProc_6a"
+    On Error GoTo on_error
+    
+    BoP ErrSrc(PROC)
+    Test_6_Execution_Trace_TestProc_6b
+    EoP ErrSrc(PROC)
+    Exit Sub
+
+on_error:
+    If mErrHndlr.ErrHndlr(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
+End Sub
+
+Private Sub Test_6_Execution_Trace_TestProc_6b()
+    
+    Const PROC = "Test_6_Execution_Trace_TestProc_6b"
+    On Error GoTo on_error
+    
+    BoP ErrSrc(PROC)
+    Test_6_Execution_Trace_TestProc_6c
+    EoP ErrSrc(PROC)
+    Exit Sub
+
+on_error:
+    If mErrHndlr.ErrHndlr(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
+End Sub
+
+Private Sub Test_6_Execution_Trace_TestProc_6c()
+    
+    Const PROC = "Test_6_Execution_Trace_TestProc_6c"
+    On Error GoTo on_error
+
+    BoP ErrSrc(PROC)
+    EoP ErrSrc(PROC)
+
+exit_proc:
+    Exit Sub
+
+on_error:
+    mErrHndlr.ErrHndlr Err.Number, ErrSrc(PROC), Err.Description, Erl
+End Sub
+
 
