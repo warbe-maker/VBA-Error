@@ -1,9 +1,8 @@
 Attribute VB_Name = "mDemo"
 Option Explicit
 
-
 Public Sub ErrorHandling_None_Demo()
-Dim l As Long
+    Dim l As Long
     l = ErrorHandling_None(10, 0)
 End Sub
 
@@ -18,7 +17,7 @@ Private Function ErrorHandling_None(ByVal op1 As Variant, _
 '   - Path to the error:        No, because a call stack is not maintained
 ' - Variant value assertion:    No
 ' - Execution Trace:            No
-' - Debugging choice:           No
+' - Debugging/Test choice:      No
 ' ------------------------------------------------------------------
     ErrorHandling_None = op1 / op2
 End Function
@@ -39,7 +38,7 @@ Private Function ErrorHandling_BetterThanNothing(ByVal op1 As Variant, _
 '   - Path to the error:        No, because a call stack is not maintained
 ' - Variant value assertion:    No
 ' - Execution Trace:            No
-' - Debugging choice:           No
+' - Debug/Test choice:          No
 ' ---------------------------------------------------------------------
 Const PROC = "ErrorHandling_BetterThanNothing"    ' error source
 
@@ -68,7 +67,7 @@ Private Function ErrorHandling_Reasonable(ByVal op1 As Variant, _
 '                               entry procedure down to the error causing procedure
 ' - Variant value assertion:    No
 ' - Execution Trace:            No
-' - Debugging choice:           No
+' - Debug/Test choice:          No
 ' ---------------------------------------------------------------------
 Const PROC = "ErrorHandling_Reasonable"    ' error source
 
@@ -98,7 +97,7 @@ Public Sub ErrorHandling_Eleborated_Demo()
 ' - Execution Trace:            Yes, by the use of the common ErrHndlr procedure which
 '                               automatically displays it in the immediate window when the
 '                               entry procedure is reached.
-' - Debugging choice:           Yes, demonstrated
+' - Debug/Test choice:          Yes, demonstrated
 ' -----------------------------------------------------------------------------------------
 Const PROC  As String = "ErrorHandling_Eleborated_Demo"
     
@@ -120,7 +119,7 @@ Private Sub ErrorHandling_Elaborated1()
 '   - Info about error:               Yes (optionally concatenated to the error message with '||')
 '   - Path to the error (call stack): Yes
 ' - Execution Trace:                  Yes (with Conditional Compile Argument 'ExecTrace = !'
-' - Debugging choice:                 Yes (with Conditional Compile Argument 'Debugging = 1'
+' - Debug/Test choice:                Yes (with Conditional Compile Argument 'DebugAndTest= 1'
 ' -----------------------------------------------------------------------
 Const PROC  As String = "ErrorHandling_Elaborated1"
 
@@ -134,9 +133,6 @@ exit_proc:
     Exit Sub
 
 on_error:
-#If Debugging Then
-    Debug.Print Err.Description: Stop: Resume    ' Resumes the statement which caused the error, turned into a comment to continue
-#End If
     mErrHndlr.ErrHndlr Err.Number, ErrSrc(PROC), Err.Description, Erl
 End Sub
 
@@ -152,7 +148,7 @@ Private Function ErrorHandling_Elaborated2(ByVal op1 As Variant, _
 '   - Path to the error (call stack): Yes
 ' - Variant value assertion:          Yes
 ' - Execution Trace:                  Yes (with Conditional Compile Argument 'ExecTrace = !'
-' - Debugging choice:                 Yes (with Conditional Compile Argument 'Debugging = 1'
+' - Debug/Test choice:                Yes (with Conditional Compile Argument 'DebugAndTest = 1'
 ' ---------------------------------------------------------------------------------------
 Const PROC  As String = "ErrorHandling_Elaborated2"
 
@@ -171,9 +167,6 @@ exit_proc:
     Exit Function
 
 on_error:
-#If Debugging Then
-    Debug.Print Err.Description: Stop: Resume    ' Resumes the statement which caused the error, turned into a comment to continue
-#End If
     mErrHndlr.ErrHndlr Err.Number, ErrSrc(PROC), Err.Description, Erl
 End Function
 
