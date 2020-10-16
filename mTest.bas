@@ -5,6 +5,24 @@ Private Function ErrSrc(ByVal s As String) As String
     ErrSrc = "mTest." & s
 End Function
 
+Public Sub Regression_Test()
+    
+    On Error GoTo on_error
+    Const PROC = "Regression_Test"
+    
+    BoP ErrSrc(PROC)
+    Test_2_Application_Error
+    Test_3_VB_Runtime_Error
+    Test_6_Execution_Trace
+    EoP ErrSrc(PROC)
+
+exit_proc:
+    Exit Sub
+    
+on_error:
+    mErrHndlr.ErrHndlr Err.Number, ErrSrc(PROC), Err.Description, Erl
+End Sub
+
 Public Sub Test_1_Unpaired_BoP_EoP()
 ' ---------------------------------------------------
 ' White-box- and regression-test procedure obligatory
@@ -101,11 +119,13 @@ on_error:
 End Sub
 
 Public Sub Test_2_Application_Error()
-' ------------------------------------------------------
-' White-box- and regression-test procedure obligatory
-' to be performed after any code modification.
-' Display of an execution trace along with this test
-' requires a conditional compile argument ExecTrace = 1.
+' -----------------------------------------------------------
+' This test procedure obligatory after any code modification.
+' The option to continue with the next test procedure (in
+' case this one runs within a regression test) is only
+' displayed when the Conditional Compile Argument Test = 1
+' The display of an execution trace along with this test
+' requires a Conditional Compile Argument ExecTrace = 1.
 ' ------------------------------------------------------
     
     Const PROC = "Test_2_Application_Error"
@@ -113,11 +133,15 @@ Public Sub Test_2_Application_Error()
     
     BoP ErrSrc(PROC)
     Test_2_Application_Error_TestProc_2a
+
+exit_proc:
     EoP ErrSrc(PROC)
     Exit Sub
 
 on_error:
-    If mErrHndlr.ErrHndlr(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
+    Select Case mErrHndlr.ErrHndlr(Err.Number, ErrSrc(PROC), Err.Description, Erl)
+        Case ResumeError: Stop: Resume
+    End Select
 End Sub
 
 Private Sub Test_2_Application_Error_TestProc_2a()
@@ -160,9 +184,9 @@ Private Sub Test_2_Application_Error_TestProc_2c()
         "The ErrHndlr identified the negative number as an ""Application Error"" and converted it back to the orginal positive number by means of the AppErr() function." & vbLf & _
         vbLf & _
         "Also note that this information is part of the raised error message but concatenated with two vertical bars indicating that it is an additional information regarding this error."
-    EoP ErrSrc(PROC)
 
 exit_proc:
+    EoP ErrSrc(PROC)
     Exit Sub
 
 on_error:
@@ -253,11 +277,17 @@ Private Sub Test_3_VB_Runtime_Error_TestProc_3d()
     BoP ErrSrc(PROC)
     Dim l As Long
 423 l = 7 / 0
+
+exit_proc:
     EoP ErrSrc(PROC)
     Exit Sub
 
 on_error:
-    If mErrHndlr.ErrHndlr(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
+    Select Case mErrHndlr.ErrHndlr(Err.Number, ErrSrc(PROC), Err.Description, Erl)
+        Case ResumeError:       Stop: Resume
+        Case ResumeNext:        Resume Next
+        Case ExitAndContinue:   GoTo exit_proc
+    End Select
 End Sub
 
 Public Sub Test_4_DebugAndTest_with_ErrHndlr()
