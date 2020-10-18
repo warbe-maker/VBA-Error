@@ -22,15 +22,7 @@ exit_proc:
     Exit Sub
 
 on_error:
-'~~ The conditional compile argument Debugging=1 allows to resume the statement which raised the error
-'~~ or continue with any desired code line (highlite the desired code line and Ctrl+F9)
-#If Debugging Then
-    Debug.Print Err.Description: Stop: Resume
-#End If
-    '~~ Pass on the error to the calling procedure and finally
-    '~~ display the error message when the entry procedure is reached
     mErrHndlr.ErrHndlr Err.Number, ErrSrc(PROC), Err.Description, Erl
-                                                     
 End Sub
 
 Private Function ErrSrc(ByVal sProc As String) As String
