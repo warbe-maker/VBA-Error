@@ -6,11 +6,25 @@ Private Function ErrSrc(ByVal s As String) As String
 End Function
 
 Public Sub Regression_Test()
+' -------------------------------------------------------------------------------------------
+' 1. The BoP/EoP statements in this regression test procedure produce one execution trace at
+'    the end of this regression test provided the Conditional Compile Argument ExecTrace = !.
+'    The execution time however will include the time used for the user action when an error
+'    message is displayed!
+' 2. The Conditional Compile Argument Debugging = 1 allows to identify the code line which
+'    causes the error through:
+'    2.1 An extra "Resume error code line" button displayed with the error message
+'    2.2 The processing as "Stop: Resume" when the button is clicked
+' 3. The Conditional Compile Argument Test = 1 allows a differentiated user action through:
+'    3.1 Two additional buttons "Resume Next
+'    2.2 A processing which corresponds with the clicked button
+' -------------------------------------------------------------------------------------------
     
     On Error GoTo on_error
     Const PROC = "Regression_Test"
     
     BoP ErrSrc(PROC)
+    Test_1_Unpaired_BoP_EoP
     Test_2_Application_Error
     Test_3_VB_Runtime_Error
     Test_6_Execution_Trace
@@ -31,7 +45,7 @@ Public Sub Test_1_Unpaired_BoP_EoP()
     
     Const PROC = "Test_1_Unpaired_BoP_EoP"
     BoP ErrSrc(PROC)
-    Test_1_Unpaired_BoP_EoP_TestProc_1a ' without BoP
+    Test_1_Unpaired_BoP_EoP_TestProc_1a_missing_BoP
     
 exit_proc:
     EoP ErrSrc(PROC)
@@ -41,20 +55,18 @@ on_error:
     If mErrHndlr.ErrHndlr(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
-Private Sub Test_1_Unpaired_BoP_EoP_TestProc_1a()
-' -----------------------------------------------
-' The error handler is trying its very best not
-' to confuse with unpaired BoP/EoP code lines.
-' However, it depends at which level this is the
-' case.
-' -----------------------------------------------
+Private Sub Test_1_Unpaired_BoP_EoP_TestProc_1a_missing_BoP()
+' -----------------------------------------------------------
+' The error handler is trying its very best not to confuse
+' with unpaired BoP/EoP code lines. However, it depends at
+' which level this is the case.
+' -----------------------------------------------------------
 
-    Const PROC = "Test_1_Unpaired_BoP_EoP_TestProc_1a"
+    Const PROC = "Test_1_Unpaired_BoP_EoP_TestProc_1a_missing_BoP"
     
 '    BoP ErrSrc(PROC)
-    Test_1_Unpaired_BoP_EoP_TestProc_1b     ' with BoP/EoP
-    Test_1_Unpaired_BoP_EoP_TestProc_1d     ' without EoP
-    Test_1_Unpaired_BoP_EoP_TestProc_1e     ' without BoP
+    Test_1_Unpaired_BoP_EoP_TestProc_1b_paired_BoP_EoP
+    Test_1_Unpaired_BoP_EoP_TestProc_1d_missing_EoP
     EoP ErrSrc(PROC)
     
     Exit Sub
@@ -63,13 +75,13 @@ on_error:
     If mErrHndlr.ErrHndlr(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
-Private Sub Test_1_Unpaired_BoP_EoP_TestProc_1b()
+Private Sub Test_1_Unpaired_BoP_EoP_TestProc_1b_paired_BoP_EoP()
     
-    Const PROC = "Test_1_Unpaired_BoP_EoP_TestProc_1b"
+    Const PROC = "Test_1_Unpaired_BoP_EoP_TestProc_1b_paired_BoP_EoP"
     On Error GoTo on_error
     
     BoP ErrSrc(PROC)
-    Test_1_Unpaired_BoP_EoP_TestProc_1c
+    Test_1_Unpaired_BoP_EoP_TestProc_1c_missing_EoT
     EoP ErrSrc(PROC)
     Exit Sub
     
@@ -77,41 +89,28 @@ on_error:
     If mErrHndlr.ErrHndlr(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
-Private Sub Test_1_Unpaired_BoP_EoP_TestProc_1c()
+Private Sub Test_1_Unpaired_BoP_EoP_TestProc_1c_missing_EoT()
     
-    Const PROC = "Test_1_Unpaired_BoP_EoP_TestProc_1c"
+    Const PROC = "Test_1_Unpaired_BoP_EoP_TestProc_1c_missing_EoT"
     On Error GoTo on_error
     
     BoP ErrSrc(PROC)
-    EoP ErrSrc(PROC)
-    Exit Sub
-    
-on_error:
-    If mErrHndlr.ErrHndlr(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
-End Sub
-
-Private Sub Test_1_Unpaired_BoP_EoP_TestProc_1d()
-
-    Const PROC = "Test_1_Unpaired_BoP_EoP_TestProc_1d"
-    On Error GoTo on_error
-    
-    BoP ErrSrc(PROC)
-    Exit Sub
-
-on_error:
-    If mErrHndlr.ErrHndlr(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
-End Sub
-
-Private Sub Test_1_Unpaired_BoP_EoP_TestProc_1e()
-' -----------------------------------------------
-' BoP missing
-' -----------------------------------------------
-
-    Const PROC = "Test_1_Unpaired_BoP_EoP_TestProc_1e"
-    On Error GoTo on_error
+    BoT ErrSrc(PROC) & " trace of some code lines" ' missing EoT statement
 
 exit_proc:
     EoP ErrSrc(PROC)
+    Exit Sub
+    
+on_error:
+    If mErrHndlr.ErrHndlr(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
+End Sub
+
+Private Sub Test_1_Unpaired_BoP_EoP_TestProc_1d_missing_EoP()
+
+    Const PROC = "Test_1_Unpaired_BoP_EoP_TestProc_1d_missing_EoP"
+    On Error GoTo on_error
+    
+    BoP ErrSrc(PROC)
     Exit Sub
 
 on_error:
@@ -173,12 +172,16 @@ on_error:
 End Sub
 
 Private Sub Test_2_Application_Error_TestProc_2c()
+' ------------------------------------------------
+' Note: The line number is added just for test to
+' demonstrate how it effects the error message.
+' ------------------------------------------------
     
     Const PROC = "Test_2_Application_Error_TestProc_2c"
     On Error GoTo on_error
 
     BoP ErrSrc(PROC)
-199 Err.Raise AppErr(1), ErrSrc(PROC), _
+181 Err.Raise AppErr(1), ErrSrc(PROC), _
         "This is a programmed i.e. an ""Application Error""!" & DCONCAT & _
         "The function AppErr() has been used to turn the positive into a negative number by adding the VB constant 'vbObjectError' to assure an error number which does not conflict with a VB Runtime error. " & _
         "The ErrHndlr identified the negative number as an ""Application Error"" and converted it back to the orginal positive number by means of the AppErr() function." & vbLf & _
@@ -270,13 +273,18 @@ on_error:
 End Sub
 
 Private Sub Test_3_VB_Runtime_Error_TestProc_3d()
+' ------------------------------------------------
+' Note: The error line intentionally has no line
+' number to demonstrate how it effects the error
+' message.
+' ------------------------------------------------
     
     Const PROC = "Test_3_VB_Runtime_Error_TestProc_3d"
     On Error GoTo on_error
 
     BoP ErrSrc(PROC)
     Dim l As Long
-423 l = 7 / 0
+    l = 7 / 0
 
 exit_proc:
     EoP ErrSrc(PROC)

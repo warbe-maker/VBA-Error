@@ -533,6 +533,8 @@ Public Function AppErr(ByVal lNo As Long) As Long
     AppErr = IIf(lNo < 0, AppErr = lNo - vbObjectError, AppErr = vbObjectError + lNo)
 End Function
 
+Public Property Get CONCAT() As String: CONCAT = "||":    End Property
+
 Private Sub ApplyScrollBarHorizontal(ByVal fr As MSForms.Frame, _
                                      ByVal widthnew As Single)
                                      
