@@ -725,7 +725,7 @@ Public Function TrcDsply(Optional ByVal bDebugPrint As Boolean = True) As String
             cyEnd = dicTrace.Items(iTt)
             cyStrt = TrcBeginTicks(sProcName, iTt)   ' item is set to vbNullString to avoid multiple recognition
             If cyStrt = 0 Then
-                '~~ BoP/BoT code line missing
+                '~~ The corresponding BoP/BoT entry for a EoP/EoT entry couldn't be found within the trace
                 iIndent = iIndent + 1
                 sTraceLine = Space$((Len(sFormat) * 2) + 1) & "    " & Replicate("|  ", iIndent) & sProcName & sInfo
                 If InStr(sTraceLine, TRACE_PROC_END_ID) <> 0 _
@@ -741,7 +741,7 @@ Public Function TrcDsply(Optional ByVal bDebugPrint As Boolean = True) As String
                 iIndent = iIndent - 1
             End If
         ElseIf TrcIsBegItem(sProcName) Then
-            '~~ Begin Trace Line
+            '~~ Trace Begin Line
             iIndent = iIndent + 1
             If iTt = 0 Then cyInitial = dicTrace.Items(iTt)
             sMsg = TrcEndItemMissing(sProcName)
@@ -814,7 +814,7 @@ Private Function TrcEndItemMissing(ByVal s As String) As String
     Dim sInfo   As String
 
     TrcEndItemMissing = "missing"
-    s = Replace(s, TRACE_PROC_BEGIN_ID, TRACE_PROC_END_ID)  ' turn the end item into a begin item string
+    s = Replace(s, TRACE_BEGIN_ID, TRACE_END_ID)  ' turn the end item into a begin item string
     For i = 0 To dicTrace.Count - 1
         sKey = dicTrace.Keys(i)
         If TrcIsEndItem(sKey, sInfo) Then
@@ -844,9 +844,9 @@ Private Function TrcEndLine( _
 ' ---------------------------------------------------
     
     TrcEndLine = TrcSecs(cyInitial, cyEnd) & " " & _
-                   TrcSecs(cyStrt, cyEnd) & "    " & _
-                   Replicate("|  ", iIndent) & _
-                   sProcName
+                 TrcSecs(cyStrt, cyEnd) & "    " & _
+                 Replicate("|  ", iIndent) & _
+                 sProcName
 
 End Function
 
@@ -896,7 +896,7 @@ Dim i As Single
     i = InStr(1, s, TRACE_BEGIN_ID)
     If i <> 0 Then
         TrcIsBegItem = True
-        s = Right(s, Len(s) - i + 1)
+        s = TrcUnstripItemNo(s)
     End If
 End Function
 
@@ -919,8 +919,7 @@ Private Function TrcIsEndItem( _
         Then sRight = " !!!" & Split(s, " !!!")(1) _
         Else sRight = vbNullString
         
-        s = Split(s, " !!!")(0)
-        s = Right(s, Len(s) - i + 1)
+        s = TrcUnstripItemNo(s)
     End If
     
 End Function
