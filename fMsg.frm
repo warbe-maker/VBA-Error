@@ -830,7 +830,7 @@ Private Sub DisplayFramesWithCaptions(Optional ByVal b As Boolean = True)
     If Not b Then
         For Each ctl In Me.Controls
             If TypeName(ctl) = "Frame" Then
-                ctl.caption = vbNullString
+                ctl.Caption = vbNullString
             End If
         Next ctl
     End If
@@ -1321,7 +1321,7 @@ Private Sub SetupButton(ByVal buttonrow As Long, _
         .Visible = True
         .AutoSize = True
         .WordWrap = False ' the longest line determines the buttonindex's width
-        .caption = buttoncaption
+        .Caption = buttoncaption
         .AutoSize = False
         .Height = .Height + 1 ' safety margin to ensure proper multilin caption display
         siMaxButtonHeight = Max(siMaxButtonHeight, .Height)
@@ -1555,7 +1555,7 @@ Private Sub SetupMsgSection(ByVal section As Long)
             Set la = DsgnSectionLabel(section)
             With la
                 .Width = Me.InsideWidth - (siHmarginFrames * 2)
-                .caption = sLabel
+                .Caption = sLabel
             End With
             frText.Top = la.Top + la.Height
             AppliedControl = la
@@ -1745,7 +1745,7 @@ Private Sub SetupTitle()
                     .Font.Size = sTitleFontSize
                 End If
                 .AutoSize = True
-                .caption = " " & sTitle    ' some left margin
+                .Caption = " " & sTitle    ' some left margin
                 siTitleWidth = .Width + HSPACE_RIGHT
             End With
             AppliedControl = .laMsgTitle
@@ -1760,10 +1760,10 @@ Private Sub SetupTitle()
                 End With
                 .Visible = False
                 .AutoSize = True
-                .caption = " " & sTitle    ' some left margin
-                siTitleWidth = .Width + 30
+                .Caption = " " & sTitle    ' some left margin
+                siTitleWidth = .Width + 35
             End With
-            .caption = " " & sTitle    ' some left margin
+            .Caption = " " & sTitle    ' some left margin
             .laMsgTitleSpaceBottom.Visible = False
         End If
                 

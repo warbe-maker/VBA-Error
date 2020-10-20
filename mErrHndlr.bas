@@ -18,7 +18,7 @@ Option Explicit
 '                     within a procedure
 '          - EoT      End of trace corresponding with the BoT.
 '          - ErrMsg   Displays the error message in a proper formated manner
-'                     The local Conditional Compile Argument "AlternateMsgBox = 1" enforces the use
+'                     The local Conditional Compile Argument "AlternativeMsgBox = 1" enforces the use
 '                     of the Alternative VBA MsgBox which provideds an improved readability.
 '
 ' Usage:   Private/Public Sub/Function any()
@@ -44,7 +44,7 @@ Option Explicit
 '       with the first (entry) procedure in which the call stack is maintained all the
 '       call sequence down to the procedure where the error occoured.
 '
-' Uses: fMsg (only when the Conditional Compile Argument AlternateMsgBox = 1)
+' Uses: fMsg (only when the Conditional Compile Argument AlternativeMsgBox = 1)
 '
 ' Requires: Reference to "Microsoft Scripting Runtime"
 '
@@ -62,6 +62,7 @@ Const TRACE_END_ID          As String = "<"                   ' End procedure or
 Const EXEC_TRACE_APP_ERR    As String = "Application error "
 Const EXEC_TRACE_VB_ERR     As String = "VB Runtime error "
 Const EXEC_TRACE_DB_ERROR   As String = "Database error "
+Const TRACE_COMMENT         As String = " !!! "
 
 Private cyFrequency         As Currency     ' Execution Trace Frequency (initialized with init)
 Private cyTicks             As Currency     ' Execution Trace Ticks counter
@@ -108,12 +109,13 @@ Private lSourceErrorNo      As Long
 Private lErrorNumber        As Long ' a number possibly different from lSourceErrorNo when it changes when passed on to the Entry Procedure
 Private sErrorSource        As String
 Private sErrorDescription   As String
-Private sErrorPath          As String
+Private cllErrorPath        As Collection   ' managed by ErrPath... procedures exclusively
 
-Private Property Get TRACE_PROC_BEGIN_ID() As String:   TRACE_PROC_BEGIN_ID = TRACE_BEGIN_ID & TRACE_BEGIN_ID & " ":    End Property
-Private Property Get TRACE_PROC_END_ID() As String:     TRACE_PROC_END_ID = TRACE_END_ID & TRACE_END_ID & " ":          End Property
-Private Property Get TRACE_CODE_BEGIN_ID() As String:   TRACE_CODE_BEGIN_ID = TRACE_BEGIN_ID & " ":                     End Property
-Private Property Get TRACE_CODE_END_ID() As String:     TRACE_CODE_END_ID = TRACE_END_ID & " ":                         End Property
+Private Property Get TRACE_PROC_BEGIN_ID() As String:   TRACE_PROC_BEGIN_ID = TRACE_BEGIN_ID & TRACE_BEGIN_ID & " ":            End Property
+Private Property Get TRACE_PROC_END_ID() As String:     TRACE_PROC_END_ID = TRACE_END_ID & TRACE_END_ID & " ":                  End Property
+Private Property Get TRACE_CODE_BEGIN_ID() As String:   TRACE_CODE_BEGIN_ID = TRACE_BEGIN_ID & " ":                             End Property
+Private Property Get TRACE_CODE_END_ID() As String:     TRACE_CODE_END_ID = TRACE_END_ID & " ":                                 End Property
+Private Property Get INCOMPLETE_TRACE() As String:      INCOMPLETE_TRACE = TRACE_COMMENT & "Incomplete trace" & TRACE_COMMENT:  End Property
 
 ' Test button, displayed with Conditional Compile Argument Test = 1
 Public Property Get ExitAndContinue() As String:    ExitAndContinue = "Exit procedure" & vbLf & "and continue" & vbLf & "with next":    End Property
@@ -177,19 +179,19 @@ Public Sub EoP(ByVal s As String)
     TrcEnd s, TRACE_PROC_END_ID
 #End If
     StackPop s
-    
-'    Debug.Print "EoP: '" & s & "', Stack Top: '" & StackTop & "', Stack Bottom: '" & StackBottom & "'"
     If StackIsEmpty Or s = sErrHndlrEntryProc Then
         TrcDsply
     End If
-    
+ 
 End Sub
 
 Public Sub EoT(ByVal s As String)
 ' -------------------------------
 ' End of Trace for code lines.
 ' -------------------------------
+#If ExecTrace Then
     TrcEnd s, TRACE_CODE_END_ID
+#End If
 End Sub
 
             
@@ -206,11 +208,12 @@ Public Function ErrHndlr(ByVal errnumber As Long, _
 ' else the error is passed on to the "Entry Procedure" whereby the
 ' .ErrorPath string is assebled.
 ' ----------------------------------------------------------------------
-#Const AlternateMsgBox = 1  ' 1 = Error displayed by means of the Alternative MsgBox fMsg
-                            ' 0 = Error displayed by means of the VBA MsgBox
+#Const AlternativeMsgBox = 1  ' 1 = Error displayed by means of the Alternative MsgBox ! requires the UserForm fMsg installed !
+                              ' 0 = Error displayed by means of the VBA MsgBox
     
     Static sLine    As String   ' provided error line (if any) for the the finally displayed message
-   
+    Dim sTrace      As String
+    
     If errnumber = 0 Then
         MsgBox "The error handling has been called with an error number = 0 !" & vbLf & vbLf & _
                "This indicates that in procedure" & vbLf & _
@@ -220,6 +223,21 @@ Public Function ErrHndlr(ByVal errnumber As Long, _
                "Exit ... statement missing in " & errsource & "!"
         Exit Function
     End If
+#If AlternativeMsgBox = 0 Then
+    Select Case buttons
+        Case vbOKOnly, vbOKCancel, vbYesNo, vbRetryCancel, vbYesNoCancel, vbAbortRetryIgnore
+        Case Else
+            MsgBox "The buttons argument may only have valid VBA MsgBox vaulues." & vbLf & _
+                   "When a free button specification is desired, the Alternative VBA MsgBox" & vbLf & _
+                   "(UserForm fMsg) is required!" & vbLf & vbLf & _
+                   "Please refer to:" & vbLf & _
+                   "https://warbe-maker.github.io/vba/common/2020/10/02/Comprehensive-Common-VBA-Error-Handler.html" _
+                   , vbOKOnly, "Invalid buttons argument!"
+            Exit Function
+    End Select
+#End If
+'~~ Special features are only available with the Alternative VBA MsgBox
+#If AlternativeMsgBox Then
 #If Debugging Or Test Then
     ErrHndlrAddButtons buttons, vbLf ' buttons in new row
 #End If
@@ -230,27 +248,24 @@ Public Function ErrHndlr(ByVal errnumber As Long, _
      ErrHndlrAddButtons buttons, ResumeNext
      ErrHndlrAddButtons buttons, ExitAndContinue
 #End If
+#End If
 
-'    If CallStack Is Nothing Then Set CallStack = New clsCallStack
     If cllErrPath Is Nothing Then Set cllErrPath = New Collection
     If errline <> 0 Then sLine = errline Else sLine = "0"
     
     If ErrPathIsEmpty Then
-        '~~ When there's yet no error path collected this indicates that the
-        '~~ error handler is executed the first time This is the error raising procedure. Backtracking to the entry procedure is due
+        '~~ This is the initial execution of the error handler within the error raising procedure.
+        '~~ Backtracking to the entry procedure is due
         ErrPathAdd errsource & " (" & ErrorDetails(errnumber, errsource, errline) & ")"
-        TrcError errsource & " !!! " & ErrorDetails(errnumber, errsource, errline) & " !!!"
+        TrcError errsource & TRACE_COMMENT & ErrorDetails(errnumber, errsource, errline) & TRACE_COMMENT
         lSourceErrorNo = errnumber
         sErrorSource = errsource
         sErrorDescription = errdscrptn
-    ElseIf lErrorNumber <> errnumber Then
+    ElseIf errnumber <> lSourceErrorNo _
+        And errsource <> sErrorSource Then
         '~~ In the rare case when the error number had changed during the process of passing it back up to the entry procedure
         TrcError errsource & ": " & ErrorDetails(errnumber, errsource, errline) & " """ & errdscrptn & """"
         lErrorNumber = errnumber
-    Else
-        '~~ This is the error handling called during the "backtracing" process,
-        '~~ i.e. the process when the error is passed on up to the entry procedure
-'            ErrHndlrErrPathAdd errsource
     End If
     
     '~~ When the user has no choice to press any button but the only one displayed button
@@ -259,8 +274,11 @@ Public Function ErrHndlr(ByVal errnumber As Long, _
     If ErrorButtons(buttons) = 1 _
     And sErrHndlrEntryProc <> vbNullString _
     And StackEntryProc <> errsource Then
-        ErrPathAdd errsource
+        If errsource <> sErrorSource Then ErrPathAdd errsource
         StackPop errsource
+#If ExecTrace Then
+        If errsource <> sErrorSource Then TrcEnd errsource, TRACE_PROC_END_ID
+#End If
         Err.Raise errnumber, errsource, errdscrptn
     End If
     
@@ -272,6 +290,9 @@ Public Function ErrHndlr(ByVal errnumber As Long, _
     Or StackEntryProc = vbNullString Then
         ErrPathAdd errsource
         StackPop errsource
+#If ExecTrace Then
+        TrcEnd errsource, TRACE_PROC_END_ID
+#End If
         ErrHndlr = ErrMsg(errnumber:=lSourceErrorNo, errsource:=sErrorSource, errdscrptn:=sErrorDescription, errline:=errline, errpath:=ErrPathErrMsg, buttons:=buttons)
         Select Case ErrHndlr
             Case ResumeError, ResumeNext, ExitAndContinue
@@ -284,7 +305,18 @@ Public Function ErrHndlr(ByVal errnumber As Long, _
     If StackEntryProc = errsource _
     Or StackEntryProc = vbNullString Then
 #If ExecTrace Then
-        TrcDsply
+#If AlternativeMsgBox Then
+        sTrace = TrcDsply(False)
+        With fMsg
+            .MaxFormWidthPrcntgOfScreenSize = 95
+            .MsgTitle = "Execution Trace, displayed because the Conditional Compile Argument ""ExecTrace = 1""!"
+            .MsgText(1) = sTrace:   .MsgMonoSpaced(1) = True
+            .Setup
+            .Show
+        End With
+#Else
+        TrcDsply  ' output via Debug.Print in VBE immediate window
+#End If
 #End If
         Select Case ErrHndlr
             Case ResumeError, ResumeNext, ExitAndContinue
@@ -308,25 +340,35 @@ Public Function ErrMsg( _
                 ByVal errline As Long, _
        Optional ByVal errpath As String = vbNullString, _
        Optional ByVal buttons As Variant = vbOKOnly) As Variant
-' -----------------------------------------------------------------------------------------
-' Displays the error message either by means of VBA MsgBox or, when the Conditional Compile
-' Argument AlternateMsgBox = 1 by means of the Alternate VBA MsgBox (fMsg). In any case the
-' path to the error may be displayed, provided the entry procedure has BoP/EoP code lines.
+' -------------------------------------------------------------
+' Displays the error message either by means of VBA MsgBox or,
+' when the Conditional Compile Argument AlternativeMsgBox = 1 by
+' means of the Alternative VBA MsgBox (UserForm fMsg). In any
+' case the path to the error may be displayed, provided the
+' entry procedure has BoP/EoP code lines.
 '
 ' W. Rauschenberger, Berlin, Sept 2020
-' -----------------------------------------------------------------------------------------
+' -------------------------------------------------------------
     
-    Dim sErrMsg, sErrPath As String
+    Dim sErrPath    As String:      sErrPath = ErrPathErrMsg
+    Dim sErrMsg     As String
+    Dim sTitle      As String
     
-#If AlternateMsgBox Then
+    Select Case ErrorType(errnumber, errsource)
+        Case VBRuntimeError, DatabaseError:         sTitle = ErrorTypeString(ErrorType(errnumber, errsource)) & errnumber & " in " & errsource & ErrorLine(errline)
+        Case ApplicationError:                      sTitle = ErrorTypeString(ErrorType(errnumber, errsource)) & AppErr(errnumber) & " in " & errsource & ErrorLine(errline)
+    End Select
+    
+#If AlternativeMsgBox Then
     '~~ Display the error message by means of the Common UserForm fMsg
     With fMsg
-        Select Case ErrorType(errnumber, errsource)
-            Case VBRuntimeError, DatabaseError:         .MsgTitle = ErrorTypeString(ErrorType(errnumber, errsource)) & errnumber & " in " & errsource
-            Case ApplicationError:                      .MsgTitle = ErrorTypeString(ErrorType(errnumber, errsource)) & AppErr(errnumber) & " in " & errsource
-        End Select
-        .MsgLabel(1) = "Error Message/Description:":    .MsgText(1) = ErrorDescription(errdscrptn)
-        .MsgLabel(2) = "Error path (call stack):":      .MsgText(2) = ErrPathErrMsg:   .MsgMonoSpaced(2) = True
+        .MsgTitle = sTitle
+        .MsgLabel(1) = "Error description:":            .MsgText(1) = ErrorDescription(errdscrptn)
+        If sErrPath <> vbNullString Then
+            .MsgLabel(2) = "Error path (call stack):":  .MsgText(2) = ErrPathErrMsg:   .MsgMonoSpaced(2) = True
+        Else
+            .MsgLabel(2) = "Error source:":             .MsgText(2) = errsource
+        End If
         .MsgLabel(3) = "Info:":                         .MsgText(3) = ErrorInfo(errdscrptn)
         .MsgButtons = buttons
         .Setup
@@ -339,16 +381,18 @@ Public Function ErrMsg( _
     End With
 #Else
     '~~ Display the error message by means of the VBA MsgBox
-    sErrMsg = "Description: " & vbLf & ErrorDescription(errdscrptn) & vbLf & vbLf & _
-              "Source:" & vbLf & errsource & ErrorLine(errline)
-    sErrPath = ErrMsgErrPath
-    If sErrPath <> vbNullString _
-    Then sErrMsg = sErrMsg & vbLf & vbLf & _
-                   "Path:" & vbLf & errpath
+    sErrMsg = "Error description: " & vbLf & ErrorDescription(errdscrptn)
+    
+    If sErrPath <> vbNullString Then
+        sErrMsg = sErrMsg & vbLf & vbLf & "Error path (call stack):" & vbLf & errpath
+    Else
+        sErrMsg = sErrMsg & vbLf & vbLf & "Error source:" & vbLf & errsource & ErrorLine(errline)
+    End If
+    
     If ErrorInfo(errdscrptn) <> vbNullString _
     Then sErrMsg = sErrMsg & vbLf & vbLf & _
                    "Info:" & vbLf & ErrorInfo(errdscrptn)
-    ErrMsg = MsgBox(Prompt:=sErrMsg, buttons:=buttons, Title:=ErrMsgErrType(errnumber, errsource) & " in " & errsource & ErrorLine(errline))
+    ErrMsg = MsgBox(Prompt:=sErrMsg, buttons:=buttons, Title:=sTitle)
 #End If
 End Function
 
@@ -457,38 +501,71 @@ End Function
 
 Private Sub ErrPathAdd(ByVal s As String)
     
-    If ErrPathIsEmpty Then
-        sErrorPath = s
-    Else
-        If InStr(sErrorPath, s & " ") = 0 Then
-            sErrorPath = s & vbLf & sErrorPath
-        End If
+    If cllErrorPath Is Nothing Then Set cllErrorPath = New Collection _
+
+    If Not ErrPathItemExists(s) Then
+        cllErrorPath.Add s ' avoid duplicate recording of the same procedure/item
     End If
 End Sub
 
-Private Sub ErrPathErase()
-    sErrorPath = vbNullString
-End Sub
+Private Function ErrPathItemExists(ByVal s As String) As Boolean
 
-Private Function ErrPathErrMsg() As String
-
-    Dim i    As Long: i = 0
-    Dim s    As String:  s = sErrorPath
-   
-    While InStr(s, vbLf) <> 0
-        s = Replace(s, vbLf, "@@@@@" & Space(i * 2) & "|_", 1, 1)
-        i = i + 1
-    Wend
-    ErrPathErrMsg = Replace(s, "@@@@@", vbLf)
+    Dim v As Variant
+    
+    For Each v In cllErrorPath
+        If InStr(v & " ", s & " ") <> 0 Then
+            ErrPathItemExists = True
+            Exit Function
+        End If
+    Next v
     
 End Function
 
-Private Function ErrPathIsEmpty() As Boolean
-   ErrPathIsEmpty = sErrorPath = vbNullString
+Private Sub ErrPathErase()
+    Set cllErrorPath = Nothing
+End Sub
+
+Private Function ErrPathErrMsg() As String
+' ----------------------------------------
+' Returns the error path for being
+' displayed in the error message.
+' ----------------------------------------
+    
+    Dim i   As Long:    i = 0
+    Dim j   As Long:    j = 0
+    Dim s   As String
+    
+    ErrPathErrMsg = vbNullString
+    If Not ErrPathIsErrSourceOnly Then
+        '~~ When the error path is not empty and not only contains the error source procedure
+        For i = cllErrorPath.Count To 1 Step -1
+            s = cllErrorPath.Item(i)
+            If i = cllErrorPath.Count _
+            Then ErrPathErrMsg = s _
+            Else ErrPathErrMsg = ErrPathErrMsg & vbLf & Space(j * 2) & "|_" & s
+            j = j + 1
+        Next i
+    End If
+
 End Function
 
-Private Function ErrSrc(ByVal sProc As String) As String
-    ErrSrc = ThisWorkbook.Name & ">mErrHndlr" & ">" & sProc
+Private Function ErrPathIsErrSourceOnly() As Boolean
+    
+    If Not ErrPathIsEmpty Then
+        If cllErrorPath.Count = 1 Then
+            ErrPathIsErrSourceOnly = True   ' The only entry is the error source
+        Else
+            ErrPathIsErrSourceOnly = False
+        End If
+    End If
+End Function
+
+Private Function ErrPathIsEmpty() As Boolean
+    ErrPathIsEmpty = cllErrorPath Is Nothing
+End Function
+
+Private Function errsrc(ByVal sProc As String) As String
+    errsrc = ThisWorkbook.Name & ">mErrHndlr" & ">" & sProc
 End Function
 
 Private Function Replicate(ByVal s As String, _
@@ -553,7 +630,7 @@ exit_proc:
     Exit Function
 
 on_error:
-    MsgBox Err.Description, vbOKOnly, "Error in " & ErrSrc(PROC)
+    MsgBox Err.Description, vbOKOnly, "Error in " & errsrc(PROC)
 End Function
 
 Private Sub StackPush(ByVal s As String)
@@ -578,20 +655,23 @@ Private Function StackUnwind() As String
     Dim s As String
     Do Until StackIsEmpty
         s = StackPop
-        If s <> vbNullString Then TrcEnd s, TrcBeginEndId(s)
+        If s <> vbNullString Then
+            TrcEnd s, TrcBegEndId(s)
+        End If
     Loop
 End Function
 
-Private Function TrcBeginEndId(ByVal s As String) As String
-    TrcBeginEndId = Split(s, " ")(0) & " "
+Private Function TrcBegEndId(ByVal s As String) As String
+    TrcBegEndId = Split(s, " ")(0) & " "
 End Function
 
 Public Sub TrcBegin(ByVal s As String, _
                     ByVal id As String)
 ' --------------------------------------
-' Keep a record (tick count) of the
-' begin of the execution of a procedure
-' or a group of code lines (s).
+' Keep a record of the current tick
+' count at the begin of the execution of
+' the procedure (s) identified as
+' procedure or code trace begin (id).
 ' ---------------------------------------
     Dim cy      As Currency
     
@@ -642,8 +722,8 @@ Private Function TrcBeginTicks(ByVal s As String, _
     TrcBeginTicks = 0
     s = Replace(s, TRACE_END_ID, TRACE_BEGIN_ID)  ' turn the end item into a begin item string
     For j = i - 1 To 0 Step -1
-        sKey = Split(TrcUnstripItemNo(dicTrace.Keys(j)), "!!!")(0)
-        sItem = Split(s, "!!!")(0)
+        sKey = Split(TrcUnstripItemNo(dicTrace.Keys(j)), TRACE_COMMENT)(0)
+        sItem = Split(s, TRACE_COMMENT)(0)
         If sItem = sKey Then
             If dicTrace.Items(j) <> vbNullString Then
                 '~~ Return the begin ticks and replace the value by vbNullString
@@ -659,15 +739,14 @@ End Function
 
 Public Function TrcDsply(Optional ByVal bDebugPrint As Boolean = True) As String
 ' --------------------------------------------------------------------------------
-' Displays the precision time tracking result with the execution
-' time in seconds with each vba code lines end tracking line.
+' Displays the precision time tracking result with the execution time in seconds
+' with each vba code lines end tracking line.
 ' --------------------------------------------------------------------------------
 #If ExecTrace Then
     
     On Error GoTo on_error
     Const PROC = "TrcDsply"        ' This procedure's name for the error handling and execution tracking
     Const ELAPSED = "Elapsed"
-    Const EXEC_SECS = "Exec secs"
     
     Dim cyStrt      As Currency ' ticks count at start
     Dim cyEnd       As Currency ' ticks count at end
@@ -712,14 +791,20 @@ Public Function TrcDsply(Optional ByVal bDebugPrint As Boolean = True) As String
     sFormat = String$(iSec - 1, "0") & "0." & String$(iDec, "0") & " "
     sIndent = Space$(Len(sFormat))
     iIndent = -1
+    
     '~~ Header
+#If AlternativeMsgBox = 0 Then
+    sTraceLine = "Execution Trace, displayed because the Conditional Compile Argument ""ExecTrace = 1""!" & vbLf
+    sTrace = sTrace & vbLf & sTraceLine
+    If bDebugPrint Then Debug.Print sTraceLine
+#End If
+    sTraceLine = ELAPSED & VBA.Space$(Len(sIndent) - Len(ELAPSED) + 1) & "Exec secs" & " >> Begin execution trace " & Format(dtTraceBeginTime, "hh:mm:ss") & " (exec time in seconds)"
+    sTrace = sTrace & vbLf & sTraceLine
+    If bDebugPrint Then Debug.Print sTraceLine
     
-    sTraceLine = ELAPSED & VBA.Space$(Len(sIndent) - Len(ELAPSED) + 1) & EXEC_SECS & " >> Begin execution trace " & Format(dtTraceBeginTime, "hh:mm:ss") & " (exec time in seconds)"
-    If bDebugPrint Then Debug.Print sTraceLine Else sTrace = sTrace & sTraceLine
-    
+    '~~ Exec trace lines
     For iTt = 0 To dicTrace.Count - 1
         sProcName = dicTrace.Keys(iTt)
-        
         If TrcIsEndItem(sProcName, sInfo) Then
             '~~ Trace End Line
             cyEnd = dicTrace.Items(iTt)
@@ -727,17 +812,19 @@ Public Function TrcDsply(Optional ByVal bDebugPrint As Boolean = True) As String
             If cyStrt = 0 Then
                 '~~ The corresponding BoP/BoT entry for a EoP/EoT entry couldn't be found within the trace
                 iIndent = iIndent + 1
-                sTraceLine = Space$((Len(sFormat) * 2) + 1) & "    " & Replicate("|  ", iIndent) & sProcName & sInfo
+                sTraceLine = Space$((Len(sFormat) * 2) + 1) & "    " & Replicate("|  ", iIndent) & sProcName
                 If InStr(sTraceLine, TRACE_PROC_END_ID) <> 0 _
-                Then sTraceLine = sTraceLine & " !!! Incomplete trace !!! The corresponding BoP statement for a EoP statement is missing." _
-                Else sTraceLine = sTraceLine & " !!! Incomplete trace !!! The corresponding BoT statement for a EoT statement is missing."
-                If bDebugPrint Then Debug.Print sTraceLine Else sTrace = sTrace & sTraceLine
+                Then sTraceLine = sTraceLine & INCOMPLETE_TRACE & "The corresponding BoP statement for a EoP statement is missing." _
+                Else sTraceLine = sTraceLine & INCOMPLETE_TRACE & "The corresponding BoT statement for a EoT statement is missing."
+                sTrace = sTrace & vbLf & sTraceLine
+                If bDebugPrint Then Debug.Print sTraceLine
                 
                 iIndent = iIndent - 1
             Else
                 '~~ End line
-                sTraceLine = TrcEndLine(cyInitial, cyEnd, cyStrt, iIndent, sProcName & sInfo)
-                If bDebugPrint Then Debug.Print sTraceLine Else sTrace = sTrace & sTraceLine
+                sTraceLine = TrcEndLine(cyInitial, cyEnd, cyStrt, iIndent, sProcName)
+                sTrace = sTrace & vbLf & sTraceLine
+                If bDebugPrint Then Debug.Print sTraceLine
                 iIndent = iIndent - 1
             End If
         ElseIf TrcIsBegItem(sProcName) Then
@@ -747,24 +834,25 @@ Public Function TrcDsply(Optional ByVal bDebugPrint As Boolean = True) As String
             sMsg = TrcEndItemMissing(sProcName)
             
             sTraceLine = TrcBeginLine(cyInitial, iTt, sIndent, iIndent, sProcName, sMsg)
-            If bDebugPrint Then Debug.Print sTraceLine Else sTrace = sTrace & sTraceLine
+            sTrace = sTrace & vbLf & sTraceLine
+            If bDebugPrint Then Debug.Print sTraceLine
             
             If sMsg <> vbNullString Then iIndent = iIndent - 1
         
         End If
+        sInfo = vbNullString
     Next iTt
     
     dicTrace.RemoveAll
     sTraceLine = Space$((Len(sFormat) * 2) + 2) & "<< End execution trace " & Format(Now(), "hh:mm:ss") & " (only " & Format(TrcSecs(0, cyOverhead), "0.000000") & " seconds exec time were caused by the executuion trace itself)"
-    If bDebugPrint Then Debug.Print sTraceLine Else sTrace = sTrace & sTraceLine
-
-    sTraceLine = Space$((Len(sFormat) * 2) + 2) & "The Conditional Compile Argument 'ExecTrace = 0' will turn off the trace and its display." & vbLf
-    If bDebugPrint Then Debug.Print sTraceLine Else sTrace = sTrace & sTraceLine
+    sTrace = sTrace & vbLf & sTraceLine
+    If bDebugPrint Then Debug.Print sTraceLine
+    
     TrcDsply = sTrace
     Exit Function
     
 on_error:
-    MsgBox Err.Description, vbOKOnly, "Error in " & ErrSrc(PROC)
+    MsgBox Err.Description, vbOKOnly, "Error in " & errsrc(PROC)
 #End If
 End Function
 
@@ -777,6 +865,15 @@ Private Sub TrcAdd(ByVal s As String, _
     
 End Sub
 
+Private Function TrcItem(ByVal s As String) As String
+' ---------------------------------------------------
+' Returns the item (i.e. the traced ErrSrc()) element
+' within the trace entry.
+' Precondition: The ErrSrc() must not contain spaces
+' ---------------------------------------------------
+    TrcItem = Split(s, " ")(1)
+End Function
+
 Private Sub TrcEnd(ByVal s As String, _
                    ByVal id As String)
 ' -----------------------------------------
@@ -785,10 +882,10 @@ Private Sub TrcEnd(ByVal s As String, _
 ' group of code lines named (s).
 ' -----------------------------------------
 #If ExecTrace Then
+    
+    On Error GoTo on_error
     Const PROC = "TrcEnd"
     Dim cy      As Currency
-
-    On Error GoTo on_error
     
     getTickCount cyTicks
     cy = cyTicks
@@ -800,7 +897,7 @@ exit_proc:
     Exit Sub
     
 on_error:
-    MsgBox Err.Description, vbOKOnly, "Error in " & ErrSrc(PROC)
+    MsgBox Err.Description, vbOKOnly, "Error in " & errsrc(PROC)
 #End If
 End Sub
 
@@ -818,7 +915,7 @@ Private Function TrcEndItemMissing(ByVal s As String) As String
     For i = 0 To dicTrace.Count - 1
         sKey = dicTrace.Keys(i)
         If TrcIsEndItem(sKey, sInfo) Then
-            If sKey = s Then
+            If TrcItem(sKey) = TrcItem(s) Then
                 TrcEndItemMissing = vbNullString
                 GoTo exit_proc
             End If
@@ -828,8 +925,8 @@ Private Function TrcEndItemMissing(ByVal s As String) As String
 exit_proc:
     If TrcEndItemMissing <> vbNullString Then
         If Split(s, " ")(0) & " " = TRACE_PROC_END_ID _
-        Then TrcEndItemMissing = " !!! Incomplete trace !!! The corresponding EoP statement for a BoP statement is missing." _
-        Else TrcEndItemMissing = " !!! Incomplete trace !!! The corresponding EoT statement for a BoT statement is missing."
+        Then TrcEndItemMissing = INCOMPLETE_TRACE & "The corresponding EoP statement for a BoP statement is missing." _
+        Else TrcEndItemMissing = INCOMPLETE_TRACE & "The corresponding EoT statement for a BoT statement is missing."
     End If
 End Function
 
@@ -864,7 +961,7 @@ Public Sub TrcError(ByVal s As String)
     getTickCount cyTicks
     '~~ Add the error indication line to the trace by ignoring any additional error information
     '~~ optionally attached by two vertical bars
-    TrcAdd TRACE_PROC_END_ID & Split(s, DCONCAT)(0), cyTicks
+    TrcAdd TRACE_PROC_END_ID & s, cyTicks
     getTickCount cyTicks
     cyOverhead = cyOverhead + (cyTicks - cy)
 #End If
@@ -902,24 +999,28 @@ End Function
 
 Private Function TrcIsEndItem( _
                  ByRef s As String, _
-                 ByRef sRight As String) As Boolean
+        Optional ByRef sRight As String) As Boolean
 ' -------------------------------------------------
 ' Returns TRUE if s is an execution trace end item.
 ' Returns s with the item counter unstripped. Any
 ' additional info is returne in sRight.
 ' -------------------------------------------------
-    Dim i As Single
-
-    TrcIsEndItem = False
-    i = InStr(1, s, TRACE_END_ID)
-    If i <> 0 Then
-        TrcIsEndItem = True
+    
+    Dim sIndicator  As String
+    
+    s = TrcUnstripItemNo(s)
+    sIndicator = Split(s)(0)
+    Select Case Split(s)(0)
+        Case Trim(TRACE_PROC_END_ID), Trim(TRACE_CODE_END_ID)
+            TrcIsEndItem = True
+        Case Else
+            TrcIsEndItem = False
+    End Select
         
-        If InStr(s, " !!!") <> 0 _
-        Then sRight = " !!!" & Split(s, " !!!")(1) _
-        Else sRight = vbNullString
-        
-        s = TrcUnstripItemNo(s)
+    If InStr(s, TRACE_COMMENT) <> 0 Then
+        sRight = TRACE_COMMENT & Split(s, TRACE_COMMENT)(1)
+    Else
+        sRight = vbNullString
     End If
     
 End Function
