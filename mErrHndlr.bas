@@ -103,13 +103,14 @@ End Type
 Public dicTrace             As Dictionary       ' Procedure execution trancing records
 Private cllErrPath          As Collection
 
+Private cllErrorPath        As Collection   ' managed by ErrPath... procedures exclusively
 Private dctStack            As Dictionary
 Private sErrHndlrEntryProc  As String
-Private lSourceErrorNo      As Long
-Private lErrorNumber        As Long ' a number possibly different from lSourceErrorNo when it changes when passed on to the Entry Procedure
-Private sErrorSource        As String
-Private sErrorDescription   As String
-Private cllErrorPath        As Collection   ' managed by ErrPath... procedures exclusively
+Private lSubsequErrNo       As Long ' a number possibly different from lInitialErrNo when it changes when passed on to the Entry Procedure
+Private lInitialErrLine     As Long
+Private lInitialErrNo       As Long
+Private sInitialErrSource   As String
+Private sInitialErrDscrptn  As String
 
 Private Property Get TRACE_PROC_BEGIN_ID() As String:   TRACE_PROC_BEGIN_ID = TRACE_BEGIN_ID & TRACE_BEGIN_ID & " ":            End Property
 Private Property Get TRACE_PROC_END_ID() As String:     TRACE_PROC_END_ID = TRACE_END_ID & TRACE_END_ID & " ":                  End Property
@@ -253,19 +254,18 @@ Public Function ErrHndlr(ByVal errnumber As Long, _
     If cllErrPath Is Nothing Then Set cllErrPath = New Collection
     If errline <> 0 Then sLine = errline Else sLine = "0"
     
-    If ErrPathIsEmpty Then
-        '~~ This is the initial execution of the error handler within the error raising procedure.
-        '~~ Backtracking to the entry procedure is due
-        ErrPathAdd errsource & " (" & ErrorDetails(errnumber, errsource, errline) & ")"
+    If sInitialErrSource = vbNullString Then
+        '~~ This is the initial/first execution of the error handler within the error raising procedure.
         TrcError errsource & TRACE_COMMENT & ErrorDetails(errnumber, errsource, errline) & TRACE_COMMENT
-        lSourceErrorNo = errnumber
-        sErrorSource = errsource
-        sErrorDescription = errdscrptn
-    ElseIf errnumber <> lSourceErrorNo _
-        And errsource <> sErrorSource Then
+        lInitialErrLine = errline
+        lInitialErrNo = errnumber
+        sInitialErrSource = errsource
+        sInitialErrDscrptn = errdscrptn
+    ElseIf errnumber <> lInitialErrNo _
+        And errsource <> sInitialErrSource Then
         '~~ In the rare case when the error number had changed during the process of passing it back up to the entry procedure
-        TrcError errsource & ": " & ErrorDetails(errnumber, errsource, errline) & " """ & errdscrptn & """"
-        lErrorNumber = errnumber
+        TrcError errsource & TRACE_COMMENT & ErrorDetails(errnumber, errsource, errline) & " """ & errdscrptn & """"
+        lSubsequErrNo = errnumber
     End If
     
     '~~ When the user has no choice to press any button but the only one displayed button
@@ -274,30 +274,35 @@ Public Function ErrHndlr(ByVal errnumber As Long, _
     If ErrorButtons(buttons) = 1 _
     And sErrHndlrEntryProc <> vbNullString _
     And StackEntryProc <> errsource Then
-        If errsource <> sErrorSource Then ErrPathAdd errsource
+        ErrPathAdd errsource
         StackPop errsource
 #If ExecTrace Then
-        If errsource <> sErrorSource Then TrcEnd errsource, TRACE_PROC_END_ID
+        If errsource <> sInitialErrSource Then TrcEnd errsource, TRACE_PROC_END_ID
 #End If
         Err.Raise errnumber, errsource, errdscrptn
     End If
     
-    '~~ When more than one button is displayed for the user to choose one
-    '~~ or the Entry Procedure is unknown or has been reached
-    '~~ the error is displayed
     If ErrorButtons(buttons) > 1 _
     Or StackEntryProc = errsource _
     Or StackEntryProc = vbNullString Then
-        ErrPathAdd errsource
+        ' More than one button is displayed with the error message for the user to choose one
+        ' or the Entry Procedure is unknown
+        ' or has been reached
+        If Not ErrPathIsEmpty Then ErrPathAdd errsource
         StackPop errsource
 #If ExecTrace Then
         TrcEnd errsource, TRACE_PROC_END_ID
 #End If
-        ErrHndlr = ErrMsg(errnumber:=lSourceErrorNo, errsource:=sErrorSource, errdscrptn:=sErrorDescription, errline:=errline, errpath:=ErrPathErrMsg, buttons:=buttons)
+        '~~ Display the error message
+        ErrHndlr = ErrMsg(errnumber:=lInitialErrNo, errsource:=sInitialErrSource, errdscrptn:=sInitialErrDscrptn, errline:=lInitialErrLine, errpath:=ErrPathErrMsg, buttons:=buttons)
         Select Case ErrHndlr
             Case ResumeError, ResumeNext, ExitAndContinue
             Case Else: ErrPathErase
         End Select
+        lInitialErrNo = 0
+        sInitialErrSource = vbNullString
+        sInitialErrDscrptn = vbNullString
+
     End If
     
     '~~ Each time a known Entry Procedure is reached the execution trace
@@ -306,6 +311,7 @@ Public Function ErrHndlr(ByVal errnumber As Long, _
     Or StackEntryProc = vbNullString Then
 #If ExecTrace Then
 #If AlternativeMsgBox Then
+        '~~ Display the trace in the fMsg UserForm
         sTrace = TrcDsply(False)
         With fMsg
             .MaxFormWidthPrcntgOfScreenSize = 95
@@ -315,6 +321,7 @@ Public Function ErrHndlr(ByVal errnumber As Long, _
             .Show
         End With
 #Else
+        '~~ Display the trace in the immediate window
         TrcDsply  ' output via Debug.Print in VBE immediate window
 #End If
 #End If
@@ -363,11 +370,11 @@ Public Function ErrMsg( _
     '~~ Display the error message by means of the Common UserForm fMsg
     With fMsg
         .MsgTitle = sTitle
-        .MsgLabel(1) = "Error description:":            .MsgText(1) = ErrorDescription(errdscrptn)
-        If sErrPath <> vbNullString Then
-            .MsgLabel(2) = "Error path (call stack):":  .MsgText(2) = ErrPathErrMsg:   .MsgMonoSpaced(2) = True
+        .MsgLabel(1) = "Error description:":            .MsgText(1) = ErrorDescription(sInitialErrDscrptn)
+        If Not ErrPathIsEmpty Then
+            .MsgLabel(2) = "Error path (call stack):":  .MsgText(2) = sErrPath:   .MsgMonoSpaced(2) = True
         Else
-            .MsgLabel(2) = "Error source:":             .MsgText(2) = errsource
+            .MsgLabel(2) = "Error source:":             .MsgText(2) = sInitialErrSource & ErrorLine(lInitialErrLine)
         End If
         .MsgLabel(3) = "Info:":                         .MsgText(3) = ErrorInfo(errdscrptn)
         .MsgButtons = buttons
@@ -383,7 +390,7 @@ Public Function ErrMsg( _
     '~~ Display the error message by means of the VBA MsgBox
     sErrMsg = "Error description: " & vbLf & ErrorDescription(errdscrptn)
     
-    If sErrPath <> vbNullString Then
+    If Not ErrPathIsEmpty Then
         sErrMsg = sErrMsg & vbLf & vbLf & "Error path (call stack):" & vbLf & errpath
     Else
         sErrMsg = sErrMsg & vbLf & vbLf & "Error source:" & vbLf & errsource & ErrorLine(errline)
@@ -445,7 +452,7 @@ Private Function ErrorDetails( _
         Case DatabaseError, VBRuntimeError: ErrorDetails = ErrorTypeString(ErrorType(errnumber, errsource)) & errnumber
     End Select
         
-    If sErrLine <> 0 Then ErrorDetails = ErrorDetails & " at line " & sErrLine
+    If sErrLine <> 0 Then ErrorDetails = ErrorDetails & ErrorLine(lInitialErrLine)
 
 End Function
 
@@ -504,6 +511,7 @@ Private Sub ErrPathAdd(ByVal s As String)
     If cllErrorPath Is Nothing Then Set cllErrorPath = New Collection _
 
     If Not ErrPathItemExists(s) Then
+        Debug.Print s & " added to path"
         cllErrorPath.Add s ' avoid duplicate recording of the same procedure/item
     End If
 End Sub
@@ -536,7 +544,7 @@ Private Function ErrPathErrMsg() As String
     Dim s   As String
     
     ErrPathErrMsg = vbNullString
-    If Not ErrPathIsErrSourceOnly Then
+    If Not ErrPathIsEmpty Then
         '~~ When the error path is not empty and not only contains the error source procedure
         For i = cllErrorPath.Count To 1 Step -1
             s = cllErrorPath.Item(i)
@@ -546,22 +554,13 @@ Private Function ErrPathErrMsg() As String
             j = j + 1
         Next i
     End If
+    ErrPathErrMsg = ErrPathErrMsg & vbLf & Space(j * 2) & "|_" & sInitialErrSource & " " & ErrorDetails(lInitialErrNo, sInitialErrSource, lInitialErrLine)
 
-End Function
-
-Private Function ErrPathIsErrSourceOnly() As Boolean
-    
-    If Not ErrPathIsEmpty Then
-        If cllErrorPath.Count = 1 Then
-            ErrPathIsErrSourceOnly = True   ' The only entry is the error source
-        Else
-            ErrPathIsErrSourceOnly = False
-        End If
-    End If
 End Function
 
 Private Function ErrPathIsEmpty() As Boolean
     ErrPathIsEmpty = cllErrorPath Is Nothing
+    If Not ErrPathIsEmpty Then ErrPathIsEmpty = cllErrorPath.Count = 0
 End Function
 
 Private Function errsrc(ByVal sProc As String) As String
@@ -683,7 +682,7 @@ Public Sub TrcBegin(ByVal s As String, _
     cyOverhead = cyOverhead + (cyTicks - cy)
     
     '~~ Reset a possibly error raised procedure
-    sErrorSource = vbNullString
+    sInitialErrSource = vbNullString
 
 End Sub
 
