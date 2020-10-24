@@ -151,15 +151,7 @@ Public Function AppErr(ByVal errno As Long) As Long
 End Function
 
 Public Sub BoP(ByVal s As String)
-' ----------------------------------
-' Trace and stack Begin of Procedure
-' ----------------------------------
-    
-#If ExecTrace Then
-    TrcBegin s, TRACE_PROC_BEGIN_ID    ' start of the procedure's execution trace
-#End If
     StackPush s
-    
 End Sub
 
 Public Sub BoT(ByVal s As String)
@@ -175,11 +167,9 @@ Public Sub EoP(ByVal s As String)
 ' --------------------------------
 ' Trace and stack End of Procedure
 ' --------------------------------
-    
-#If ExecTrace Then
-    TrcEnd s, TRACE_PROC_END_ID
-#End If
+
     StackPop s
+    
     If StackIsEmpty Or s = sErrHndlrEntryProc Then
         TrcDsply
     End If
@@ -257,6 +247,7 @@ Public Function ErrHndlr(ByVal errnumber As Long, _
     If sInitialErrSource = vbNullString Then
         '~~ This is the initial/first execution of the error handler within the error raising procedure.
         TrcError errsource & TRACE_COMMENT & ErrorDetails(errnumber, errsource, errline) & TRACE_COMMENT
+        StackPop errsource, trace:=False
         lInitialErrLine = errline
         lInitialErrNo = errnumber
         sInitialErrSource = errsource
@@ -290,9 +281,9 @@ Public Function ErrHndlr(ByVal errnumber As Long, _
         ' or has been reached
         If Not ErrPathIsEmpty Then ErrPathAdd errsource
         StackPop errsource
-#If ExecTrace Then
-        TrcEnd errsource, TRACE_PROC_END_ID
-#End If
+'#If ExecTrace Then
+'        TrcEnd errsource, TRACE_PROC_END_ID
+'#End If
         '~~ Display the error message
         ErrHndlr = ErrMsg(errnumber:=lInitialErrNo, errsource:=sInitialErrSource, errdscrptn:=sInitialErrDscrptn, errline:=lInitialErrLine, errpath:=ErrPathErrMsg, buttons:=buttons)
         Select Case ErrHndlr
@@ -606,23 +597,33 @@ Private Function StackIsEmpty() As Boolean
 End Function
 
 Private Function StackPop( _
-        Optional ByVal s As String = vbNullString) As String
-' ----------------------------------------------------------
+        Optional ByVal s As String = vbNullString, _
+        Optional ByVal trace As Boolean = True) As String
+' -------------------------------------------------------
 ' Returns the item removed from the top of the stack.
 ' When s is provided and is not on the top of the stack
 ' an error is raised.
-' ----------------------------------------------------------
+' -------------------------------------------------------
     
     On Error GoTo on_error
     Const PROC = "StackPop"
-
-    If Not StackIsEmpty Then
-        If s <> vbNullString And s = dctStack.Items()(dctStack.Count - 1) Then
-            StackPop = dctStack.Items()(dctStack.Count - 1) ' Return the poped item
-            dctStack.Remove dctStack.Count                  ' Remove item s from stack
-        ElseIf s = vbNullString Then
-            dctStack.Remove dctStack.Count                  ' Unwind! Remove item s from stack
+    Dim sPop    As String
+    
+    If s = StackTop Then
+        StackPop = s                    ' Return the poped item
+        dctStack.Remove dctStack.Count  ' Remove item s from stack
+#If ExecTrace Then
+        If trace Then
+            TrcEnd s, TRACE_PROC_END_ID
         End If
+#End If
+    ElseIf s = vbNullString And Not StackIsEmpty Then
+        dctStack.Remove dctStack.Count  ' Unwind! Remove item s from stack
+#If ExecTrace Then
+        If trace Then
+            TrcEnd s, TRACE_PROC_END_ID
+        End If
+#End If
     End If
     
 exit_proc:
@@ -639,6 +640,9 @@ Private Sub StackPush(ByVal s As String)
         sErrHndlrEntryProc = s ' First pushed = bottom item = entry procedure
     End If
     dctStack.Add dctStack.Count + 1, s
+#If ExecTrace Then
+    TrcBegin s, TRACE_PROC_BEGIN_ID    ' start of the procedure's execution trace
+#End If
 
 End Sub
 
