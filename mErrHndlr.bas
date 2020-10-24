@@ -51,30 +51,11 @@ Option Private Module
 '
 ' W. Rauschenberger, Berlin January 2020, https://github.com/warbe-maker/Common-VBA-Error-Handler
 ' -----------------------------------------------------------------------------------------------
-' --- Begin of declaration for the Execution Tracing
-Private Declare PtrSafe Function getFrequency Lib "kernel32" _
-Alias "QueryPerformanceFrequency" (cyFrequency As Currency) As Long
-Private Declare PtrSafe Function getTickCount Lib "kernel32" _
-Alias "QueryPerformanceCounter" (cyTickCount As Currency) As Long
 
-Private Const TRACE_BEGIN_ID        As String = ">"                   ' Begin procedure or code trace indicator
-Private Const TRACE_END_ID          As String = "<"                   ' End procedure or code trace indicator
-Private Const EXEC_TRACE_APP_ERR    As String = "Application error "
-Private Const EXEC_TRACE_VB_ERR     As String = "VB Runtime error "
-Private Const EXEC_TRACE_DB_ERROR   As String = "Database error "
-Private Const TRACE_COMMENT         As String = " !!! "
-Public Const CONCAT                 As String = "||"
-
-Private cyFrequency         As Currency     ' Execution Trace Frequency (initialized with init)
-Private cyTicks             As Currency     ' Execution Trace Ticks counter
-Private iTraceItem          As Long         ' Execution Trace Call counter to unify key
-Private lPrecisionDecimals  As Long         ' Execution Trace Default Precision (6=0,000000)
-Private iSec                As Integer      ' Execution Trace digits left from decimal point
-Private iDec                As Integer      ' Execution Trace decimal digits right from decimal point
-Private sFormat             As String       ' Execution Trace tracking time presentation format
-Private cyOverhead          As Currency     ' Execution Trace time accumulated by caused by the time tracking itself
-Private dtTraceBeginTime    As Date         ' Execution Trace start time
-' --- End of declaration for the Execution Tracing
+Private Const TYPE_APP_ERR  As String = "Application error "
+Private Const TYPE_VB_ERR   As String = "VB Runtime error "
+Private Const TYPE_DB_ERROR As String = "Database error "
+Public Const CONCAT         As String = "||"
 
 Public Enum StartupPosition         ' ---------------------------
     Manual = 0                      ' Used to position the
@@ -98,7 +79,6 @@ Public Type tMessage                ' three message
        section(1 To 3) As tSection  ' sections
 End Type                            ' -------------------
 
-Private dicTrace            As Dictionary       ' Procedure execution trancing records
 Private cllErrPath          As Collection
 Private cllErrorPath        As Collection   ' managed by ErrPath... procedures exclusively
 Private dctStack            As Dictionary
@@ -108,12 +88,7 @@ Private lInitialErrLine     As Long
 Private lInitialErrNo       As Long
 Private sInitialErrSource   As String
 Private sInitialErrDscrptn  As String
-
-Private Property Get TRACE_PROC_BEGIN_ID() As String:   TRACE_PROC_BEGIN_ID = TRACE_BEGIN_ID & TRACE_BEGIN_ID & " ":                        End Property
-Private Property Get TRACE_PROC_END_ID() As String:     TRACE_PROC_END_ID = TRACE_END_ID & TRACE_END_ID & " ":                              End Property
-Private Property Get TRACE_CODE_BEGIN_ID() As String:   TRACE_CODE_BEGIN_ID = TRACE_BEGIN_ID & " ":                                         End Property
-Private Property Get TRACE_CODE_END_ID() As String:     TRACE_CODE_END_ID = TRACE_END_ID & " ":                                             End Property
-Private Property Get INCOMPLETE_TRACE() As String:      INCOMPLETE_TRACE = TRACE_COMMENT & "Incomplete trace" & TRACE_COMMENT:              End Property
+Private sTrcErrInfo         As String
 
 ' Test button, displayed with Conditional Compile Argument Test = 1
 Public Property Get ExitAndContinue() As String:        ExitAndContinue = "Exit procedure" & vbLf & "and continue" & vbLf & "with next":    End Property
@@ -151,7 +126,15 @@ Public Function AppErr(ByVal errno As Long) As Long
 End Function
 
 Public Sub BoP(ByVal s As String)
+' ----------------------------------
+' Trace and stack Begin of Procedure
+' ----------------------------------
+    
+#If ExecTrace Then
+    TrcProcBegin s    ' start of the procedure's execution trace
+#End If
     StackPush s
+    
 End Sub
 
 Public Sub BoT(ByVal s As String)
@@ -159,7 +142,7 @@ Public Sub BoT(ByVal s As String)
 ' Begin of Trace for code lines.
 ' -------------------------------
 #If ExecTrace Then
-    TrcBegin s, TRACE_CODE_BEGIN_ID
+    TrcCodeBegin s
 #End If
 End Sub
 
@@ -167,9 +150,8 @@ Public Sub EoP(ByVal s As String)
 ' --------------------------------
 ' Trace and stack End of Procedure
 ' --------------------------------
-
-    StackPop s
     
+    StackPop s
     If StackIsEmpty Or s = sErrHndlrEntryProc Then
         ErrHndlrDisplayTrace
     End If
@@ -181,7 +163,7 @@ Public Sub EoT(ByVal s As String)
 ' End of Trace for code lines.
 ' -------------------------------
 #If ExecTrace Then
-    TrcEnd s, TRACE_CODE_END_ID
+    TrcCodeEnd s
 #End If
 End Sub
 
@@ -210,8 +192,7 @@ Public Function ErrHndlr(ByVal errnumber As Long, _
 
     If sInitialErrSource = vbNullString Then
         '~~ This is the initial/first execution of the error handler within the error raising procedure.
-        TrcError errsource & TRACE_COMMENT & ErrorDetails(errnumber, errsource, errline) & TRACE_COMMENT
-        StackPop errsource, trace:=False
+        sTrcErrInfo = ErrorDetails(errnumber, errsource, errline)
         lInitialErrLine = errline
         lInitialErrNo = errnumber
         sInitialErrSource = errsource
@@ -221,7 +202,7 @@ Public Function ErrHndlr(ByVal errnumber As Long, _
         And errsource <> sInitialErrSource Then
         '~~ In the rare case when the error number had changed during the process of passing it back up to the entry procedure
         lSubsequErrNo = errnumber
-        TrcError errsource & TRACE_COMMENT & ErrorDetails(lSubsequErrNo, errsource, errline) & " """ & errdscrptn & """"
+        sTrcErrInfo = ErrorDetails(lSubsequErrNo, errsource, errline)
     End If
     
     '~~ When the user has no choice to press any button but the only one displayed button
@@ -231,10 +212,8 @@ Public Function ErrHndlr(ByVal errnumber As Long, _
     And sErrHndlrEntryProc <> vbNullString _
     And StackEntryProc <> errsource Then
         ErrPathAdd errsource
-        StackPop errsource
-#If ExecTrace Then
-        If errsource <> sInitialErrSource Then TrcEnd errsource, TRACE_PROC_END_ID
-#End If
+        StackPop errsource, sTrcErrInfo
+        sTrcErrInfo = vbNullString
         Err.Raise errnumber, errsource, errdscrptn
     End If
     
@@ -245,10 +224,8 @@ Public Function ErrHndlr(ByVal errnumber As Long, _
         ' or the Entry Procedure is unknown
         ' or has been reached
         If Not ErrPathIsEmpty Then ErrPathAdd errsource
-        StackPop errsource
-'#If ExecTrace Then
-'        TrcEnd errsource, TRACE_PROC_END_ID
-'#End If
+        StackPop errsource, sTrcErrInfo
+        sTrcErrInfo = vbNullString
         '~~ Display the error message
         ErrHndlr = ErrMsg(errnumber:=lInitialErrNo, errsource:=sInitialErrSource, errdscrptn:=sInitialErrDscrptn, errline:=lInitialErrLine, buttons:=buttons)
         Select Case ErrHndlr
@@ -290,6 +267,7 @@ Private Sub ErrHndlrDisplayTrace()
 #End If
 
 End Sub
+
 Private Sub ErrHndlrManageButtons(ByRef buttons As Variant)
 
     If buttons = vbNullString _
@@ -512,9 +490,9 @@ End Function
 
 Private Function ErrorTypeString(ByVal errtype As enErrorType) As String
     Select Case errtype
-        Case ApplicationError:  ErrorTypeString = EXEC_TRACE_APP_ERR
-        Case DatabaseError:     ErrorTypeString = EXEC_TRACE_DB_ERROR
-        Case VBRuntimeError:    ErrorTypeString = EXEC_TRACE_VB_ERR
+        Case ApplicationError:  ErrorTypeString = TYPE_APP_ERR
+        Case DatabaseError:     ErrorTypeString = TYPE_DB_ERROR
+        Case VBRuntimeError:    ErrorTypeString = TYPE_VB_ERR
     End Select
 End Function
 
@@ -597,20 +575,7 @@ Private Function ErrPathIsEmpty() As Boolean
 End Function
 
 Private Function ErrSrc(ByVal sProc As String) As String
-    ErrSrc = ThisWorkbook.Name & ">mErrHndlr" & ">" & sProc
-End Function
-
-Private Function Replicate(ByVal s As String, _
-                        ByVal ir As Long) As String
-' -------------------------------------------------
-' Returns the string (s) repeated (ir) times.
-' -------------------------------------------------
-    Dim i   As Long
-    
-    For i = 1 To ir
-        Replicate = Replicate & s
-    Next i
-    
+    ErrSrc = "mErrHndlr." & sProc
 End Function
 
 Public Function Space(ByVal l As Long) As String
@@ -629,39 +594,32 @@ Private Sub StackErase()
     If Not dctStack Is Nothing Then dctStack.RemoveAll
 End Sub
 
-Private Function StackIsEmpty() As Boolean
+Public Function StackIsEmpty() As Boolean
     StackIsEmpty = dctStack Is Nothing
     If Not StackIsEmpty Then StackIsEmpty = dctStack.Count = 0
 End Function
 
-Private Function StackPop( _
-        Optional ByVal s As String = vbNullString, _
-        Optional ByVal trace As Boolean = True) As String
-' -------------------------------------------------------
-' Returns the item removed from the top of the stack.
-' When s is provided and is not on the top of the stack
-' an error is raised.
-' -------------------------------------------------------
+Public Function StackPop( _
+       Optional ByVal s As String = vbNullString, _
+       Optional ByVal errinfo As String = vbNullString) As String
+' ------------------------------------------------------------------
+' Returns the item removed from the top of the stack. When s is
+' provided and is not on the top of the stack pop is suspended.
+' ------------------------------------------------------------------
     
     On Error GoTo on_error
     Const PROC = "StackPop"
-    Dim sPop    As String
-    
-    If s = StackTop Then
-        StackPop = s                    ' Return the poped item
-        dctStack.Remove dctStack.Count  ' Remove item s from stack
+
+    If Not StackIsEmpty Then
+        If s <> vbNullString And StackTop = s Then
+            StackPop = dctStack.Items()(dctStack.Count - 1) ' Return the poped item
+            dctStack.Remove dctStack.Count                  ' Remove item s from stack
 #If ExecTrace Then
-        If trace Then
-            TrcEnd s, TRACE_PROC_END_ID
-        End If
+            TrcProcEnd s, errinfo
 #End If
-    ElseIf s = vbNullString And Not StackIsEmpty Then
-        dctStack.Remove dctStack.Count  ' Unwind! Remove item s from stack
-#If ExecTrace Then
-        If trace Then
-            TrcEnd s, TRACE_PROC_END_ID
+        ElseIf s = vbNullString Then
+            dctStack.Remove dctStack.Count                  ' Unwind! Remove item s from stack
         End If
-#End If
     End If
     
 exit_proc:
@@ -678,405 +636,10 @@ Private Sub StackPush(ByVal s As String)
         sErrHndlrEntryProc = s ' First pushed = bottom item = entry procedure
     End If
     dctStack.Add dctStack.Count + 1, s
-#If ExecTrace Then
-    TrcBegin s, TRACE_PROC_BEGIN_ID    ' start of the procedure's execution trace
-#End If
 
 End Sub
 
 Private Function StackTop() As String
     If Not StackIsEmpty Then StackTop = dctStack.Items()(dctStack.Count - 1)
-End Function
-
-Private Function StackUnwind() As String
-' --------------------------------------
-' Completes the execution trace for
-' items still on the stack.
-' --------------------------------------
-    Dim s As String
-    Do Until StackIsEmpty
-        s = StackPop
-        If s <> vbNullString Then
-            TrcEnd s, TrcBegEndId(s)
-        End If
-    Loop
-End Function
-
-Private Function TrcBegEndId(ByVal s As String) As String
-    TrcBegEndId = Split(s, " ")(0) & " "
-End Function
-
-Public Sub TrcBegin(ByVal s As String, _
-                    ByVal id As String)
-' --------------------------------------
-' Keep a record of the current tick
-' count at the begin of the execution of
-' the procedure (s) identified as
-' procedure or code trace begin (id).
-' ---------------------------------------
-    Dim cy      As Currency
-    
-    getTickCount cy
-    TrcInit
-    
-    getTickCount cyTicks
-    TrcAdd id & s, cy
-    cyOverhead = cyOverhead + (cyTicks - cy)
-    
-    '~~ Reset a possibly error raised procedure
-    sInitialErrSource = vbNullString
-
-End Sub
-
-Private Function TrcBeginLine( _
-                 ByVal cyInitial As Currency, _
-                 ByVal iTt As Long, _
-                 ByVal sIndent As String, _
-                 ByVal iIndent As Long, _
-                 ByVal sProcName As String, _
-                 ByVal sMsg As String) As String
-' ----------------------------------------------
-' Return a trace begin line for being displayed.
-' ----------------------------------------------
-    TrcBeginLine = TrcSecs(cyInitial, dicTrace.Items(iTt)) _
-                 & "    " & sIndent _
-                 & " " & Replicate("|  ", iIndent) _
-                 & sProcName & sMsg
-End Function
-
-Private Function TrcBeginTicks(ByVal s As String, _
-                               ByVal i As Single) As Currency
-' -----------------------------------------------------------
-' Returns the number of ticks recorded with the begin item
-' corresponding with the end item (s) by searching the trace
-' Dictionary back up starting with the index (i) -1 (= index
-' of the end time (s)).
-' Returns 0 when no start item coud be found.
-' To avoid multiple identifications of the begin item it is
-' set to vbNullString with the return of the number of begin ticks.
-' ----------------------------------------------------------
-    
-    Dim j       As Single
-    Dim sItem   As String
-    Dim sKey    As String
-
-    TrcBeginTicks = 0
-    s = Replace(s, TRACE_END_ID, TRACE_BEGIN_ID)  ' turn the end item into a begin item string
-    For j = i - 1 To 0 Step -1
-        sKey = Split(TrcUnstripItemNo(dicTrace.Keys(j)), TRACE_COMMENT)(0)
-        sItem = Split(s, TRACE_COMMENT)(0)
-        If sItem = sKey Then
-            If dicTrace.Items(j) <> vbNullString Then
-                '~~ Return the begin ticks and replace the value by vbNullString
-                '~~ to avoid multiple recognition of the same start item
-                TrcBeginTicks = dicTrace.Items(j)
-                dicTrace.Items(j) = vbNullString
-                Exit For
-            End If
-        End If
-    Next j
-    
-End Function
-
-Public Function TrcDsply() As String
-' -------------------------------------------------
-' Returns the execution trace a displayable string.
-' -------------------------------------------------
-#If ExecTrace Then
-    
-    On Error GoTo on_error
-    Const PROC = "TrcDsply"        ' This procedure's name for the error handling and execution tracking
-    Const ELAPSED = "Elapsed"
-    
-    Dim cyStrt      As Currency ' ticks count at start
-    Dim cyEnd       As Currency ' ticks count at end
-    Dim cyElapsed   As Currency ' elapsed ticks since start
-    Dim cyInitial   As Currency ' initial ticks count (at first traced proc)
-    Dim iTt         As Single   ' index for dictionary dicTrace
-    Dim sProcName   As String   ' tracked procedure/vba code
-    Dim iIndent     As Single   ' indentation nesting level
-    Dim sIndent     As String   ' Indentation string defined by the precision
-    Dim sMsg        As String
-    Dim dbl         As Double
-    Dim i           As Long
-    Dim sTrace      As String
-    Dim sTraceLine  As String
-    Dim sInfo       As String
-       
-    StackUnwind ' end procedures still on the stack
-    
-    If dicTrace Is Nothing Then Exit Function   ' When the contional compile argument where not
-    If dicTrace.Count = 0 Then Exit Function    ' ExecTrace = 1 there will be no execution trace result
-
-    cyElapsed = 0
-    
-    If lPrecisionDecimals = 0 Then lPrecisionDecimals = 6
-    iDec = lPrecisionDecimals
-    cyStrt = dicTrace.Items(0)
-    For i = dicTrace.Count - 1 To 0 Step -1
-        cyEnd = dicTrace.Items(i)
-        If cyEnd <> 0 Then Exit For
-    Next i
-    
-    If cyFrequency = 0 Then getFrequency cyFrequency
-    dbl = (cyEnd - cyStrt) / cyFrequency
-    Select Case dbl
-        Case Is >= 100000:  iSec = 6
-        Case Is >= 10000:   iSec = 5
-        Case Is >= 1000:    iSec = 4
-        Case Is >= 100:     iSec = 3
-        Case Is >= 10:      iSec = 2
-        Case Else:          iSec = 1
-    End Select
-    sFormat = String$(iSec - 1, "0") & "0." & String$(iDec, "0") & " "
-    sIndent = Space$(Len(sFormat))
-    iIndent = -1
-    
-    '~~ Header
-    sTrace = ELAPSED & VBA.Space$(Len(sIndent) - Len(ELAPSED) + 1) & "Exec secs" & " >> Begin execution trace " & Format(dtTraceBeginTime, "hh:mm:ss") & " (exec time in seconds)"
-    
-    '~~ Exec trace lines
-    For iTt = 0 To dicTrace.Count - 1
-        sProcName = dicTrace.Keys(iTt)
-        If TrcIsEndItem(sProcName, sInfo) Then
-            '~~ Trace End Line
-            cyEnd = dicTrace.Items(iTt)
-            cyStrt = TrcBeginTicks(sProcName, iTt)   ' item is set to vbNullString to avoid multiple recognition
-            If cyStrt = 0 Then
-                '~~ The corresponding BoP/BoT entry for a EoP/EoT entry couldn't be found within the trace
-                iIndent = iIndent + 1
-                sTraceLine = Space$((Len(sFormat) * 2) + 1) & "    " & Replicate("|  ", iIndent) & sProcName
-                If InStr(sTraceLine, TRACE_PROC_END_ID) <> 0 _
-                Then sTraceLine = sTraceLine & INCOMPLETE_TRACE & "The corresponding BoP statement for a EoP statement is missing." _
-                Else sTraceLine = sTraceLine & INCOMPLETE_TRACE & "The corresponding BoT statement for a EoT statement is missing."
-                sTrace = sTrace & vbLf & sTraceLine
-                iIndent = iIndent - 1
-            Else
-                '~~ End line
-                sTraceLine = TrcEndLine(cyInitial, cyEnd, cyStrt, iIndent, sProcName)
-                sTrace = sTrace & vbLf & sTraceLine
-                iIndent = iIndent - 1
-            End If
-        ElseIf TrcIsBegItem(sProcName) Then
-            '~~ Trace Begin Line
-            iIndent = iIndent + 1
-            If iTt = 0 Then cyInitial = dicTrace.Items(iTt)
-            sMsg = TrcEndItemMissing(sProcName)
-            
-            sTraceLine = TrcBeginLine(cyInitial, iTt, sIndent, iIndent, sProcName, sMsg)
-            sTrace = sTrace & vbLf & sTraceLine
-            If sMsg <> vbNullString Then iIndent = iIndent - 1
-        
-        End If
-        sInfo = vbNullString
-    Next iTt
-    
-    dicTrace.RemoveAll
-    '~~ Footer
-    sTraceLine = Space$((Len(sFormat) * 2) + 2) & "<< End execution trace " & Format(Now(), "hh:mm:ss") & " (only " & Format(TrcSecs(0, cyOverhead), "0.000000") & " seconds exec time were caused by the executuion trace itself)"
-    sTrace = sTrace & vbLf & sTraceLine
-    
-exit_proc:
-    TrcDsply = sTrace
-    Exit Function
-    
-on_error:
-    MsgBox Err.Description, vbOKOnly, "Error in " & ErrSrc(PROC)
-#End If
-End Function
-
-Private Sub TrcAdd(ByVal s As String, _
-                   ByVal cy As Currency)
-                   
-    iTraceItem = iTraceItem + 1
-    dicTrace.Add iTraceItem & s, cy
-'    Debug.Print "Added to Trace: '" & iTraceItem & s
-    
-End Sub
-
-Private Function TrcItem(ByVal s As String) As String
-' ---------------------------------------------------
-' Returns the item (i.e. the traced ErrSrc()) element
-' within the trace entry.
-' Precondition: The ErrSrc() must not contain spaces
-' ---------------------------------------------------
-    TrcItem = Split(s, " ")(1)
-End Function
-
-Private Sub TrcEnd(ByVal s As String, _
-                   ByVal id As String)
-' -----------------------------------------
-' End of Trace. Keeps a record of the ticks
-' count for the execution trace of the
-' group of code lines named (s).
-' -----------------------------------------
-#If ExecTrace Then
-    
-    On Error GoTo on_error
-    Const PROC = "TrcEnd"
-    Dim cy      As Currency
-    
-    getTickCount cyTicks
-    cy = cyTicks
-    TrcAdd id & s, cyTicks
-    getTickCount cyTicks
-    cyOverhead = cyOverhead + (cyTicks - cy)
-
-exit_proc:
-    Exit Sub
-    
-on_error:
-    MsgBox Err.Description, vbOKOnly, "Error in " & ErrSrc(PROC)
-#End If
-End Sub
-
-Private Function TrcEndItemMissing(ByVal s As String) As String
-' -------------------------------------------------------------------
-' Returns a message string when a corresponding end item is missing.
-' -------------------------------------------------------------------
-    Dim i       As Long
-    Dim sKey    As String
-    Dim sInfo   As String
-
-    TrcEndItemMissing = "missing"
-    s = Replace(s, TRACE_BEGIN_ID, TRACE_END_ID)  ' turn the end item into a begin item string
-    For i = 0 To dicTrace.Count - 1
-        sKey = dicTrace.Keys(i)
-        If TrcIsEndItem(sKey, sInfo) Then
-            If TrcItem(sKey) = TrcItem(s) Then
-                TrcEndItemMissing = vbNullString
-                GoTo exit_proc
-            End If
-        End If
-    Next i
-    
-exit_proc:
-    If TrcEndItemMissing <> vbNullString Then
-        If Split(s, " ")(0) & " " = TRACE_PROC_END_ID _
-        Then TrcEndItemMissing = INCOMPLETE_TRACE & "The corresponding EoP statement for a BoP statement is missing." _
-        Else TrcEndItemMissing = INCOMPLETE_TRACE & "The corresponding EoT statement for a BoT statement is missing."
-    End If
-End Function
-
-Private Function TrcEndLine( _
-                 ByVal cyInitial As Currency, _
-                 ByVal cyEnd As Currency, _
-                 ByVal cyStrt As Currency, _
-                 ByVal iIndent As Long, _
-                 ByVal sProcName As String) As String
-' ---------------------------------------------------
-' Assemble a Trace End Line
-' ---------------------------------------------------
-    
-    TrcEndLine = TrcSecs(cyInitial, cyEnd) & " " & _
-                 TrcSecs(cyStrt, cyEnd) & "    " & _
-                 Replicate("|  ", iIndent) & _
-                 sProcName
-
-End Function
-
-Public Sub TrcError(ByVal s As String)
-' --------------------------------------
-' Keep record of the error (s) raised
-' during the execution of any procedure.
-' --------------------------------------
-#If ExecTrace Then
-    Dim cy As Currency
-
-    getTickCount cy
-    TrcInit
-    
-    getTickCount cyTicks
-    '~~ Add the error indication line to the trace by ignoring any additional error information
-    '~~ optionally attached by two vertical bars
-    TrcAdd TRACE_PROC_END_ID & s, cyTicks
-    getTickCount cyTicks
-    cyOverhead = cyOverhead + (cyTicks - cy)
-#End If
-End Sub
-
-Private Sub TrcInit()
-    If Not dicTrace Is Nothing Then
-        If dicTrace.Count = 0 Then
-            dtTraceBeginTime = Now()
-            iTraceItem = 0
-            cyOverhead = 0
-        End If
-    Else
-        Set dicTrace = New Dictionary
-        dtTraceBeginTime = Now()
-        iTraceItem = 0
-        cyOverhead = 0
-    End If
-
-End Sub
-
-Private Function TrcIsBegItem(ByRef s As String) As Boolean
-' ---------------------------------------------------------
-' Returns TRUE if s is an execution trace begin item.
-' Returns s with the call counter unstripped.
-' ---------------------------------------------------------
-Dim i As Single
-    TrcIsBegItem = False
-    i = InStr(1, s, TRACE_BEGIN_ID)
-    If i <> 0 Then
-        TrcIsBegItem = True
-        s = TrcUnstripItemNo(s)
-    End If
-End Function
-
-Private Function TrcIsEndItem( _
-                 ByRef s As String, _
-        Optional ByRef sRight As String) As Boolean
-' -------------------------------------------------
-' Returns TRUE if s is an execution trace end item.
-' Returns s with the item counter unstripped. Any
-' additional info is returne in sRight.
-' -------------------------------------------------
-    
-    Dim sIndicator  As String
-    
-    s = TrcUnstripItemNo(s)
-    sIndicator = Split(s)(0)
-    Select Case Split(s)(0)
-        Case Trim(TRACE_PROC_END_ID), Trim(TRACE_CODE_END_ID)
-            TrcIsEndItem = True
-        Case Else
-            TrcIsEndItem = False
-    End Select
-        
-    If InStr(s, TRACE_COMMENT) <> 0 Then
-        sRight = TRACE_COMMENT & Split(s, TRACE_COMMENT)(1)
-    Else
-        sRight = vbNullString
-    End If
-    
-End Function
-
-Private Function TrcSecs( _
-                 ByVal cyStrt As Currency, _
-                 ByVal cyEnd As Currency) As String
-' --------------------------------------------------
-' Returns the difference between cyStrt and cyEnd as
-' formatted seconds string (decimal = nanoseconds).
-' --------------------------------------------------
-    Dim dbl As Double
-
-    dbl = (cyEnd - cyStrt) / cyFrequency
-    TrcSecs = Format(dbl, sFormat)
-
-End Function
-
-Private Function TrcUnstripItemNo( _
-                 ByVal s As String) As String
-    Dim i As Long
-
-    i = 1
-    While IsNumeric(Mid(s, i, 1))
-        i = i + 1
-    Wend
-    s = Right(s, Len(s) - (i - 1))
-    TrcUnstripItemNo = s
-    
 End Function
 
