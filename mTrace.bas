@@ -1,5 +1,26 @@
 Attribute VB_Name = "mTrace"
 Option Explicit
+' --------------------------------------------------------------------------------
+'
+' Structure of a collected trace entry:
+' -------------------------------------
+' |   Entry Item   | Origin, Transformation |   Type    |
+' | ---------------| -----------------------| --------- |
+' | EntryNumber    | = Count + 1,           | Long      |
+' |                | before add Index       |           |
+' | TickCount      | Collected              | Currency  |
+' | ElapsedSeconds | Computed               | Long      |
+' | ExecSeconds    | Computed               | Long      |
+' | CallLevel      | = Number if items on   | Long      |
+' |                | the stack -1 after push|           |
+' |                | or item on stack before|           |
+' |                | push                   |           |
+' | Indentation    | Computed based on      | String    |
+' |                | CallLevel              |           |
+' | DirectiveId    | Collected              | String    |
+' | Procedure      | Collected              | String    |
+' | ExecErrorInfo  | Collected              | String    |
+' | TraceErrorInfo | Computed               | String    |
 
 ' --- Begin of declaration for the Execution Tracing
 Private Declare PtrSafe Function getFrequency Lib "kernel32" _
@@ -11,7 +32,9 @@ Private Const TRACE_BEGIN_ID    As String = ">"                   ' Begin proced
 Private Const TRACE_END_ID      As String = "<"                   ' End procedure or code trace indicator
 Private Const TRACE_COMMENT     As String = " !!! "
 
+
 Private dicTrace            As Dictionary   ' For the collection of execution trance entries/lines
+Private cllTrace            As Collection
 Private cyFrequency         As Currency     ' Execution Trace Frequency (initialized with init)
 Private cyTicks             As Currency     ' Execution Trace Ticks counter
 Private iTraceItem          As Long         ' Execution Trace Call counter to unify key
@@ -459,5 +482,88 @@ Private Function TrcUnstripItemNo( _
     s = Right(s, Len(s) - (i - 1))
     TrcUnstripItemNo = s
     
+End Function
+
+Private Sub CllTrcAdd( _
+      ByVal v1 As Variant, _
+      ByVal v2 As Variant, _
+      ByVal v3 As Variant, _
+      ByVal v4 As Variant, _
+      ByVal v5 As Variant, _
+      ByVal v6 As Variant, _
+      ByVal v7 As Variant, _
+      ByVal v8 As Variant, _
+      ByVal v9 As Variant)
+            
+   cllTrace.Add CllTrcEntry(v1, v2, v3, v4, v5, v6, v7, v8, v9)
+   
+End Sub
+
+Private Function CllTrcEntry( _
+           ByVal v1 As Variant, _
+           ByVal v2 As Variant, _
+           ByVal v3 As Variant, _
+           ByVal v4 As Variant, _
+           ByVal v5 As Variant, _
+           ByVal v6 As Variant, _
+           ByVal v7 As Variant, _
+           ByVal v8 As Variant, _
+           ByVal v9 As Variant) As Collection
+           
+    Dim cll As New Collection
+    
+    cll.Add v1
+    cll.Add v2
+    cll.Add v3
+    cll.Add v4
+    cll.Add v5
+    cll.Add v6
+    cll.Add v7
+    cll.Add v8
+    cll.Add v9
+    Set CllTrcEntry = cll
+End Function
+
+Private Property Get TrcEntryNo(Optional ByVal entry As Collection) As Long:        TrcEntryNo = entry(1):      End Property
+Private Property Get TrcTickCount(Optional ByVal entry As Collection) As Currency:  TrcTickCount = entry(2):    End Property
+'Private Property Get TrcElapsedSeconds | Computed               | Long      |
+'Private Property Get TrcExecSeconds    | Computed               | Long      |
+'Private Property Get TrcCallLevel      | = Number if items on   | Long      |
+'Private Property Get Trc               | the stack -1 after push|           |
+'Private Property Get Trc               | or item on stack before|           |
+'Private Property Get Trc               | push                   |           |
+'Private Property Get TrcIndentation    | Computed based on      | String    |
+'Private Property Get Trc               | CallLevel              |           |
+'Private Property Get TrcDirectiveId    | Collected              | String    |
+'Private Property Get TrcProcedure      | Collected              | String    |
+'Private Property Get TrcExecErrorInfo  | Collected              | String    |
+'Private Property Get TrcTraceErrorInfo | Computed               | String    |
+
+Private Sub CllTrcDsply()
+    Dim v As Variant
+    For Each v In cllTrace
+'        If TrcBeginEntry(v) Then
+'            If Not TrcHasEndEntry(v) Then
+'                TrcAddTraceErrInfo v, "end entry missing"
+'                ' no indentation! i'll never go left
+'            Else
+'               ' Indentation is due
+'            End If
+''        ElseIf DirectiveId(v)
+'
+'        End If
+    Next v
+    
+ End Sub
+ 
+ Private Function TrcBeginEntry(v As Collection) As Boolean
+    Select Case TrcDirectiveId(v)
+        Case TRACE_PROC_BEGIN_ID, TRACE_CODE_BEGIN_ID
+            TrcBeginEntry = True
+    End Select
+End Function
+
+Private Function TrcDirectiveId(ByVal cll As Collection) As String
+    TrcDirectiveId = cll(7)
 End Function
 
