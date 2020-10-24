@@ -12,19 +12,19 @@ Private Sub AnyProc()
 Const PROC As String = "AnyProc" ' This procedure's name for error handling and execution trace
 
     On Error GoTo on_error
-    BoP errsrc(PROC) ' Begin of Procedure (push stack and begin of execution trace)
+    BoP ErrSrc(PROC) ' Begin of Procedure (push stack and begin of execution trace)
 
     ' any code
 
 exit_proc:
     ' any "finally" code
-    EoP errsrc(PROC) ' End of Procedure (pop stack and end of execution trace)
+    EoP ErrSrc(PROC) ' End of Procedure (pop stack and end of execution trace)
     Exit Sub
 
 on_error:
-    mErrHndlr.ErrHndlr Err.Number, errsrc(PROC), Err.Description, Erl
+    mErrHndlr.ErrHndlr Err.Number, ErrSrc(PROC), Err.Description, Erl
 End Sub
 
-Private Function errsrc(ByVal sProc As String) As String
-    errsrc = Split(ThisWorkbook.Name, ".")(0) & "." & MODNAME & "." & sProc
+Private Function ErrSrc(ByVal sProc As String) As String
+    ErrSrc = Split(ThisWorkbook.Name, ".")(0) & "." & MODNAME & "." & sProc
 End Function
