@@ -183,7 +183,6 @@ Public Function ErrHndlr(ByVal errnumber As Long, _
 ' ----------------------------------------------------------------------
     
     Static sLine    As String   ' provided error line (if any) for the the finally displayed message
-    Dim sTrace      As String
     
     If ErrHndlrFailed(errnumber, errsource, buttons) Then Exit Function
     If cllErrPath Is Nothing Then Set cllErrPath = New Collection
@@ -214,7 +213,7 @@ Public Function ErrHndlr(ByVal errnumber As Long, _
         ErrPathAdd errsource
         StackPop errsource, sTrcErrInfo
         sTrcErrInfo = vbNullString
-        Err.Raise errnumber, errsource, errdscrptn
+        err.Raise errnumber, errsource, errdscrptn
     End If
     
     If ErrorButtons(buttons) > 1 _
@@ -626,7 +625,7 @@ exit_proc:
     Exit Function
 
 on_error:
-    MsgBox Err.Description, vbOKOnly, "Error in " & ErrSrc(PROC)
+    MsgBox err.Description, vbOKOnly, "Error in " & ErrSrc(PROC)
 End Function
 
 Private Sub StackPush(ByVal s As String)

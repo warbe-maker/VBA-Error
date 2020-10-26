@@ -160,7 +160,7 @@ exit_sub:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume
+    Debug.Print err.Description: Stop: Resume
 End Sub
 
 Private Sub CollectDesignControls()
@@ -204,7 +204,7 @@ exit_proc:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume
+    Debug.Print err.Description: Stop: Resume
 End Sub
 
 Private Sub ProvideCollection(ByRef cll As Collection)
@@ -772,7 +772,7 @@ exit_proc:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume
+    Debug.Print err.Description: Stop: Resume
 End Sub
 
  
@@ -950,7 +950,7 @@ exit_proc:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume
+    Debug.Print err.Description: Stop: Resume
 End Sub
 
 Private Sub ResizeAndRepositionAreas()
@@ -1026,7 +1026,7 @@ exit_proc:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume
+    Debug.Print err.Description: Stop: Resume
 End Sub
 
 Private Sub ResizeAndRepositionButtons()
@@ -1066,7 +1066,7 @@ exit_proc:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume
+    Debug.Print err.Description: Stop: Resume
 End Sub
 
 Private Sub ResizeAndRepositionButtonsArea()
@@ -1110,7 +1110,7 @@ exit_proc:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume
+    Debug.Print err.Description: Stop: Resume
 End Sub
 
 Private Sub ResizeAndRepositionButtonsFrame()
@@ -1139,7 +1139,7 @@ exit_proc:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume
+    Debug.Print err.Description: Stop: Resume
 End Sub
 
 Private Sub ResizeAndRepositionMsgArea()
@@ -1164,7 +1164,7 @@ exit_proc:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume
+    Debug.Print err.Description: Stop: Resume
 End Sub
 
 Private Sub ResizeAndRepositionMsgSections()
@@ -1238,7 +1238,7 @@ exit_proc:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume
+    Debug.Print err.Description: Stop: Resume
 End Sub
 
 Public Sub Setup()
@@ -1301,7 +1301,7 @@ exit_proc:
     Exit Sub
 
 on_error:
-    Debug.Print Err.Description: Stop: Resume
+    Debug.Print err.Description: Stop: Resume
 End Sub
 
 Private Sub SetupButton(ByVal buttonrow As Long, _
@@ -1336,7 +1336,7 @@ exit_proc:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume
+    Debug.Print err.Description: Stop: Resume
 End Sub
 
 Private Sub SetupButtons(ByVal vButtons As Variant)
@@ -1385,7 +1385,7 @@ exit_proc:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume
+    Debug.Print err.Description: Stop: Resume
 End Sub
 
 ' Setup the reply buttons based on the comma delimited string of button captions
@@ -1442,7 +1442,7 @@ exit_proc:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume
+    Debug.Print err.Description: Stop: Resume
 End Sub
 
 Private Sub SetupButtonsFromString(ByVal sButtons As String)
@@ -1509,7 +1509,7 @@ exit_proc:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume
+    Debug.Print err.Description: Stop: Resume
 End Sub
 
 ' Setup a message section with its label when one is specified
@@ -1576,7 +1576,7 @@ exit_proc:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume
+    Debug.Print err.Description: Stop: Resume
 End Sub
 
 ' Setup the applied monospaced message section (section) with the text (text),
@@ -1638,7 +1638,7 @@ exit_proc:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume
+    Debug.Print err.Description: Stop: Resume
 End Sub
 
 ' Setup the proportional spaced Message Section (section) with the text (text)
@@ -1703,7 +1703,7 @@ exit_proc:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume
+    Debug.Print err.Description: Stop: Resume
 End Sub
 
 Private Sub SetupMsgSectionsPropSpaced()
@@ -1719,7 +1719,7 @@ exit_proc:
     Exit Sub
     
 on_error:
-    Debug.Print Err.Description: Stop: Resume
+    Debug.Print err.Description: Stop: Resume
 End Sub
 
 ' When a specific font name and/or size is specified, the extra title label is actively used

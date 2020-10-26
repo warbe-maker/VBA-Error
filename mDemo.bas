@@ -47,7 +47,7 @@ Const PROC = "ErrorHandling_BetterThanNothing"    ' error source
     Exit Function
 
 on_error:
-    mErrHndlr.ErrMsg Err.Number, ErrSrc(PROC), Err.Description & "||Line number manually added for demonstration.", Erl
+    mErrHndlr.ErrMsg err.Number, ErrSrc(PROC), err.Description & "||Line number manually added for demonstration.", Erl
 End Function
 
 Public Sub ErrorHandling_Reasonable_Demo()
@@ -78,7 +78,7 @@ Const PROC = "ErrorHandling_Reasonable"    ' error source
     Exit Function
 
 on_error:
-    mErrHndlr.ErrHndlr Err.Number, ErrSrc(PROC), Err.Description & "||Line number manually added for demonstration.", Erl
+    mErrHndlr.ErrHndlr err.Number, ErrSrc(PROC), err.Description & "||Line number manually added for demonstration.", Erl
 End Function
 
 Public Sub ErrorHandling_Eleborated_Demo()
@@ -107,7 +107,7 @@ Const PROC  As String = "ErrorHandling_Eleborated_Demo"
     EoP ErrSrc(PROC)
 
 on_error:
-    mErrHndlr.ErrHndlr Err.Number, ErrSrc(PROC), Err.Description, Erl
+    mErrHndlr.ErrHndlr err.Number, ErrSrc(PROC), err.Description, Erl
 End Sub
 
 Private Sub ErrorHandling_Elaborated1()
@@ -133,7 +133,7 @@ exit_proc:
     Exit Sub
 
 on_error:
-    mErrHndlr.ErrHndlr Err.Number, ErrSrc(PROC), Err.Description, Erl
+    mErrHndlr.ErrHndlr err.Number, ErrSrc(PROC), err.Description, Erl
 End Sub
 
 Private Function ErrorHandling_Elaborated2(ByVal op1 As Variant, _
@@ -155,9 +155,9 @@ Const PROC  As String = "ErrorHandling_Elaborated2"
     On Error GoTo on_error
     BoP ErrSrc(PROC)    ' Push procedure on call stack
     
-    If Not IsNumeric(op1) Then Err.Raise AppErr(1), ErrSrc(PROC), "The parameter (op1) is not numeric!"
-    If Not IsNumeric(op2) Then Err.Raise AppErr(2), ErrSrc(PROC), "The parameter (op2) is not numeric!"
-163 If op2 = 0 Then Err.Raise AppErr(3), ErrSrc(PROC), "The parameter (op2) is 0 which would cause a 'Division by zero' error!" & CONCAT & _
+    If Not IsNumeric(op1) Then err.Raise AppErr(1), ErrSrc(PROC), "The parameter (op1) is not numeric!"
+    If Not IsNumeric(op2) Then err.Raise AppErr(2), ErrSrc(PROC), "The parameter (op2) is not numeric!"
+163 If op2 = 0 Then err.Raise AppErr(3), ErrSrc(PROC), "The parameter (op2) is 0 which would cause a 'Division by zero' error!" & CONCAT & _
                                                 "This error has been detected by a programed assertion of correct values provided for the function call." & vbLf & _
                                                 "(this extra information is part of the error message but split by means of two vertical bars, which is only possible by programed (Err.Raise) error message "
     ErrorHandling_Elaborated2 = op1 / op2
@@ -167,7 +167,7 @@ exit_proc:
     Exit Function
 
 on_error:
-    mErrHndlr.ErrHndlr Err.Number, ErrSrc(PROC), Err.Description, Erl
+    mErrHndlr.ErrHndlr err.Number, ErrSrc(PROC), err.Description, Erl
 End Function
 
 Public Sub Demo_2_Application_Error()
@@ -191,7 +191,7 @@ exit_proc:
     Exit Sub
 
 on_error:
-    Select Case mErrHndlr.ErrHndlr(Err.Number, ErrSrc(PROC), Err.Description, Erl)
+    Select Case mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), err.Description, Erl)
         Case ResumeError: Stop: Resume
     End Select
 End Sub
@@ -207,7 +207,7 @@ Private Sub Demo_2_Application_Error_DemoProc_2a()
     Exit Sub
 
 on_error:
-    If mErrHndlr.ErrHndlr(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
+    If mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Demo_2_Application_Error_DemoProc_2b()
@@ -221,7 +221,7 @@ Private Sub Demo_2_Application_Error_DemoProc_2b()
     Exit Sub
 
 on_error:
-    If mErrHndlr.ErrHndlr(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
+    If mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Demo_2_Application_Error_DemoProc_2c()
@@ -234,7 +234,7 @@ Private Sub Demo_2_Application_Error_DemoProc_2c()
     On Error GoTo on_error
 
     BoP ErrSrc(PROC)
-181 Err.Raise AppErr(1), ErrSrc(PROC), _
+181 err.Raise AppErr(1), ErrSrc(PROC), _
         "This is a programmed i.e. an ""Application Error""!" & CONCAT & _
         "The function AppErr() has been used to turn the positive into a negative number by adding the VB constant 'vbObjectError' to assure an error number which does not conflict with a VB Runtime error. " & _
         "The ErrHndlr identified the negative number as an ""Application Error"" and converted it back to the orginal positive number by means of the AppErr() function." & vbLf & _
@@ -246,7 +246,7 @@ exit_proc:
     Exit Sub
 
 on_error:
-    Select Case mErrHndlr.ErrHndlr(Err.Number, ErrSrc(PROC), Err.Description, Erl)
+    Select Case mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), err.Description, Erl)
         Case ResumeError:       Stop: Resume
         Case ResumeNext:        Resume Next
         Case ExitAndContinue:   GoTo exit_proc
@@ -276,7 +276,7 @@ exit_proc:
     Exit Sub
 
 on_error:
-    Select Case mErrHndlr.ErrHndlr(Err.Number, ErrSrc(PROC), Err.Description, Erl)
+    Select Case mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), err.Description, Erl)
         Case ResumeError: Stop: Resume
         Case ResumeNext: Resume Next
         Case ExitAndContinue: GoTo exit_proc
@@ -294,7 +294,7 @@ Private Sub Demo_3_VB_Runtime_Error_DemoProc_3a()
     Exit Sub
 
 on_error:
-    If mErrHndlr.ErrHndlr(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
+    If mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Demo_3_VB_Runtime_Error_DemoProc_3b()
@@ -308,7 +308,7 @@ Private Sub Demo_3_VB_Runtime_Error_DemoProc_3b()
     Exit Sub
 
 on_error:
-    If mErrHndlr.ErrHndlr(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
+    If mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Demo_3_VB_Runtime_Error_DemoProc_3c()
@@ -322,7 +322,7 @@ Private Sub Demo_3_VB_Runtime_Error_DemoProc_3c()
     Exit Sub
 
 on_error:
-    If mErrHndlr.ErrHndlr(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
+    If mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Demo_3_VB_Runtime_Error_DemoProc_3d()
@@ -344,7 +344,7 @@ exit_proc:
     Exit Sub
 
 on_error:
-    Select Case mErrHndlr.ErrHndlr(Err.Number, ErrSrc(PROC), Err.Description, Erl)
+    Select Case mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), err.Description, Erl)
         Case ResumeError:       Stop: Resume
         Case ResumeNext:        Resume Next
         Case ExitAndContinue:   GoTo exit_proc
@@ -365,7 +365,7 @@ Public Sub Demo_4_With_Debugging_Support()
     Exit Sub
 
 on_error:
-    If mErrHndlr.ErrHndlr(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
+    If mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Demo_4_With_Debugging_Support_DemoProc_5a()
@@ -379,7 +379,7 @@ Private Sub Demo_4_With_Debugging_Support_DemoProc_5a()
     Exit Sub
     
 on_error:
-    Select Case mErrHndlr.ErrHndlr(errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl)
+    Select Case mErrHndlr.ErrHndlr(errnumber:=err.Number, errsource:=ErrSrc(PROC), errdscrptn:=err.Description, errline:=Erl)
         Case ResumeError: Stop: Resume ' Continue with F8 to end up at the code line which caused the error
     End Select
 End Sub
@@ -393,7 +393,7 @@ Public Sub Demo_5_No_Exit_Statement()
     On Error GoTo on_error
     
 on_error:
-    If mErrHndlr.ErrHndlr(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
+    If mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Public Sub Demo_6_Execution_Trace()
@@ -413,7 +413,7 @@ Public Sub Demo_6_Execution_Trace()
     Exit Sub
 
 on_error:
-    If mErrHndlr.ErrHndlr(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
+    If mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Demo_6_Execution_Trace_DemoProc_6a()
@@ -427,7 +427,7 @@ Private Sub Demo_6_Execution_Trace_DemoProc_6a()
     Exit Sub
 
 on_error:
-    If mErrHndlr.ErrHndlr(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
+    If mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Demo_6_Execution_Trace_DemoProc_6b()
@@ -449,7 +449,7 @@ Private Sub Demo_6_Execution_Trace_DemoProc_6b()
     Exit Sub
 
 on_error:
-    If mErrHndlr.ErrHndlr(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
+    If mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Demo_6_Execution_Trace_DemoProc_6c()
@@ -464,7 +464,7 @@ exit_proc:
     Exit Sub
 
 on_error:
-    mErrHndlr.ErrHndlr Err.Number, ErrSrc(PROC), Err.Description, Erl
+    mErrHndlr.ErrHndlr err.Number, ErrSrc(PROC), err.Description, Erl
 End Sub
 
 Private Sub Demo_7_Free_Button_Display()
@@ -472,11 +472,11 @@ Private Sub Demo_7_Free_Button_Display()
     On Error GoTo on_error
     Const PROC = "Demo_7_Free_Button_Display"
 
-    Err.Raise AppErr(1), ErrSrc(PROC), "Display of a free defined button in addition to the usual Ok button (resumes the error when clicked)"
+    err.Raise AppErr(1), ErrSrc(PROC), "Display of a free defined button in addition to the usual Ok button (resumes the error when clicked)"
     Exit Sub
 
 on_error:
-    Select Case mErrHndlr.ErrHndlr(Err.Number, ErrSrc(PROC), Err.Description, Erl, buttons:=vbOKOnly & "," & vbLf & ",My button")
+    Select Case mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), err.Description, Erl, buttons:=vbOKOnly & "," & vbLf & ",My button")
         Case "My button": Resume
     End Select
 End Sub
