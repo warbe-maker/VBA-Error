@@ -22,7 +22,7 @@ exit_proc:
     Exit Sub
 
 on_error:
-    mErrHndlr.ErrHndlr Err.Number, ErrSrc(PROC), Err.Description, Erl
+    mErrHndlr.ErrHndlr err.Number, ErrSrc(PROC), err.Description, Erl
 End Sub
 
 Private Function ErrSrc(ByVal sProc As String) As String

@@ -15,9 +15,9 @@ Option Private Module
 '          - EoP      Maintains the call stack at the End of a Procedure, triggers the display of
 '                     the Execution Trace when the entry procedure is finished and the
 '                     Conditional Compile Argument ExecTrace = 1
-'          - BoT      Begin of Trace. In contrast to BoP this is for any group of code lines
+'          - BoC      Begin of Trace. In contrast to BoP this is for any group of code lines
 '                     within a procedure
-'          - EoT      End of trace corresponding with the BoT.
+'          - EoC      End of trace corresponding with the BoC.
 '          - ErrMsg   Displays the error message in a proper formated manner
 '                     The local Conditional Compile Argument "AlternativeMsgBox = 1" enforces the use
 '                     of the Alternative VBA MsgBox which provideds an improved readability.
@@ -137,7 +137,7 @@ Public Sub BoP(ByVal s As String)
     
 End Sub
 
-Public Sub BoT(ByVal s As String)
+Public Sub BoC(ByVal s As String)
 ' -------------------------------
 ' Begin of Trace for code lines.
 ' -------------------------------
@@ -158,7 +158,7 @@ Public Sub EoP(ByVal s As String)
  
 End Sub
 
-Public Sub EoT(ByVal s As String)
+Public Sub EoC(ByVal s As String)
 ' -------------------------------
 ' End of Trace for code lines.
 ' -------------------------------
@@ -183,7 +183,6 @@ Public Function ErrHndlr(ByVal errnumber As Long, _
 ' ----------------------------------------------------------------------
     
     Static sLine    As String   ' provided error line (if any) for the the finally displayed message
-    Dim sTrace      As String
     
     If ErrHndlrFailed(errnumber, errsource, buttons) Then Exit Function
     If cllErrPath Is Nothing Then Set cllErrPath = New Collection
@@ -214,7 +213,7 @@ Public Function ErrHndlr(ByVal errnumber As Long, _
         ErrPathAdd errsource
         StackPop errsource, sTrcErrInfo
         sTrcErrInfo = vbNullString
-        Err.Raise errnumber, errsource, errdscrptn
+        err.Raise errnumber, errsource, errdscrptn
     End If
     
     If ErrorButtons(buttons) > 1 _
@@ -235,11 +234,10 @@ Public Function ErrHndlr(ByVal errnumber As Long, _
         lInitialErrNo = 0
         sInitialErrSource = vbNullString
         sInitialErrDscrptn = vbNullString
-
     End If
     
     '~~ Each time a known Entry Procedure is reached the execution trace
-    '~~ maintained by the BoP and EoP and the BoT and EoT statements is displayed
+    '~~ maintained by the BoP and EoP and the BoC and EoC statements is displayed
     If StackEntryProc = errsource _
     Or StackEntryProc = vbNullString Then
         ErrHndlrDisplayTrace
@@ -257,15 +255,8 @@ Private Sub ErrHndlrDisplayTrace()
 ' Display the trace in the fMsg UserForm
 ' --------------------------------------
 #If ExecTrace Then
-        With fMsg
-            .MaxFormWidthPrcntgOfScreenSize = 95
-            .MsgTitle = "Execution Trace, displayed because the Conditional Compile Argument ""ExecTrace = 1""!"
-            .MsgText(1) = TrcDsply:   .MsgMonoSpaced(1) = True
-            .Setup
-            .Show
-        End With
+    TrcDsply
 #End If
-
 End Sub
 
 Private Sub ErrHndlrManageButtons(ByRef buttons As Variant)
@@ -558,7 +549,7 @@ Private Function ErrPathErrMsg() As String
     If Not ErrPathIsEmpty Then
         '~~ When the error path is not empty and not only contains the error source procedure
         For i = cllErrorPath.Count To 1 Step -1
-            s = cllErrorPath.Item(i)
+            s = cllErrorPath.TrcEntryItem(i)
             If i = cllErrorPath.Count _
             Then ErrPathErrMsg = s _
             Else ErrPathErrMsg = ErrPathErrMsg & vbLf & Space(j * 2) & "|_" & s
@@ -626,7 +617,7 @@ exit_proc:
     Exit Function
 
 on_error:
-    MsgBox Err.Description, vbOKOnly, "Error in " & ErrSrc(PROC)
+    MsgBox err.Description, vbOKOnly, "Error in " & ErrSrc(PROC)
 End Function
 
 Private Sub StackPush(ByVal s As String)
