@@ -101,7 +101,7 @@ Private Sub Test_1_BoP_EoP_TestProc_1b_paired_BoP_EoP()
     On Error GoTo on_error
     
     BoP ErrSrc(PROC)
-    Test_1_BoP_EoP_TestProc_1c_missing_EoT
+    Test_1_BoP_EoP_TestProc_1c_missing_EoC
     EoP ErrSrc(PROC)
     Exit Sub
     
@@ -109,13 +109,13 @@ on_error:
     If mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
-Private Sub Test_1_BoP_EoP_TestProc_1c_missing_EoT()
+Private Sub Test_1_BoP_EoP_TestProc_1c_missing_EoC()
     
-    Const PROC = "Test_1_BoP_EoP_TestProc_1c_missing_EoT"
+    Const PROC = "Test_1_BoP_EoP_TestProc_1c_missing_EoC"
     On Error GoTo on_error
     
     BoP ErrSrc(PROC)
-    BoT ErrSrc(PROC) & " trace of some code lines" ' missing EoT statement
+    BoC ErrSrc(PROC) & " trace of some code lines" ' missing EoC statement
 
 exit_proc:
     EoP ErrSrc(PROC)
@@ -125,18 +125,18 @@ on_error:
     If mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
-Private Sub Test_1_BoP_EoP_TestProc_1e_BoT_EoT()
+Private Sub Test_1_BoP_EoP_TestProc_1e_BoC_EoC()
     
-    Const PROC = "Test_1_BoP_EoP_TestProc_1e_BoT_EoT"
+    Const PROC = "Test_1_BoP_EoP_TestProc_1e_BoC_EoC"
     On Error GoTo on_error
     
     BoP ErrSrc(PROC)
         
     Dim i As Long: Dim j As Long: j = 10000000
-    BoT PROC & " code trace empty loop 1 to " & j
+    BoC PROC & " code trace empty loop 1 to " & j
     For i = 1 To j
     Next i
-    EoT PROC & " code trace empty loop 1 to " & j ' !!! the string must match with the BoT statement !!!
+    EoC PROC & " code trace empty loop 1 to " & j ' !!! the string must match with the BoC statement !!!
     
     EoP ErrSrc(PROC)
     Exit Sub
@@ -151,7 +151,7 @@ Private Sub Test_1_BoP_EoP_TestProc_1d_missing_EoP()
     On Error GoTo on_error
     
     BoP ErrSrc(PROC)
-    Test_1_BoP_EoP_TestProc_1e_BoT_EoT
+    Test_1_BoP_EoP_TestProc_1e_BoC_EoC
     
     Exit Sub
 
@@ -410,11 +410,14 @@ End Sub
 
 Private Sub Test_6_Execution_Trace_TestProc_6a()
 
-    Const PROC = "Test_6_Execution_Trace_TestProc_6a"
     On Error GoTo on_error
+    Const PROC = "Test_6_Execution_Trace_TestProc_6a"
     
     BoP ErrSrc(PROC)
+    BoC ErrSrc(PROC) & " call of 6b and 6c"
     Test_6_Execution_Trace_TestProc_6b
+    Test_6_Execution_Trace_TestProc_6c
+    EoC ErrSrc(PROC) & " call of 6b and 6c"
     EoP ErrSrc(PROC)
     Exit Sub
 
@@ -428,7 +431,10 @@ Private Sub Test_6_Execution_Trace_TestProc_6b()
     On Error GoTo on_error
     
     BoP ErrSrc(PROC)
-    Test_6_Execution_Trace_TestProc_6c
+    Dim i As Long
+    For i = 1 To 10000
+        s = Application.Path ' to produce some execution time
+    Next i
     EoP ErrSrc(PROC)
     Exit Sub
 

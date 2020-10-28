@@ -141,7 +141,7 @@ Private Sub UserForm_Initialize()
     Me.MaxFormHeightPrcntgOfScreenSize = FORM_MAX_HEIGHT_POW
     sMonoSpacedFontName = FONT_MONOSPACED_NAME                  ' Default monospaced font
     siMonoSpacedFontSize = FONT_MONOSPACED_SIZE                 ' Default monospaced font
-    Me.Width = siMinFormWidth
+    Me.width = siMinFormWidth
     bDisplayFramesWithCaptions = False
     bTestFrameWithBorders = False
     Me.Height = VSPACE_AREAS * 4
@@ -170,17 +170,17 @@ Private Sub CollectDesignControls()
     On Error GoTo on_error
     
     ProvideCollection cllDsgnAreas
-    Collect into:=cllDsgnAreas, ctltype:="Frame", fromparent:=Me, ctlheight:=10, ctlwidth:=Me.Width - siHmarginFrames
-    DsgnButtonsArea.Width = 10  ' Will be adjusted to the max replies row width during setup
+    Collect into:=cllDsgnAreas, ctltype:="Frame", fromparent:=Me, ctlheight:=10, ctlwidth:=Me.width - siHmarginFrames
+    DsgnButtonsArea.width = 10  ' Will be adjusted to the max replies row width during setup
     
     ProvideCollection cllDsgnSections
-    Collect into:=cllDsgnSections, ctltype:="Frame", fromparent:=DsgnMsgArea, ctlheight:=50, ctlwidth:=DsgnMsgArea.Width - siHmarginFrames
+    Collect into:=cllDsgnSections, ctltype:="Frame", fromparent:=DsgnMsgArea, ctlheight:=50, ctlwidth:=DsgnMsgArea.width - siHmarginFrames
     ProvideCollection cllDsgnSectionsLabel
-    Collect into:=cllDsgnSectionsLabel, ctltype:="Label", fromparent:=cllDsgnSections, ctlheight:=15, ctlwidth:=DsgnMsgArea.Width - (siHmarginFrames * 2)
+    Collect into:=cllDsgnSectionsLabel, ctltype:="Label", fromparent:=cllDsgnSections, ctlheight:=15, ctlwidth:=DsgnMsgArea.width - (siHmarginFrames * 2)
     ProvideCollection cllDsgnSectionsTextFrame
-    Collect into:=cllDsgnSectionsTextFrame, ctltype:="Frame", fromparent:=cllDsgnSections, ctlheight:=20, ctlwidth:=DsgnMsgArea.Width - (siHmarginFrames * 2)
+    Collect into:=cllDsgnSectionsTextFrame, ctltype:="Frame", fromparent:=cllDsgnSections, ctlheight:=20, ctlwidth:=DsgnMsgArea.width - (siHmarginFrames * 2)
     ProvideCollection cllDsgnSectionsText
-    Collect into:=cllDsgnSectionsText, ctltype:="TextBox", fromparent:=cllDsgnSectionsTextFrame, ctlheight:=20, ctlwidth:=DsgnMsgArea.Width - (siHmarginFrames * 3)
+    Collect into:=cllDsgnSectionsText, ctltype:="TextBox", fromparent:=cllDsgnSectionsTextFrame, ctlheight:=20, ctlwidth:=DsgnMsgArea.width - (siHmarginFrames * 3)
     ProvideCollection cllDsgnButtonsFrame
     Collect into:=cllDsgnButtonsFrame, ctltype:="Frame", fromparent:=DsgnButtonsArea, ctlheight:=10, ctlwidth:=10
     ProvideCollection cllDsgnButtonRows
@@ -311,8 +311,8 @@ Private Property Get DsgnTextFrame(Optional ByVal section As Long) As MSForms.Fr
 Private Property Get DsgnTextFrames() As Collection:                                    Set DsgnTextFrames = cllDsgnSectionsTextFrame:                              End Property
 
 Private Property Let FormWidth(ByVal w As Single)
-    Dim siInOutDiff As Single:  siInOutDiff = Me.Width - Me.InsideWidth
-    Me.Width = Max(Me.Width, siMinFormWidth, w + siInOutDiff)
+    Dim siInOutDiff As Single:  siInOutDiff = Me.width - Me.InsideWidth
+    Me.width = Max(Me.width, siMinFormWidth, w + siInOutDiff)
 End Property
 
 Private Property Let HeightDecrementButtonsArea(ByVal b As Boolean)
@@ -357,7 +357,7 @@ Public Property Let MaxFormWidthPrcntgOfScreenSize(ByVal l As Long)
 End Property
 
 Private Property Get MaxFormWidthUsable() As Single
-    MaxFormWidthUsable = siMaxFormWidth - (Me.Width - Me.InsideWidth)
+    MaxFormWidthUsable = siMaxFormWidth - (Me.width - Me.InsideWidth)
 End Property
 
 Private Property Get MaxMsgAreaWidth() As Single:                                       MaxMsgAreaWidth = MaxFormWidthUsable - siHmarginFrames:                     End Property
@@ -495,13 +495,13 @@ Public Sub AdjustStartupPosition(ByRef pUserForm As Object, _
             If Not pOwner Is Nothing Then Set pOwner = Application
             With pUserForm
                 .StartupPosition = 0
-                .left = pOwner.left + ((pOwner.Width - .Width) / 2)
+                .left = pOwner.left + ((pOwner.width - .width) / 2)
                 .Top = pOwner.Top + ((pOwner.Height - .Height) / 2)
             End With
         Case CenterScreen           ' Assign the Left and Top properties after switching to Manual positioning.
             With pUserForm
                 .StartupPosition = Manual
-                .left = (wVirtualScreenWidth - .Width) / 2
+                .left = (wVirtualScreenWidth - .width) / 2
                 .Top = (wVirtualScreenHeight - .Height) / 2
             End With
     End Select
@@ -509,7 +509,7 @@ Public Sub AdjustStartupPosition(ByRef pUserForm As Object, _
     '~~ is not the left-most screen (which causes "pOwner.Left" to be negative). First make sure the bottom
     '~~ right fits, then check if the top-left is still on the screen (which gets priority).
     With pUserForm
-        If ((.left + .Width) > (wVirtualScreenLeft + wVirtualScreenWidth)) Then .left = ((wVirtualScreenLeft + wVirtualScreenWidth) - .Width)
+        If ((.left + .width) > (wVirtualScreenLeft + wVirtualScreenWidth)) Then .left = ((wVirtualScreenLeft + wVirtualScreenWidth) - .width)
         If ((.Top + .Height) > (wVirtualScreenTop + wVirtualScreenHeight)) Then .Top = ((wVirtualScreenTop + wVirtualScreenHeight) - .Height)
         If (.left < wVirtualScreenLeft) Then .left = wVirtualScreenLeft
         If (.Top < wVirtualScreenTop) Then .Top = wVirtualScreenTop
@@ -533,16 +533,14 @@ Public Function AppErr(ByVal lNo As Long) As Long
     AppErr = IIf(lNo < 0, AppErr = lNo - vbObjectError, AppErr = vbObjectError + lNo)
 End Function
 
-Public Property Get CONCAT() As String: CONCAT = "||":    End Property
-
 Private Sub ApplyScrollBarHorizontal(ByVal fr As MSForms.Frame, _
                                      ByVal widthnew As Single)
                                      
     Dim siScrollWidth   As Single
     
     With fr
-        siScrollWidth = .Width + 1
-        .Width = widthnew
+        siScrollWidth = .width + 1
+        .width = widthnew
         .Height = .Height + VSPACE_SCROLLBAR
     End With
     Select Case fr.ScrollBars
@@ -608,8 +606,8 @@ Private Sub CenterHorizontal(ByVal centerfr As MSForms.Frame, _
           Optional ByVal infr As MSForms.Frame = Nothing)
     
     If infr Is Nothing _
-    Then centerfr.left = (Me.InsideWidth - centerfr.Width) / 2 _
-    Else centerfr.left = (infr.Width - centerfr.Width) / 2
+    Then centerfr.left = (Me.InsideWidth - centerfr.width) / 2 _
+    Else centerfr.left = (infr.width - centerfr.width) / 2
     
 End Sub
 
@@ -744,7 +742,7 @@ Private Sub Collect(ByRef into As Variant, _
                         With ctl
                             .Visible = False
                             .Height = ctlheight
-                            .Width = ctlwidth
+                            .width = ctlwidth
                         End With
                         into.Add ctl
                     End If
@@ -756,7 +754,7 @@ Private Sub Collect(ByRef into As Variant, _
                     With ctl
                         .Visible = False
                         .Height = ctlheight
-                        .Width = ctlwidth
+                        .width = ctlwidth
                     End With
                     Select Case TypeName(into)
                         Case "Collection"
@@ -830,7 +828,7 @@ Private Sub DisplayFramesWithCaptions(Optional ByVal b As Boolean = True)
     If Not b Then
         For Each ctl In Me.Controls
             If TypeName(ctl) = "Frame" Then
-                ctl.Caption = vbNullString
+                ctl.caption = vbNullString
             End If
         Next ctl
     End If
@@ -1015,8 +1013,8 @@ Private Sub ResizeAndRepositionButtonRows()
         With frRow
             .Top = siTop
             .Height = siHeight
-            .Width = AppliedButtonRowWidth(lButtons)
-            siMaxButtonRowWidth = Max(siMaxButtonRowWidth, .Width)
+            .width = AppliedButtonRowWidth(lButtons)
+            siMaxButtonRowWidth = Max(siMaxButtonRowWidth, .width)
             siTop = .Top + .Height + siVmarginButtons
         End With
     Next v
@@ -1052,10 +1050,10 @@ Private Sub ResizeAndRepositionButtons()
                     With vButton
                         .Visible = True
                         .left = siLeft
-                        .Width = siMaxButtonWidth
+                        .width = siMaxButtonWidth
                         .Height = siMaxButtonHeight
                         .Top = siVmarginFrames
-                        siLeft = .left + .Width + siHmarginButtons
+                        siLeft = .left + .width + siHmarginButtons
                     End With
                 End If
             Next vButton
@@ -1085,19 +1083,19 @@ Private Sub ResizeAndRepositionButtonsArea()
             Select Case .ScrollBars
                 Case fmScrollBarsBoth
                     .Height = frButtons.Height + siVmarginFrames + VSPACE_SCROLLBAR
-                    .Width = frButtons.Width + (siHmarginFrames * 2) + HSPACE_SCROLLBAR ' space reserved or used
+                    .width = frButtons.width + (siHmarginFrames * 2) + HSPACE_SCROLLBAR ' space reserved or used
                     frButtons.left = 0
                 Case fmScrollBarsHorizontal
                     .Height = frButtons.Height + (siVmarginFrames + 2) + VSPACE_SCROLLBAR
                     frButtons.left = 0
                 Case fmScrollBarsNone
                     .Height = frButtons.Height + (siVmarginFrames * 2)
-                    .Width = frButtons.Width + (siHmarginFrames * 2)
+                    .width = frButtons.width + (siHmarginFrames * 2)
                 Case fmScrollBarsVertical
-                    .Width = frButtons.Width + (siHmarginFrames * 2) + HSPACE_SCROLLBAR ' space reserved or used
+                    .width = frButtons.width + (siHmarginFrames * 2) + HSPACE_SCROLLBAR ' space reserved or used
             End Select
             
-            FormWidth = (.Width + siHmarginFrames * 2)
+            FormWidth = (.width + siHmarginFrames * 2)
             .left = siHmarginFrames
         End With
         If frArea.ScrollBars = fmScrollBarsNone _
@@ -1123,7 +1121,7 @@ Private Sub ResizeAndRepositionButtonsFrame()
         With DsgnButtonsFrame
             .Visible = True
             .Top = siVmarginFrames
-            .Width = ButtonsFrameWidth
+            .width = ButtonsFrameWidth
             .Height = ButtonsFrameHeight
             If bVscrollbarButtonsArea _
             Then .left = siHmarginFrames _
@@ -1254,7 +1252,7 @@ Public Sub Setup()
     '~~ returns their individual widths which determines the minimum required message form width
     '~~ This setup ends width the final message form width and all elements adjusted to it.
     '~~ ----------------------------------------------------------------------------------------
-    Me.Width = siMinFormWidth ' Setup starts with the minimum message form width
+    Me.width = siMinFormWidth ' Setup starts with the minimum message form width
     Me.StartupPosition = 2
     '~~ Setup of those elements which determine the final form width
     If Not bDoneTitle Then SetupTitle
@@ -1271,7 +1269,7 @@ Public Sub Setup()
         
     '~~ At this point the form width is final - possibly with its specified minimum width.
     '~~ The message area width is adjusted to the form's width
-    DsgnMsgArea.Width = Me.InsideWidth - siHmarginFrames
+    DsgnMsgArea.width = Me.InsideWidth - siHmarginFrames
     
     '~~ Setup proportional spaced message sections (use the given width)
     SetupMsgSectionsPropSpaced
@@ -1321,11 +1319,11 @@ Private Sub SetupButton(ByVal buttonrow As Long, _
         .Visible = True
         .AutoSize = True
         .WordWrap = False ' the longest line determines the buttonindex's width
-        .Caption = buttoncaption
+        .caption = buttoncaption
         .AutoSize = False
         .Height = .Height + 1 ' safety margin to ensure proper multilin caption display
         siMaxButtonHeight = Max(siMaxButtonHeight, .Height)
-        siMaxButtonWidth = Max(siMaxButtonWidth, .Width, siMinButtonWidth)
+        siMaxButtonWidth = Max(siMaxButtonWidth, .width, siMinButtonWidth)
     End With
     dctApplButtons.Add cmb, buttonrow
     AppliedButtonRetVal(cmb) = buttonreturnvalue ' keep record of the setup buttonindex's reply value
@@ -1369,11 +1367,11 @@ Private Sub SetupButtons(ByVal vButtons As Variant)
             
     ResizeAndReposition
     
-    If frArea.Width > MaxButtonsAreaWidth Then
+    If frArea.width > MaxButtonsAreaWidth Then
         Debug_Sizes "Buttons area width exceeds maximum width specified:"
         ApplyScrollBarHorizontal fr:=frArea, widthnew:=MaxButtonsAreaWidth
         bHscrollbarButtonsArea = True
-        Me.Width = siMaxFormWidth
+        Me.width = siMaxFormWidth
         frArea.Height = frArea.Height + VSPACE_SCROLLBAR
         CenterHorizontal frArea
         Debug_Sizes "Buttons area width decremented:"
@@ -1539,10 +1537,10 @@ Private Sub SetupMsgSection(ByVal section As Long)
     sText = Me.MsgText(section)
     bMonospaced = Me.MsgMonoSpaced(section)
     
-    frSection.Width = frArea.Width
-    la.Width = frSection.Width
-    frText.Width = frSection.Width
-    tbText.Width = frSection.Width
+    frSection.width = frArea.width
+    la.width = frSection.width
+    frText.width = frSection.width
+    tbText.width = frSection.width
         
     If sText <> vbNullString Then
     
@@ -1554,8 +1552,8 @@ Private Sub SetupMsgSection(ByVal section As Long)
         If sLabel <> vbNullString Then
             Set la = DsgnSectionLabel(section)
             With la
-                .Width = Me.InsideWidth - (siHmarginFrames * 2)
-                .Caption = sLabel
+                .width = Me.InsideWidth - (siHmarginFrames * 2)
+                .caption = sLabel
             End With
             frText.Top = la.Top + la.Height
             AppliedControl = la
@@ -1606,25 +1604,25 @@ Private Sub SetupMsgSectionMonoSpaced(ByVal section As Long, _
         .SelStart = 0
         .left = siHmarginFrames
         .Height = .Height + 2 ' ensure text is not squeeced
-        frText.Width = .Width + (siHmarginFrames * 2)
+        frText.width = .width + (siHmarginFrames * 2)
         frText.left = siHmarginFrames
                    
-        frSection.Width = frText.Width + (siHmarginFrames * 2)
+        frSection.width = frText.width + (siHmarginFrames * 2)
         
         '~~ The area width considers that there might be a need to apply a vertival scroll bar
         '~~ When the space finally isn't required, the sections are centered within the area
-        frArea.Width = Max(frArea.Width, frSection.left + frSection.Width + siHmarginFrames + HSPACE_SCROLLBAR)
-        FormWidth = frArea.Width + siHmarginFrames + 7
+        frArea.width = Max(frArea.width, frSection.left + frSection.width + siHmarginFrames + HSPACE_SCROLLBAR)
+        FormWidth = frArea.width + siHmarginFrames + 7
         
-        If .Width > MaxTextBoxWidth Then
-            frSection.Width = MaxSectionWidth
-            frArea.Width = MaxMsgAreaWidth
-            Me.Width = siMaxFormWidth
+        If .width > MaxTextBoxWidth Then
+            frSection.width = MaxSectionWidth
+            frArea.width = MaxMsgAreaWidth
+            Me.width = siMaxFormWidth
             ApplyScrollBarHorizontal fr:=frText, widthnew:=MaxTextBoxFrameWidth
         End If
         
     End With
-    siMaxSectionWidth = Max(siMaxSectionWidth, frSection.Width)
+    siMaxSectionWidth = Max(siMaxSectionWidth, frSection.width)
     
     '~~ Keep record of which controls had been applied
     AppliedControl = frArea
@@ -1662,12 +1660,12 @@ Private Sub SetupMsgSectionPropSpaced(ByVal section As Long, _
         
     '~~ For proportional spaced message sections the width is determined by the area width
     With frSection
-        .Width = frArea.Width - siHmarginFrames - HSPACE_SCROLLBAR
+        .width = frArea.width - siHmarginFrames - HSPACE_SCROLLBAR
         .left = HSPACE_LEFT
-        siMaxSectionWidth = Max(siMaxSectionWidth, .Width)
+        siMaxSectionWidth = Max(siMaxSectionWidth, .width)
     End With
     With frText
-        .Width = frSection.Width - siHmarginFrames
+        .width = frSection.width - siHmarginFrames
         .left = HSPACE_LEFT
     End With
     
@@ -1676,11 +1674,11 @@ Private Sub SetupMsgSectionPropSpaced(ByVal section As Long, _
         .MultiLine = True
         .AutoSize = True
         .WordWrap = True
-        .Width = frText.Width - siHmarginFrames
+        .width = frText.width - siHmarginFrames
         .Value = text
         .SelStart = 0
         .left = HSPACE_LEFT
-        frText.Width = .left + .Width + siHmarginFrames
+        frText.width = .left + .width + siHmarginFrames
     End With
     
     '~~ Keep record of which controls had been applied
@@ -1745,8 +1743,8 @@ Private Sub SetupTitle()
                     .Font.Size = sTitleFontSize
                 End If
                 .AutoSize = True
-                .Caption = " " & sTitle    ' some left margin
-                siTitleWidth = .Width + HSPACE_RIGHT
+                .caption = " " & sTitle    ' some left margin
+                siTitleWidth = .width + HSPACE_RIGHT
             End With
             AppliedControl = .laMsgTitle
             .laMsgTitleSpaceBottom.Visible = True
@@ -1760,14 +1758,14 @@ Private Sub SetupTitle()
                 End With
                 .Visible = False
                 .AutoSize = True
-                .Caption = " " & sTitle    ' some left margin
-                siTitleWidth = .Width + 35
+                .caption = " " & sTitle    ' some left margin
+                siTitleWidth = .width + 30
             End With
-            .Caption = " " & sTitle    ' some left margin
+            .caption = " " & sTitle    ' some left margin
             .laMsgTitleSpaceBottom.Visible = False
         End If
                 
-        .laMsgTitleSpaceBottom.Width = siTitleWidth
+        .laMsgTitleSpaceBottom.width = siTitleWidth
         FormWidth = siTitleWidth
     End With
     bDoneTitle = True

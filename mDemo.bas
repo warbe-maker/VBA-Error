@@ -440,10 +440,10 @@ Private Sub Demo_6_Execution_Trace_DemoProc_6b()
     Demo_6_Execution_Trace_DemoProc_6c
     
     Dim i As Long: Dim j As Long: j = 10000000
-    BoT PROC & " empty loop 1 to " & j
+    BoC PROC & " empty loop 1 to " & j
     For i = 1 To j
     Next i
-    EoT PROC & " empty loop 1 to " & j ' !!! the string must match with the BoT statement !!!
+    EoC PROC & " empty loop 1 to " & j ' !!! the string must match with the BoC statement !!!
     
     EoP ErrSrc(PROC)
     Exit Sub
