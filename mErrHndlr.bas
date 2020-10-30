@@ -131,6 +131,7 @@ Public Sub BoP(ByVal s As String)
 ' ----------------------------------
     
 #If ExecTrace Then
+    If StackIsEmpty Then mTrace.Initialize
     TrcProcBegin s    ' start of the procedure's execution trace
 #End If
     StackPush s
