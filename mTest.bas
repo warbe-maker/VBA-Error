@@ -172,6 +172,7 @@ Public Sub Test_2_Application_Error()
     Const PROC = "Test_2_Application_Error"
     On Error GoTo on_error
     
+'    mTrace.DisplayedInfo = Detailed
     BoP ErrSrc(PROC)
     Test_2_Application_Error_TestProc_2a
 
@@ -259,6 +260,7 @@ Public Sub Test_3_VB_Runtime_Error()
     Const PROC = "Test_3_VB_Runtime_Error"
     On Error GoTo on_error
     
+    mTrace.DisplayedInfo = Detailed
     BoP ErrSrc(PROC)
     Test_3_VB_Runtime_Error_TestProc_3a
     EoP ErrSrc(PROC)
@@ -398,6 +400,8 @@ Public Sub Test_6_Execution_Trace()
     
     Const PROC = "Test_6_Execution_Trace"
     On Error GoTo on_error
+    mTrace.DisplayedInfo = Compact
+'    mTrace.DisplayedInfo = Detailed
     
     BoP ErrSrc(PROC)
     Test_6_Execution_Trace_TestProc_6a
@@ -429,12 +433,15 @@ Private Sub Test_6_Execution_Trace_TestProc_6b()
     
     Const PROC = "Test_6_Execution_Trace_TestProc_6b"
     On Error GoTo on_error
-    
+
     BoP ErrSrc(PROC)
+    
     Dim i As Long
+    Dim s As String
     For i = 1 To 10000
         s = Application.Path ' to produce some execution time
     Next i
+    
     EoP ErrSrc(PROC)
     Exit Sub
 
