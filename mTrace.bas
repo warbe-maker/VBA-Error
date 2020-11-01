@@ -225,7 +225,6 @@ End Property
 
 Private Property Let NtryTcksOvrhdNtry(Optional ByRef entry As Collection, ByRef cy As Currency)
     entry.Add cy, "TON"
-'    Debug.Print Format(cy, "0000.00000") & " = Ticks oerhead caused by entry for " & NtryDrctv(entry) & " " & NtryItem(entry)
 End Property
 
 Private Property Get NtryTcksOvrhdItm(Optional ByRef entry As Collection) As Currency
@@ -327,19 +326,19 @@ Private Function DsplyAbout() As String
     cyTcksOvrhdItm = DsplyCmptTcksOvrhdItm
     dblOvrhdPcntg = (dblTtlScsOvrhdNtry / NtryScsElpsd(NtryLst)) * 100
     
-    DsplyAbout = "The trace itself, i.e. the collection of the begin and end data for each traced item " & _
+    DsplyAbout = "> The trace itself, i.e. the collection of the begin and end data for each traced item " & _
                  "(procedure or code) caused a performance loss of " & Format(dblTtlScsOvrhdNtry, sFrmtScsOvrhdItm) & _
                  " seconds (=" & Format(dblOvrhdPcntg, "0.00") & "%). " _
                & "For a best possible execution time precision the overhead per traced item " _
                & "has been deducted from each of the " & cllTrace.Count / 2 & " traced item's execution time." _
       & vbLf _
-      & "The precision (decimals) for the displayed seconds defaults to 0,000000 (6 decimals) which may " _
+      & "> The precision (decimals) for the displayed seconds defaults to 0,000000 (6 decimals) which may " _
       & "be changed via the property ""DisplayedSecsPrecision""." _
       & vbLf _
-      & "The displayed execution time varies from execution to execution and can only be estimated " _
+      & "> The displayed execution time varies from execution to execution and can only be estimated " _
       & "as an average of many executions." _
       & vbLf _
-      & "When an error had been displayed the traced execution time includes the time " _
+      & "> When an error had been displayed the traced execution time includes the time " _
       & "of the user reaction and thus does not provide a meaningful result."
 
 End Function
@@ -416,14 +415,14 @@ Private Function DsplyHdr( _
             sHeader2Ticks = _
                     DsplyHdrCntrAbv("System", sFrmtTcksSys) _
             & " " & DsplyHdrCntrAbv("Elapsed", sFrmtTcksElpsd) _
-            & " " & DsplyHdrCntrAbv("Grss", sFrmtTcksGrss) _
+            & " " & DsplyHdrCntrAbv("Gross", sFrmtTcksGrss) _
             & " " & DsplyHdrCntrAbv("Oh Entry", sFrmtTcksOvrhdItm) _
             & " " & DsplyHdrCntrAbv("Oh Item", sFrmtTcksOvrhdItm) _
             & " " & DsplyHdrCntrAbv("Net", sFrmtTcksNt)
             
             sHeader2Secs = _
                     DsplyHdrCntrAbv("Elapsed", sFrmtScsElpsd) _
-            & " " & DsplyHdrCntrAbv("Grss", sFrmtScsGrss) _
+            & " " & DsplyHdrCntrAbv("Gross", sFrmtScsGrss) _
             & " " & DsplyHdrCntrAbv("Oh Entry", sFrmtScsOvrhdItm) _
             & " " & DsplyHdrCntrAbv("Oh Item", sFrmtScsOvrhdItm) _
             & " " & DsplyHdrCntrAbv("Net", sFrmtScsNt)
@@ -514,12 +513,10 @@ Private Sub DsplyCmptScs()
     For Each v In cllTrace
         Set cll = v
         NtryScsOvrhdNtry(cll) = CDbl(NtryTcksOvrhdNtry(cll)) / CDbl(SysFrequency)
-        Debug.Print "Overhead secs entry: " & NtryTcksOvrhdNtry(cll) & " / " & SysFrequency & " = " & NtryScsOvrhdNtry(cll)
+        NtryScsElpsd(cll) = CDec(NtryTcksElpsd(cll)) / CDec(SysFrequency)
         If Not NtryIsBegin(cll) Then
-            NtryScsElpsd(cll) = CDec(NtryTcksElpsd(cll)) / CDec(SysFrequency)
             NtryScsGrss(cll) = CDec(NtryTcksGrss(cll)) / CDec(SysFrequency)
             NtryScsOvrhdItm(cll) = CDec(NtryTcksOvrhdItm(cll)) / CDec(SysFrequency)
-            Debug.Print "Overhead secs item: " & NtryTcksOvrhdItm(cll) & " / " & SysFrequency & " = " & NtryScsOvrhdItm(cll)
             NtryScsNt(cll) = CDec(NtryTcksNt(cll)) / CDec(SysFrequency)
         End If
     Next v
@@ -673,7 +670,6 @@ Private Function DsplyNtryAllCnsstnt(ByRef dct As Dictionary) As Boolean
                             '~~ Calculate the executesd seconds for the end entry
                             NtryTcksGrss(cllEndEntry) = NtryTcksElpsd(cllEndEntry) - NtryTcksElpsd(cllBeginEntry)
                             NtryTcksOvrhdItm(cllEndEntry) = NtryTcksOvrhdNtry(cllBeginEntry) + NtryTcksOvrhdNtry(cllEndEntry)
-                            Debug.Print "Overhead " & NtryItem(cllEndEntry) & ": Total=" & NtryTcksOvrhdItm(cllEndEntry) & ", Begin=" & NtryTcksOvrhdNtry(cllBeginEntry) & ", End=" & NtryTcksOvrhdNtry(cllEndEntry)
                             GoTo next_begin_entry
                         End If
                     End If
@@ -694,7 +690,6 @@ next_begin_entry:
     For Each v In cllTrace
         If NtryIsEnd(v, cllEndEntry) Then
             If NtryTcksGrss(cllEndEntry) = 0 Then
-                Debug.Print NtryItem(cllBeginEntry)
                 '~~ No corresponding begin entry found
                 Select Case NtryDrctv(cllEndEntry)
                     Case DIR_END_PROC: sComment = "No corresponding Begin of Procedure (BoP) code line in:  "
@@ -917,10 +912,7 @@ Public Sub TrcBgnPrc(ByVal s As String)
 End Sub
 
 Public Sub TrcEndPrc(ByVal s As String, _
-             Optional ByVal errinfo As String = vbNullString)
+            Optional ByVal errinfo As String = vbNullString)
     TrcEnd s, DIR_END_PROC, errinfo
-    If errinfo <> vbNullString Then
-        Debug.Print errinfo
-    End If
 End Sub
 
