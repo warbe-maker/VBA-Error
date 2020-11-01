@@ -23,20 +23,18 @@ Option Private Module
 '                     of the Alternative VBA MsgBox which provideds an improved readability.
 '
 ' Usage:   Private/Public Sub/Function any()
-'             Const PROC = "any"  ' procedure's name as error source
+'              Const PROC = "any"  ' procedure's name as error source
 '
-'             On Error GoTo on_error
-'             BoP ErrSrc(PROC)   ' puts the procedure on the call stack
+'              On Error GoTo eh
+'              BoP ErrSrc(PROC)   ' puts the procedure on the call stack
 '
-'             ' <any code>
+'              ' <any code>
 '
-'          exit_proc:
-'                               ' <any "finally" code like re-protecting an unprotected sheet for instance>
+'          xt: ' <any "finally" code like re-protecting an unprotected sheet for instance>
 '                               EoP ErrSrc(PROC)   ' takes the procedure off from the call stack
 '                               Exit Sub/Function
 '
-'          on_error:
-'             mErrHndlr.ErrHndlr Err.Number, ErrSrc(PROC), Err.Description, Erl
+'           eh: mErrHndlr.ErrHndlr Err.Number, ErrSrc(PROC), Err.Description, Erl
 '           End ....
 '
 ' Note: When the call stack is not maintained the ErrHndlr will display the message
@@ -132,7 +130,7 @@ Public Sub BoP(ByVal s As String)
     
 #If ExecTrace Then
     If StackIsEmpty Then mTrace.Initialize
-    TrcProcBegin s    ' start of the procedure's execution trace
+    mTrace.TrcBgnPrc s    ' start of the procedure's execution trace
 #End If
     StackPush s
     
@@ -143,7 +141,7 @@ Public Sub BoC(ByVal s As String)
 ' Begin of Trace for code lines.
 ' -------------------------------
 #If ExecTrace Then
-    TrcCodeBegin s
+    mTrace.TrcBgnCd s
 #End If
 End Sub
 
@@ -164,7 +162,7 @@ Public Sub EoC(ByVal s As String)
 ' End of Trace for code lines.
 ' -------------------------------
 #If ExecTrace Then
-    TrcCodeEnd s
+    mTrace.TrcEndCd s
 #End If
 End Sub
 
@@ -256,7 +254,7 @@ Private Sub ErrHndlrDisplayTrace()
 ' Display the trace in the fMsg UserForm
 ' --------------------------------------
 #If ExecTrace Then
-    TrcDsply
+    mTrace.Dsply
 #End If
 End Sub
 
@@ -599,7 +597,7 @@ Public Function StackPop( _
 ' provided and is not on the top of the stack pop is suspended.
 ' ------------------------------------------------------------------
     
-    On Error GoTo on_error
+    On Error GoTo eh
     Const PROC = "StackPop"
 
     If Not StackIsEmpty Then
@@ -607,18 +605,16 @@ Public Function StackPop( _
             StackPop = dctStack.Items()(dctStack.Count - 1) ' Return the poped item
             dctStack.Remove dctStack.Count                  ' Remove item s from stack
 #If ExecTrace Then
-            TrcProcEnd s, errinfo
+            mTrace.TrcEndPrc s, errinfo
 #End If
         ElseIf s = vbNullString Then
             dctStack.Remove dctStack.Count                  ' Unwind! Remove item s from stack
         End If
     End If
     
-exit_proc:
-    Exit Function
+xt: Exit Function
 
-on_error:
-    MsgBox err.Description, vbOKOnly, "Error in " & ErrSrc(PROC)
+eh: MsgBox err.Description, vbOKOnly, "Error in " & ErrSrc(PROC)
 End Function
 
 Private Sub StackPush(ByVal s As String)
