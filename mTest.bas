@@ -36,25 +36,23 @@ Public Sub Regression_Test()
 '    "Stop: Resume" when the button is clicked.
 ' ------------------------------------------------------------------------------
     
-    On Error GoTo on_error
+    On Error GoTo eh
     Const PROC = "Regression_Test"
     bRegressionTest = True
     
-    BoP ErrSrc(PROC)
+    mErH.BoP ErrSrc(PROC)
 '    Test_1_BoP_EoP
     Test_2_Application_Error
     Test_3_VB_Runtime_Error
 #If ExecTrace = 0 Then
     Test_6_Execution_Trace
 #End If
-    EoP ErrSrc(PROC)
 
-exit_proc:
+xt: mErH.EoP ErrSrc(PROC)
     bRegressionTest = False
     Exit Sub
     
-on_error:
-    mErrHndlr.ErrHndlr errnumber:=err.Number, errsource:=ErrSrc(PROC), errdscrptn:=err.Description, errline:=Erl
+eh: mErH.ErrMsg errnumber:=err.Number, errsource:=ErrSrc(PROC), errdscrptn:=err.Description, errline:=Erl
 End Sub
 
 Public Sub Test_1_BoP_EoP()
@@ -64,15 +62,13 @@ Public Sub Test_1_BoP_EoP()
 ' ---------------------------------------------------
     
     Const PROC = "Test_1_BoP_EoP"
-    BoP ErrSrc(PROC)
+    mErH.BoP ErrSrc(PROC)
     Test_1_BoP_EoP_TestProc_1a_missing_BoP
     
-exit_proc:
-    EoP ErrSrc(PROC)
+xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
-on_error:
-    If mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
+eh: If mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_1_BoP_EoP_TestProc_1a_missing_BoP()
@@ -84,53 +80,51 @@ Private Sub Test_1_BoP_EoP_TestProc_1a_missing_BoP()
 
     Const PROC = "Test_1_BoP_EoP_TestProc_1a_missing_BoP"
     
-'    BoP ErrSrc(PROC)
+'    mErH.BoP ErrSrc(PROC)
     Test_1_BoP_EoP_TestProc_1b_paired_BoP_EoP
     Test_1_BoP_EoP_TestProc_1d_missing_EoP
-    EoP ErrSrc(PROC)
+    mErH.EoP ErrSrc(PROC)
     
     Exit Sub
 
-on_error:
-    If mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
+eh:
+    If mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_1_BoP_EoP_TestProc_1b_paired_BoP_EoP()
     
     Const PROC = "Test_1_BoP_EoP_TestProc_1b_paired_BoP_EoP"
-    On Error GoTo on_error
+    On Error GoTo eh
     
-    BoP ErrSrc(PROC)
+    mErH.BoP ErrSrc(PROC)
     Test_1_BoP_EoP_TestProc_1c_missing_EoC
-    EoP ErrSrc(PROC)
+    mErH.EoP ErrSrc(PROC)
     Exit Sub
     
-on_error:
-    If mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
+eh:
+    If mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_1_BoP_EoP_TestProc_1c_missing_EoC()
     
     Const PROC = "Test_1_BoP_EoP_TestProc_1c_missing_EoC"
-    On Error GoTo on_error
+    On Error GoTo eh
     
-    BoP ErrSrc(PROC)
+    mErH.BoP ErrSrc(PROC)
     BoC ErrSrc(PROC) & " trace of some code lines" ' missing EoC statement
 
-exit_proc:
-    EoP ErrSrc(PROC)
+xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
     
-on_error:
-    If mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
+eh: If mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_1_BoP_EoP_TestProc_1e_BoC_EoC()
     
     Const PROC = "Test_1_BoP_EoP_TestProc_1e_BoC_EoC"
-    On Error GoTo on_error
+    On Error GoTo eh
     
-    BoP ErrSrc(PROC)
+    mErH.BoP ErrSrc(PROC)
         
     Dim i As Long: Dim j As Long: j = 10000000
     BoC PROC & " code trace empty loop 1 to " & j
@@ -138,25 +132,25 @@ Private Sub Test_1_BoP_EoP_TestProc_1e_BoC_EoC()
     Next i
     EoC PROC & " code trace empty loop 1 to " & j ' !!! the string must match with the BoC statement !!!
     
-    EoP ErrSrc(PROC)
+    mErH.EoP ErrSrc(PROC)
     Exit Sub
 
-on_error:
-    If mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
+eh:
+    If mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_1_BoP_EoP_TestProc_1d_missing_EoP()
 
     Const PROC = "Test_1_BoP_EoP_TestProc_1d_missing_EoP"
-    On Error GoTo on_error
+    On Error GoTo eh
     
-    BoP ErrSrc(PROC)
+    mErH.BoP ErrSrc(PROC)
     Test_1_BoP_EoP_TestProc_1e_BoC_EoC
     
     Exit Sub
 
-on_error:
-    If mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
+eh:
+    If mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Public Sub Test_2_Application_Error()
@@ -170,18 +164,16 @@ Public Sub Test_2_Application_Error()
 ' ------------------------------------------------------
     
     Const PROC = "Test_2_Application_Error"
-    On Error GoTo on_error
+    On Error GoTo eh
     
-'    mTrace.DisplayedInfo = Detailed
-    BoP ErrSrc(PROC)
+'    mTrc.DisplayedInfo = Detailed
+    mErH.BoP ErrSrc(PROC)
     Test_2_Application_Error_TestProc_2a
 
-exit_proc:
-    EoP ErrSrc(PROC)
+xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
-on_error:
-    Select Case mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), err.Description, Erl)
+eh: Select Case mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl)
         Case ResumeError: Stop: Resume
     End Select
 End Sub
@@ -189,29 +181,29 @@ End Sub
 Private Sub Test_2_Application_Error_TestProc_2a()
 
     Const PROC = "Test_2_Application_Error_TestProc_2a"
-    On Error GoTo on_error
+    On Error GoTo eh
     
-    BoP ErrSrc(PROC)
+    mErH.BoP ErrSrc(PROC)
     Test_2_Application_Error_TestProc_2b
-    EoP ErrSrc(PROC)
+    mErH.EoP ErrSrc(PROC)
     Exit Sub
 
-on_error:
-    If mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
+eh:
+    If mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_2_Application_Error_TestProc_2b()
     
     Const PROC = "Test_2_Application_Error_TestProc_2b"
-    On Error GoTo on_error
+    On Error GoTo eh
     
-    BoP ErrSrc(PROC)
+    mErH.BoP ErrSrc(PROC)
     Test_2_Application_Error_TestProc_2c
-    EoP ErrSrc(PROC)
+    mErH.EoP ErrSrc(PROC)
     Exit Sub
 
-on_error:
-    If mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
+eh:
+    If mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_2_Application_Error_TestProc_2c()
@@ -220,28 +212,26 @@ Private Sub Test_2_Application_Error_TestProc_2c()
 ' demonstrate how it effects the error message.
 ' ------------------------------------------------
     
-    On Error GoTo on_error
+    On Error GoTo eh
     Const PROC = "Test_2_Application_Error_TestProc_2c"
     Dim sErrDscrptn As String
 
-    BoP ErrSrc(PROC)
+    mErH.BoP ErrSrc(PROC)
 181 err.Raise AppErr(1), ErrSrc(PROC), _
         "This is a programmed i.e. an ""Application Error""!" & CONCAT & _
         "The function AppErr() has been used to turn the positive into a negative number by adding the VB constant 'vbObjectError' to assure an error number which does not conflict with a VB Runtime error. " & _
-        "The ErrHndlr identified the negative number as an ""Application Error"" and converted it back to the orginal positive number by means of the AppErr() function." & vbLf & _
+        "The ErrMsg identified the negative number as an ""Application Error"" and converted it back to the orginal positive number by means of the AppErr() function." & vbLf & _
         vbLf & _
         "Also note that this information is part of the raised error message but concatenated with two vertical bars indicating that it is an additional information regarding this error."
 
-exit_proc:
-    EoP ErrSrc(PROC)
+xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
-on_error:
-    sErrDscrptn = RegressionTestInfo
-    Select Case mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), sErrDscrptn, Erl)
+eh: sErrDscrptn = RegressionTestInfo
+    Select Case mErH.ErrMsg(err.Number, ErrSrc(PROC), sErrDscrptn, Erl)
         Case ResumeError:       Stop: Resume
         Case ResumeNext:        Resume Next
-        Case ExitAndContinue:   GoTo exit_proc
+        Case ExitAndContinue:   GoTo xt
     End Select
 End Sub
 
@@ -258,64 +248,62 @@ Public Sub Test_3_VB_Runtime_Error()
 ' -----------------------------------------------
     
     Const PROC = "Test_3_VB_Runtime_Error"
-    On Error GoTo on_error
+    On Error GoTo eh
     
-    mTrace.DisplayedInfo = Detailed
-    BoP ErrSrc(PROC)
+    mTrc.DisplayedInfo = Detailed
+    mErH.BoP ErrSrc(PROC)
     Test_3_VB_Runtime_Error_TestProc_3a
-    EoP ErrSrc(PROC)
 
-exit_proc:
+xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
-on_error:
-    Select Case mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), err.Description, Erl)
+eh: Select Case mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl)
         Case ResumeError: Stop: Resume
         Case ResumeNext: Resume Next
-        Case ExitAndContinue: GoTo exit_proc
+        Case ExitAndContinue: GoTo xt
     End Select
 End Sub
 
 Private Sub Test_3_VB_Runtime_Error_TestProc_3a()
 
     Const PROC = "Test_3_VB_Runtime_Error_TestProc_3a"
-    On Error GoTo on_error
+    On Error GoTo eh
 
-    BoP ErrSrc(PROC)
+    mErH.BoP ErrSrc(PROC)
     Test_3_VB_Runtime_Error_TestProc_3b
-    EoP ErrSrc(PROC)
+    mErH.EoP ErrSrc(PROC)
     Exit Sub
 
-on_error:
-    If mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
+eh:
+    If mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_3_VB_Runtime_Error_TestProc_3b()
     
     Const PROC = "Test_3_VB_Runtime_Error_TestProc_3b"
-    On Error GoTo on_error
+    On Error GoTo eh
 
-    BoP ErrSrc(PROC)
+    mErH.BoP ErrSrc(PROC)
     Test_3_VB_Runtime_Error_TestProc_3c
-    EoP ErrSrc(PROC)
+    mErH.EoP ErrSrc(PROC)
     Exit Sub
 
-on_error:
-    If mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
+eh:
+    If mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_3_VB_Runtime_Error_TestProc_3c()
 
     Const PROC = "Test_3_VB_Runtime_Error_TestProc_3c"
-    On Error GoTo on_error
+    On Error GoTo eh
     
-    BoP ErrSrc(PROC)
+    mErH.BoP ErrSrc(PROC)
     Test_3_VB_Runtime_Error_TestProc_3d
-    EoP ErrSrc(PROC)
+    mErH.EoP ErrSrc(PROC)
     Exit Sub
 
-on_error:
-    If mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
+eh:
+    If mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_3_VB_Runtime_Error_TestProc_3d()
@@ -325,55 +313,53 @@ Private Sub Test_3_VB_Runtime_Error_TestProc_3d()
 ' message.
 ' ------------------------------------------------
     
-    On Error GoTo on_error
+    On Error GoTo eh
     Const PROC = "Test_3_VB_Runtime_Error_TestProc_3d"
     Dim sErrDscrptn As String
-    BoP ErrSrc(PROC)
+    mErH.BoP ErrSrc(PROC)
     Dim l As Long
     l = 7 / 0
 
-exit_proc:
-    EoP ErrSrc(PROC)
+xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
-on_error:
-    sErrDscrptn = RegressionTestInfo
-    Select Case mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), sErrDscrptn, Erl)
+eh: sErrDscrptn = RegressionTestInfo
+    Select Case mErH.ErrMsg(err.Number, ErrSrc(PROC), sErrDscrptn, Erl)
         Case ResumeError:       Stop: Resume
         Case ResumeNext:        Resume Next
-        Case ExitAndContinue:   GoTo exit_proc
+        Case ExitAndContinue:   GoTo xt
     End Select
 End Sub
 
-Public Sub Test_4_DebugAndTest_with_ErrHndlr()
+Public Sub Test_4_DebugAndTest_with_ErrMsg()
 ' -----------------------------------------
 ' This test the Conditional Compile
 ' Argument DebugAndTest = 1 is required.
 ' -----------------------------------------
-    On Error GoTo on_error
-    Const PROC = "Test_4_DebugAndTest_with_ErrHndlr"
+    On Error GoTo eh
+    Const PROC = "Test_4_DebugAndTest_with_ErrMsg"
       
-    BoP ErrSrc(PROC)
-    Test_4_DebugAndTest_with_ErrHndlr_TestProc_5a
-    EoP ErrSrc(PROC)
+    mErH.BoP ErrSrc(PROC)
+    Test_4_DebugAndTest_with_ErrMsg_TestProc_5a
+    mErH.EoP ErrSrc(PROC)
     Exit Sub
 
-on_error:
-    If mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
+eh:
+    If mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
-Private Sub Test_4_DebugAndTest_with_ErrHndlr_TestProc_5a()
+Private Sub Test_4_DebugAndTest_with_ErrMsg_TestProc_5a()
 
-    Const PROC = "Test_5_DebugAndTest_with_ErrHndlr_TestProc_5a"
-    On Error GoTo on_error
+    Const PROC = "Test_5_DebugAndTest_with_ErrMsg_TestProc_5a"
+    On Error GoTo eh
        
-    BoP ErrSrc(PROC)
+    mErH.BoP ErrSrc(PROC)
 15  Debug.Print ThisWorkbook.Named
-    EoP ErrSrc(PROC)
+    mErH.EoP ErrSrc(PROC)
     Exit Sub
     
-on_error:
-    Select Case mErrHndlr.ErrHndlr(errnumber:=err.Number, errsource:=ErrSrc(PROC), errdscrptn:=err.Description, errline:=Erl)
+eh:
+    Select Case mErH.ErrMsg(errnumber:=err.Number, errsource:=ErrSrc(PROC), errdscrptn:=err.Description, errline:=Erl)
         Case ResumeError: Stop: Resume ' Continue with F8 to end up at the code line which caused the error
     End Select
 End Sub
@@ -384,10 +370,10 @@ Public Sub Test_5_No_Exit_Statement()
 ' -----------------------------------
 
     Const PROC = "Test_6_No_Exit_Statement"
-    On Error GoTo on_error
+    On Error GoTo eh
     
-on_error:
-    If mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
+eh:
+    If mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Public Sub Test_6_Execution_Trace()
@@ -399,42 +385,42 @@ Public Sub Test_6_Execution_Trace()
 ' ------------------------------------------------------
     
     Const PROC = "Test_6_Execution_Trace"
-    On Error GoTo on_error
-    mTrace.DisplayedInfo = Compact
-'    mTrace.DisplayedInfo = Detailed
+    On Error GoTo eh
+'    mTrc.DisplayedInfo = Compact
+    mTrc.DisplayedInfo = Detailed
     
-    BoP ErrSrc(PROC)
+    mTrc.BoP ErrSrc(PROC)
     Test_6_Execution_Trace_TestProc_6a
-    EoP ErrSrc(PROC)
+    mTrc.EoP ErrSrc(PROC)
     Exit Sub
 
-on_error:
-    If mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
+eh:
+    If mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_6_Execution_Trace_TestProc_6a()
 
-    On Error GoTo on_error
+    On Error GoTo eh
     Const PROC = "Test_6_Execution_Trace_TestProc_6a"
     
-    BoP ErrSrc(PROC)
-    BoC ErrSrc(PROC) & " call of 6b and 6c"
+    mTrc.BoP ErrSrc(PROC)
+    mTrc.BoC ErrSrc(PROC) & " call of 6b and 6c"
     Test_6_Execution_Trace_TestProc_6b
     Test_6_Execution_Trace_TestProc_6c
-    EoC ErrSrc(PROC) & " call of 6b and 6c"
-    EoP ErrSrc(PROC)
+    mTrc.EoC ErrSrc(PROC) & " call of 6b and 6c"
+    mTrc.EoP ErrSrc(PROC)
     Exit Sub
 
-on_error:
-    If mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
+eh:
+    If mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_6_Execution_Trace_TestProc_6b()
     
     Const PROC = "Test_6_Execution_Trace_TestProc_6b"
-    On Error GoTo on_error
+    On Error GoTo eh
 
-    BoP ErrSrc(PROC)
+    mTrc.BoP ErrSrc(PROC)
     
     Dim i As Long
     Dim s As String
@@ -442,25 +428,23 @@ Private Sub Test_6_Execution_Trace_TestProc_6b()
         s = Application.Path ' to produce some execution time
     Next i
     
-    EoP ErrSrc(PROC)
+    mTrc.EoP ErrSrc(PROC)
     Exit Sub
 
-on_error:
-    If mErrHndlr.ErrHndlr(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
+eh:
+    If mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_6_Execution_Trace_TestProc_6c()
     
     Const PROC = "Test_6_Execution_Trace_TestProc_6c"
-    On Error GoTo on_error
+    On Error GoTo eh
 
-    BoP ErrSrc(PROC)
-    EoP ErrSrc(PROC)
+    mTrc.BoP ErrSrc(PROC)
 
-exit_proc:
+xt: mTrc.EoP ErrSrc(PROC)
     Exit Sub
 
-on_error:
-    mErrHndlr.ErrHndlr err.Number, ErrSrc(PROC), err.Description, Erl
+eh: mErH.ErrMsg err.Number, ErrSrc(PROC), err.Description, Erl
 End Sub
 

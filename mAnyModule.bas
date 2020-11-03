@@ -11,18 +11,16 @@ Private Sub AnyProc()
 ' -------------------------------------------------------------------------------
 Const PROC As String = "AnyProc" ' This procedure's name for error handling and execution trace
 
-    On Error GoTo on_error
-    BoP ErrSrc(PROC) ' Begin of Procedure (push stack and begin of execution trace)
+    On Error GoTo eh
+    mErH.BoP ErrSrc(PROC) ' Begin of Procedure (push stack and begin of execution trace)
 
     ' any code
 
-exit_proc:
-    ' any "finally" code
-    EoP ErrSrc(PROC) ' End of Procedure (pop stack and end of execution trace)
+xt: ' any "finally" code
+    mErH.EoP ErrSrc(PROC) ' End of Procedure (pop stack and end of execution trace)
     Exit Sub
 
-on_error:
-    mErrHndlr.ErrHndlr err.Number, ErrSrc(PROC), err.Description, Erl
+eh: mErH.ErrMsg err.Number, ErrSrc(PROC), err.Description, Erl
 End Sub
 
 Private Function ErrSrc(ByVal sProc As String) As String
