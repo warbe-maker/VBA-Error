@@ -9,7 +9,7 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = True
 Option Explicit
 ' ------------------------------------------------------------------------------
-' Workbook ErrHndlr.xlsm
+' Workbook ErrMsg.xlsm
 '
 '          This is the development and test Workbook for the Common Component
 '          "mErrHndlr" with its sub-components clsCallStack and clsCallStackItem.

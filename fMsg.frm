@@ -130,7 +130,7 @@ Dim lSetupRows                  As Long ' number of setup button rows
 
 Private Sub UserForm_Initialize()
         
-    On Error GoTo on_error
+    On Error GoTo eh
     siMinButtonWidth = MIN_BUTTON_WIDTH
     siHmarginButtons = HSPACE_BUTTONS
     siVmarginButtons = VSPACE_BUTTON_ROWS
@@ -159,7 +159,7 @@ Private Sub UserForm_Initialize()
 exit_sub:
     Exit Sub
     
-on_error:
+eh:
     Debug.Print err.Description: Stop: Resume
 End Sub
 
@@ -167,7 +167,7 @@ Private Sub CollectDesignControls()
 ' ----------------------------------------------------------------------
 ' Collects all designed controls without concidering any control's name.
 ' ----------------------------------------------------------------------
-    On Error GoTo on_error
+    On Error GoTo eh
     
     ProvideCollection cllDsgnAreas
     Collect into:=cllDsgnAreas, ctltype:="Frame", fromparent:=Me, ctlheight:=10, ctlwidth:=Me.width - siHmarginFrames
@@ -200,11 +200,9 @@ Private Sub CollectDesignControls()
     ProvideDictionary dctApplButtonsRetVal
     ProvideDictionary dctApplButtonRows
 
-exit_proc:
-    Exit Sub
+xt: Exit Sub
     
-on_error:
-    Debug.Print err.Description: Stop: Resume
+eh: Debug.Print err.Description: Stop: Resume
 End Sub
 
 Private Sub ProvideCollection(ByRef cll As Collection)
@@ -731,7 +729,7 @@ Private Sub Collect(ByRef into As Variant, _
     Dim ctl As MSForms.Control
     Dim v   As Variant
      
-    On Error GoTo on_error
+    On Error GoTo eh
         
     Select Case TypeName(fromparent)
         Case "Collection"
@@ -766,11 +764,9 @@ Private Sub Collect(ByRef into As Variant, _
             Next ctl
     End Select
 
-exit_proc:
-    Exit Sub
+xt: Exit Sub
     
-on_error:
-    Debug.Print err.Description: Stop: Resume
+eh: Debug.Print err.Description: Stop: Resume
 End Sub
 
  
@@ -930,7 +926,7 @@ End Sub
 ' obligatory before any height decrement may be due and after any height decrement.
 ' -----------------------------------------------------------------------------------
 Private Sub ResizeAndReposition()
-    On Error GoTo on_error
+    On Error GoTo eh
     
     If IsApplied(DsgnMsgArea) Then
         ResizeAndRepositionMsgSections
@@ -944,11 +940,9 @@ Private Sub ResizeAndReposition()
     End If
     ResizeAndRepositionAreas
     
-exit_proc:
-    Exit Sub
+xt: Exit Sub
     
-on_error:
-    Debug.Print err.Description: Stop: Resume
+eh: Debug.Print err.Description: Stop: Resume
 End Sub
 
 Private Sub ResizeAndRepositionAreas()
@@ -977,7 +971,7 @@ Private Sub ResizeAndRepositionButtonRows()
 ' by keeping a record of the maximum button row's width.
 ' ---------------------------------------------------------
     
-    On Error GoTo on_error
+    On Error GoTo eh
     
     Dim cllButtonRows   As Collection:      Set cllButtonRows = DsgnButtonRows
     Dim frRow           As MSForms.Frame
@@ -1020,11 +1014,9 @@ Private Sub ResizeAndRepositionButtonRows()
     Next v
     Set dct = Nothing
     
-exit_proc:
-    Exit Sub
+xt: Exit Sub
     
-on_error:
-    Debug.Print err.Description: Stop: Resume
+eh: Debug.Print err.Description: Stop: Resume
 End Sub
 
 Private Sub ResizeAndRepositionButtons()
@@ -1033,7 +1025,7 @@ Private Sub ResizeAndRepositionButtons()
 ' calculated during their setup and adjust their left position.
 ' ---------------------------------------------------------------
     
-    On Error GoTo on_error
+    On Error GoTo eh
     
     Dim cllButtonRows   As Collection:      Set cllButtonRows = DsgnButtonRows
     Dim siLeft          As Single
@@ -1060,11 +1052,9 @@ Private Sub ResizeAndRepositionButtons()
         End If
     Next lRow
         
-exit_proc:
-    Exit Sub
+xt: Exit Sub
     
-on_error:
-    Debug.Print err.Description: Stop: Resume
+eh: Debug.Print err.Description: Stop: Resume
 End Sub
 
 Private Sub ResizeAndRepositionButtonsArea()
@@ -1072,7 +1062,7 @@ Private Sub ResizeAndRepositionButtonsArea()
 ' Adjust buttons frame to max button row width and the
 ' surrounding area's width and heigth is adjusted
 ' ----------------------------------------------------
-    On Error GoTo on_error
+    On Error GoTo eh
     
     Dim frArea      As MSForms.Frame:   Set frArea = DsgnButtonsArea
     Dim frButtons   As MSForms.Frame:   Set frButtons = DsgnButtonsFrame
@@ -1104,15 +1094,13 @@ Private Sub ResizeAndRepositionButtonsArea()
         CenterHorizontal centerfr:=frArea
     End If
     
-exit_proc:
-    Exit Sub
+xt: Exit Sub
     
-on_error:
-    Debug.Print err.Description: Stop: Resume
+eh: Debug.Print err.Description: Stop: Resume
 End Sub
 
 Private Sub ResizeAndRepositionButtonsFrame()
-    On Error GoTo on_error
+    On Error GoTo eh
     
     Dim fr  As MSForms.Frame: Set fr = DsgnButtonsFrame
     Dim v   As Variant
@@ -1133,11 +1121,9 @@ Private Sub ResizeAndRepositionButtonsFrame()
         If IsApplied(v) Then CenterHorizontal centerfr:=v, infr:=fr
     Next v
     
-exit_proc:
-    Exit Sub
+xt: Exit Sub
     
-on_error:
-    Debug.Print err.Description: Stop: Resume
+eh: Debug.Print err.Description: Stop: Resume
 End Sub
 
 Private Sub ResizeAndRepositionMsgArea()
@@ -1146,7 +1132,7 @@ Private Sub ResizeAndRepositionMsgArea()
 ' and adjust the Message Area height accordingly.
 ' --------------------------------------------------------
     
-    On Error GoTo on_error
+    On Error GoTo eh
     
     Dim frArea      As MSForms.Frame: Set frArea = DsgnMsgArea
     Dim frSection   As MSForms.Frame
@@ -1158,11 +1144,9 @@ Private Sub ResizeAndRepositionMsgArea()
         Me.Height = Max(Me.Height, frArea.Top + frArea.Height + (VSPACE_AREAS * 4))
     End If
     
-exit_proc:
-    Exit Sub
+xt: Exit Sub
     
-on_error:
-    Debug.Print err.Description: Stop: Resume
+eh: Debug.Print err.Description: Stop: Resume
 End Sub
 
 Private Sub ResizeAndRepositionMsgSections()
@@ -1170,7 +1154,7 @@ Private Sub ResizeAndRepositionMsgSections()
 ' Assign all displayed message sections the required height
 ' and finally adjust the message area's height.
 ' -----------------------------------------------------------
-    On Error GoTo on_error
+    On Error GoTo eh
     
     Dim frSection       As MSForms.Frame
     Dim i               As Long
@@ -1232,16 +1216,14 @@ Private Sub ResizeAndRepositionMsgSections()
     
     DsgnMsgArea.Height = frSection.Top + frSection.Height + siVmarginFrames
     
-exit_proc:
-    Exit Sub
+xt: Exit Sub
     
-on_error:
-    Debug.Print err.Description: Stop: Resume
+eh: Debug.Print err.Description: Stop: Resume
 End Sub
 
 Public Sub Setup()
     
-    On Error GoTo on_error
+    On Error GoTo eh
         
     CollectDesignControls
        
@@ -1295,11 +1277,9 @@ Public Sub Setup()
     AdjustStartupPosition Me
     bDoneSetup = True ' To indicate for the Activate event that the setup had already be done beforehand
     
-exit_proc:
-    Exit Sub
+xt: Exit Sub
 
-on_error:
-    Debug.Print err.Description: Stop: Resume
+eh: Debug.Print err.Description: Stop: Resume
 End Sub
 
 Private Sub SetupButton(ByVal buttonrow As Long, _
@@ -1311,7 +1291,7 @@ Private Sub SetupButton(ByVal buttonrow As Long, _
 ' caption, calculate the maximum buttonindex width and height,
 ' keep a record of the setup reply buttonindex's return value.
 ' -----------------------------------------------------------------
-    On Error GoTo on_error
+    On Error GoTo eh
     
     Dim cmb As MSForms.CommandButton:   Set cmb = DsgnButton(buttonrow, buttonindex)
     
@@ -1330,11 +1310,9 @@ Private Sub SetupButton(ByVal buttonrow As Long, _
     AppliedControl = cmb
     AppliedControl = DsgnButtonRow(buttonrow)
     
-exit_proc:
-    Exit Sub
+xt: Exit Sub
     
-on_error:
-    Debug.Print err.Description: Stop: Resume
+eh: Debug.Print err.Description: Stop: Resume
 End Sub
 
 Private Sub SetupButtons(ByVal vButtons As Variant)
@@ -1343,7 +1321,7 @@ Private Sub SetupButtons(ByVal vButtons As Variant)
 ' Note: When the provided vButtons argument is a string it wil be converted into a
 '       collection and the procedure is performed recursively with it.
 ' --------------------------------------------------------------------------------------
-    On Error GoTo on_error
+    On Error GoTo eh
     
     Dim frArea  As MSForms.Frame:   Set frArea = DsgnButtonsArea
     Dim cll     As Collection
@@ -1379,11 +1357,9 @@ Private Sub SetupButtons(ByVal vButtons As Variant)
 
     bDoneButtonsArea = True
     
-exit_proc:
-    Exit Sub
+xt: Exit Sub
     
-on_error:
-    Debug.Print err.Description: Stop: Resume
+eh: Debug.Print err.Description: Stop: Resume
 End Sub
 
 ' Setup the reply buttons based on the comma delimited string of button captions
@@ -1391,7 +1367,7 @@ End Sub
 ' ------------------------------------------------------------------------------
 Private Sub SetupButtonsFromCollection(ByVal cllButtons As Collection)
 
-    On Error GoTo on_error
+    On Error GoTo eh
     
     Dim v           As Variant
     
@@ -1436,11 +1412,9 @@ Private Sub SetupButtonsFromCollection(ByVal cllButtons As Collection)
     End If
     DsgnButtonsArea.Visible = True
     
-exit_proc:
-    Exit Sub
+xt: Exit Sub
     
-on_error:
-    Debug.Print err.Description: Stop: Resume
+eh: Debug.Print err.Description: Stop: Resume
 End Sub
 
 Private Sub SetupButtonsFromString(ByVal sButtons As String)
@@ -1459,7 +1433,7 @@ Private Sub SetupButtonsFromValue(ByVal lButtons As Long)
 ' -------------------------------------------------------
 ' Setup a row of standard VB MsgBox reply command buttons
 ' -------------------------------------------------------
-    On Error GoTo on_error
+    On Error GoTo eh
     
     Select Case lButtons
         Case vbOKOnly
@@ -1503,11 +1477,9 @@ Private Sub SetupButtonsFromValue(ByVal lButtons As Long)
     AppliedControl = DsgnButtonRow(lSetupRows)
     AppliedControl = DsgnButtonsFrame
     
-exit_proc:
-    Exit Sub
+xt: Exit Sub
     
-on_error:
-    Debug.Print err.Description: Stop: Resume
+eh: Debug.Print err.Description: Stop: Resume
 End Sub
 
 ' Setup a message section with its label when one is specified
@@ -1516,7 +1488,7 @@ End Sub
 '       are done by the ResizeAndReposition
 ' -------------------------------------------------------------
 Private Sub SetupMsgSection(ByVal section As Long)
-    On Error GoTo on_error
+    On Error GoTo eh
     
     Dim frArea      As MSForms.Frame
     Dim frSection   As MSForms.Frame
@@ -1570,11 +1542,9 @@ Private Sub SetupMsgSection(ByVal section As Long)
         
     End If
     
-exit_proc:
-    Exit Sub
+xt: Exit Sub
     
-on_error:
-    Debug.Print err.Description: Stop: Resume
+eh: Debug.Print err.Description: Stop: Resume
 End Sub
 
 ' Setup the applied monospaced message section (section) with the text (text),
@@ -1584,7 +1554,7 @@ End Sub
 ' --------------------------------------------------------------------
 Private Sub SetupMsgSectionMonoSpaced(ByVal section As Long, _
                                        ByVal text As String)
-    On Error GoTo on_error
+    On Error GoTo eh
     
     Dim frArea          As MSForms.Frame:   Set frArea = DsgnMsgArea
     Dim frText          As MSForms.Frame:   Set frText = DsgnSectionTextFrame(section)
@@ -1632,11 +1602,9 @@ Private Sub SetupMsgSectionMonoSpaced(ByVal section As Long, _
     
     Debug_Sizes "Monospaced sections setup:", frSection
     
-exit_proc:
-    Exit Sub
+xt: Exit Sub
     
-on_error:
-    Debug.Print err.Description: Stop: Resume
+eh: Debug.Print err.Description: Stop: Resume
 End Sub
 
 ' Setup the proportional spaced Message Section (section) with the text (text)
@@ -1690,22 +1658,20 @@ Private Sub SetupMsgSectionPropSpaced(ByVal section As Long, _
 End Sub
 
 Private Sub SetupMsgSectionsMonoSpaced()
-    On Error GoTo on_error
+    On Error GoTo eh
                              
     If MsgText(1) <> vbNullString And MsgMonoSpaced(1) = True Then SetupMsgSection section:=1
     If MsgText(2) <> vbNullString And MsgMonoSpaced(2) = True Then SetupMsgSection section:=2
     If MsgText(3) <> vbNullString And MsgMonoSpaced(3) = True Then SetupMsgSection section:=3
     bDoneMonoSpacedSections = True
     
-exit_proc:
-    Exit Sub
+xt: Exit Sub
     
-on_error:
-    Debug.Print err.Description: Stop: Resume
+eh: Debug.Print err.Description: Stop: Resume
 End Sub
 
 Private Sub SetupMsgSectionsPropSpaced()
-    On Error GoTo on_error
+    On Error GoTo eh
     
     If MsgText(1) <> vbNullString And MsgMonoSpaced(1) = False Then SetupMsgSection section:=1
     If MsgText(2) <> vbNullString And MsgMonoSpaced(2) = False Then SetupMsgSection section:=2
@@ -1713,11 +1679,9 @@ Private Sub SetupMsgSectionsPropSpaced()
     bDonePropSpacedSections = True
     bDoneMsgArea = True
     
-exit_proc:
-    Exit Sub
+xt: Exit Sub
     
-on_error:
-    Debug.Print err.Description: Stop: Resume
+eh: Debug.Print err.Description: Stop: Resume
 End Sub
 
 ' When a specific font name and/or size is specified, the extra title label is actively used
