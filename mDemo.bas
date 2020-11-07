@@ -40,9 +40,10 @@ Private Function ErrorHandling_BetterThanNothing(ByVal op1 As Variant, _
 ' - Execution Trace:            No
 ' - Debug/Test choice:          No
 ' ---------------------------------------------------------------------
-Const PROC = "ErrorHandling_BetterThanNothing"    ' error source
+    Const PROC = "ErrorHandling_BetterThanNothing"    ' error source
 
     On Error GoTo eh
+    
 46  ErrorHandling_BetterThanNothing = op1 / op2
     Exit Function
 
@@ -72,7 +73,7 @@ Private Function ErrorHandling_Reasonable(ByVal op1 As Variant, _
 ' - Execution Trace:            No
 ' - Debug/Test choice:          No
 ' ---------------------------------------------------------------------
-Const PROC = "ErrorHandling_Reasonable"    ' error source
+    Const PROC = "ErrorHandling_Reasonable"    ' error source
 
     On Error GoTo eh
     mErH.BoP ErrSrc(PROC)
@@ -178,8 +179,8 @@ Public Sub Demo_2_Application_Error()
 ' The display of an execution trace along with this test
 ' requires a Conditional Compile Argument ExecTrace = 1.
 ' ------------------------------------------------------
-    
     Const PROC = "Demo_2_Application_Error"
+    
     On Error GoTo eh
     
     mErH.BoP ErrSrc(PROC)
@@ -194,8 +195,8 @@ eh: Select Case mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl)
 End Sub
 
 Private Sub Demo_2_Application_Error_DemoProc_2a()
-
     Const PROC = "Demo_2_Application_Error_DemoProc_2a"
+    
     On Error GoTo eh
     
     mErH.BoP ErrSrc(PROC)
@@ -208,8 +209,8 @@ eh:
 End Sub
 
 Private Sub Demo_2_Application_Error_DemoProc_2b()
-    
     Const PROC = "Demo_2_Application_Error_DemoProc_2b"
+    
     On Error GoTo eh
     
     mErH.BoP ErrSrc(PROC)
@@ -226,8 +227,8 @@ Private Sub Demo_2_Application_Error_DemoProc_2c()
 ' Note: The line number is added just for test to
 ' demonstrate how it effects the error message.
 ' ------------------------------------------------
-    
     Const PROC = "Demo_2_Application_Error_DemoProc_2c"
+    
     On Error GoTo eh
 
     mErH.BoP ErrSrc(PROC)
@@ -259,8 +260,8 @@ Public Sub Demo_3_VB_Runtime_Error()
 ' Requires:
 ' - Conditional Compile Argument ExecTrace = 1.
 ' -----------------------------------------------
-    
     Const PROC = "Demo_3_VB_Runtime_Error"
+    
     On Error GoTo eh
     
     mErH.BoP ErrSrc(PROC)
@@ -277,8 +278,8 @@ eh: Select Case mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl)
 End Sub
 
 Private Sub Demo_3_VB_Runtime_Error_DemoProc_3a()
-
     Const PROC = "Demo_3_VB_Runtime_Error_DemoProc_3a"
+    
     On Error GoTo eh
 
     mErH.BoP ErrSrc(PROC)
@@ -291,8 +292,8 @@ eh:
 End Sub
 
 Private Sub Demo_3_VB_Runtime_Error_DemoProc_3b()
-    
     Const PROC = "Demo_3_VB_Runtime_Error_DemoProc_3b"
+    
     On Error GoTo eh
 
     mErH.BoP ErrSrc(PROC)
@@ -305,8 +306,8 @@ eh:
 End Sub
 
 Private Sub Demo_3_VB_Runtime_Error_DemoProc_3c()
-
     Const PROC = "Demo_3_VB_Runtime_Error_DemoProc_3c"
+    
     On Error GoTo eh
     
     mErH.BoP ErrSrc(PROC)
@@ -324,8 +325,8 @@ Private Sub Demo_3_VB_Runtime_Error_DemoProc_3d()
 ' number to demonstrate how it effects the error
 ' message.
 ' ------------------------------------------------
-    
     Const PROC = "Demo_3_VB_Runtime_Error_DemoProc_3d"
+    
     On Error GoTo eh
 
     mErH.BoP ErrSrc(PROC)
@@ -347,8 +348,9 @@ Public Sub Demo_4_With_Debugging_Support()
 ' Attention! This test requires the
 ' Conditional Compile Argument "Debugging = 1" !
 ' ----------------------------------------------
-    On Error GoTo eh
     Const PROC = "Demo_4_With_Debugging_Support"
+    
+    On Error GoTo eh
       
     mErH.BoP ErrSrc(PROC)
     Demo_4_With_Debugging_Support_DemoProc_5a
@@ -360,8 +362,8 @@ eh:
 End Sub
 
 Private Sub Demo_4_With_Debugging_Support_DemoProc_5a()
-
     Const PROC = "Demo_5_With_Debugging_Support_DemoProc_5a"
+    
     On Error GoTo eh
        
     mErH.BoP ErrSrc(PROC)
@@ -379,8 +381,8 @@ Public Sub Demo_5_No_Exit_Statement()
 ' -----------------------------------
 ' Exit statement missing
 ' -----------------------------------
-
     Const PROC = "Demo_6_No_Exit_Statement"
+    
     On Error GoTo eh
     
 eh:
@@ -394,8 +396,8 @@ Public Sub Demo_6_Execution_Trace()
 ' Display of an execution trace along with this test
 ' requires a conditional compile argument ExecTrace = 1.
 ' ------------------------------------------------------
-    
     Const PROC = "Demo_6_Execution_Trace"
+    
     On Error GoTo eh
     
     mErH.BoP ErrSrc(PROC)
@@ -408,8 +410,8 @@ eh:
 End Sub
 
 Private Sub Demo_6_Execution_Trace_DemoProc_6a()
-
     Const PROC = "Demo_6_Execution_Trace_DemoProc_6a"
+    
     On Error GoTo eh
     
     mErH.BoP ErrSrc(PROC)
@@ -422,8 +424,8 @@ eh:
 End Sub
 
 Private Sub Demo_6_Execution_Trace_DemoProc_6b()
-    
     Const PROC = "Demo_6_Execution_Trace_DemoProc_6b"
+    
     On Error GoTo eh
     
     mErH.BoP ErrSrc(PROC)
@@ -444,8 +446,8 @@ eh:
 End Sub
 
 Private Sub Demo_6_Execution_Trace_DemoProc_6c()
-    
     Const PROC = "Demo_6_Execution_Trace_DemoProc_6c"
+    
     On Error GoTo eh
 
     mErH.BoP ErrSrc(PROC)
@@ -457,9 +459,9 @@ eh: mErH.ErrMsg err.Number, ErrSrc(PROC), err.Description, Erl
 End Sub
 
 Private Sub Demo_7_Free_Button_Display()
+    Const PROC = "Demo_7_Free_Button_Display"
 
     On Error GoTo eh
-    Const PROC = "Demo_7_Free_Button_Display"
 
     err.Raise AppErr(1), ErrSrc(PROC), "Display of a free defined button in addition to the usual Ok button (resumes the error when clicked)"
     Exit Sub

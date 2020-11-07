@@ -9,22 +9,28 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = True
 Option Explicit
 ' ------------------------------------------------------------------------------
-' Workbook ErrMsg.xlsm
+' Workbook ErH.xlsm
 '
-'          This is the development and test Workbook for the Common Component
-'          "mErrHndlr" with its sub-components clsCallStack and clsCallStackItem.
-'          Its Hosted Components are registered by means of the CompMan Addin
-'          feature ExportChangedComponents when the Workbook is closed.
+'          This is the Common Component Workbook for the (hosted) Common
+'          Component (Standard module) mErH.
+'          The hosted Component is registered by means of the CompMan Addin *)
+'          when the Workbook is closed (procedure ExportChangedComponents).
 '          Any used Common Components (hosted in other Workbooks) are updated
-'          (when their code had changed) by means of the CompMan Addin feature
-'          UpdateUsedCommCompsTheOriginHasChanged when the Workbook is opened.
+'          when their code had changed by means of the CompMan Addin procedure
+'          UpdateUsedCommCompsTheOriginHasChanged when the Workbook is opened *)
+
+'          *) provided the Conditional Compile Argument CompMan = 1 and the
+'             CompMan Addin Workbook is available, i.e. it is referenced.
 '
-'          See the comments in module mErrHndlr for details about this common
-'          component
+' Uses: fMsg Alternative VBA MsgBox
 '
-' W. Rauschenberger, Berlin, June 2020
+'          See the Github blog post
+'          "A comprehensive common VBA Error Handler inspired by the best of the web"
+' https://warbe-maker.github.io/vba/common/2020/10/02/Comprehensive-Common-VBA-Error-Handler.html
+'
+' W. Rauschenberger, Berlin, Nov 2020
 ' ------------------------------------------------------------------------------
-Const HOSTED_COMMON_COMPS = "mErrHndlr, clsCallStack, clsCallStackItem"
+Const HOSTED_COMMON_COMPS = "mErrHndlr"
 
 Private Sub Workbook_Open()
 #If CompMan Then

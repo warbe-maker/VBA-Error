@@ -35,18 +35,15 @@ Public Sub Regression_Test()
 '    button displayed with the error message and processed when clicked as
 '    "Stop: Resume" when the button is clicked.
 ' ------------------------------------------------------------------------------
+    Const PROC = "Regression_Test"
     
     On Error GoTo eh
-    Const PROC = "Regression_Test"
-    bRegressionTest = True
     
+    bRegressionTest = True
     mErH.BoP ErrSrc(PROC)
 '    Test_1_BoP_EoP
     Test_2_Application_Error
     Test_3_VB_Runtime_Error
-#If ExecTrace = 0 Then
-    Test_6_Execution_Trace
-#End If
 
 xt: mErH.EoP ErrSrc(PROC)
     bRegressionTest = False
@@ -60,8 +57,8 @@ Public Sub Test_1_BoP_EoP()
 ' White-box- and regression-test procedure obligatory
 ' to be performed after any code modification.
 ' ---------------------------------------------------
-    
     Const PROC = "Test_1_BoP_EoP"
+    
     mErH.BoP ErrSrc(PROC)
     Test_1_BoP_EoP_TestProc_1a_missing_BoP
     
@@ -77,7 +74,6 @@ Private Sub Test_1_BoP_EoP_TestProc_1a_missing_BoP()
 ' with unpaired BoP/EoP code lines. However, it depends at
 ' which level this is the case.
 ' -----------------------------------------------------------
-
     Const PROC = "Test_1_BoP_EoP_TestProc_1a_missing_BoP"
     
 '    mErH.BoP ErrSrc(PROC)
@@ -92,7 +88,6 @@ eh:
 End Sub
 
 Private Sub Test_1_BoP_EoP_TestProc_1b_paired_BoP_EoP()
-    
     Const PROC = "Test_1_BoP_EoP_TestProc_1b_paired_BoP_EoP"
     On Error GoTo eh
     
@@ -106,8 +101,8 @@ eh:
 End Sub
 
 Private Sub Test_1_BoP_EoP_TestProc_1c_missing_EoC()
-    
     Const PROC = "Test_1_BoP_EoP_TestProc_1c_missing_EoC"
+    
     On Error GoTo eh
     
     mErH.BoP ErrSrc(PROC)
@@ -120,8 +115,8 @@ eh: If mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError
 End Sub
 
 Private Sub Test_1_BoP_EoP_TestProc_1e_BoC_EoC()
-    
     Const PROC = "Test_1_BoP_EoP_TestProc_1e_BoC_EoC"
+    
     On Error GoTo eh
     
     mErH.BoP ErrSrc(PROC)
@@ -140,8 +135,8 @@ eh:
 End Sub
 
 Private Sub Test_1_BoP_EoP_TestProc_1d_missing_EoP()
-
     Const PROC = "Test_1_BoP_EoP_TestProc_1d_missing_EoP"
+    
     On Error GoTo eh
     
     mErH.BoP ErrSrc(PROC)
@@ -162,8 +157,8 @@ Public Sub Test_2_Application_Error()
 ' The display of an execution trace along with this test
 ' requires a Conditional Compile Argument ExecTrace = 1.
 ' ------------------------------------------------------
-    
     Const PROC = "Test_2_Application_Error"
+    
     On Error GoTo eh
     
 '    mTrc.DisplayedInfo = Detailed
@@ -179,8 +174,8 @@ eh: Select Case mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl)
 End Sub
 
 Private Sub Test_2_Application_Error_TestProc_2a()
-
     Const PROC = "Test_2_Application_Error_TestProc_2a"
+    
     On Error GoTo eh
     
     mErH.BoP ErrSrc(PROC)
@@ -193,8 +188,8 @@ eh:
 End Sub
 
 Private Sub Test_2_Application_Error_TestProc_2b()
-    
     Const PROC = "Test_2_Application_Error_TestProc_2b"
+    
     On Error GoTo eh
     
     mErH.BoP ErrSrc(PROC)
@@ -211,9 +206,9 @@ Private Sub Test_2_Application_Error_TestProc_2c()
 ' Note: The line number is added just for test to
 ' demonstrate how it effects the error message.
 ' ------------------------------------------------
+    Const PROC = "Test_2_Application_Error_TestProc_2c"
     
     On Error GoTo eh
-    Const PROC = "Test_2_Application_Error_TestProc_2c"
     Dim sErrDscrptn As String
 
     mErH.BoP ErrSrc(PROC)
@@ -246,8 +241,8 @@ Public Sub Test_3_VB_Runtime_Error()
 ' Requires:
 ' - Conditional Compile Argument ExecTrace = 1.
 ' -----------------------------------------------
-    
     Const PROC = "Test_3_VB_Runtime_Error"
+    
     On Error GoTo eh
     
     mTrc.DisplayedInfo = Detailed
@@ -265,8 +260,8 @@ eh: Select Case mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl)
 End Sub
 
 Private Sub Test_3_VB_Runtime_Error_TestProc_3a()
-
     Const PROC = "Test_3_VB_Runtime_Error_TestProc_3a"
+    
     On Error GoTo eh
 
     mErH.BoP ErrSrc(PROC)
@@ -279,8 +274,8 @@ eh:
 End Sub
 
 Private Sub Test_3_VB_Runtime_Error_TestProc_3b()
-    
     Const PROC = "Test_3_VB_Runtime_Error_TestProc_3b"
+    
     On Error GoTo eh
 
     mErH.BoP ErrSrc(PROC)
@@ -293,8 +288,8 @@ eh:
 End Sub
 
 Private Sub Test_3_VB_Runtime_Error_TestProc_3c()
-
     Const PROC = "Test_3_VB_Runtime_Error_TestProc_3c"
+    
     On Error GoTo eh
     
     mErH.BoP ErrSrc(PROC)
@@ -312,10 +307,11 @@ Private Sub Test_3_VB_Runtime_Error_TestProc_3d()
 ' number to demonstrate how it effects the error
 ' message.
 ' ------------------------------------------------
+    Const PROC = "Test_3_VB_Runtime_Error_TestProc_3d"
     
     On Error GoTo eh
-    Const PROC = "Test_3_VB_Runtime_Error_TestProc_3d"
     Dim sErrDscrptn As String
+    
     mErH.BoP ErrSrc(PROC)
     Dim l As Long
     l = 7 / 0
@@ -336,8 +332,9 @@ Public Sub Test_4_DebugAndTest_with_ErrMsg()
 ' This test the Conditional Compile
 ' Argument DebugAndTest = 1 is required.
 ' -----------------------------------------
-    On Error GoTo eh
     Const PROC = "Test_4_DebugAndTest_with_ErrMsg"
+    
+    On Error GoTo eh
       
     mErH.BoP ErrSrc(PROC)
     Test_4_DebugAndTest_with_ErrMsg_TestProc_5a
@@ -349,8 +346,8 @@ eh:
 End Sub
 
 Private Sub Test_4_DebugAndTest_with_ErrMsg_TestProc_5a()
-
     Const PROC = "Test_5_DebugAndTest_with_ErrMsg_TestProc_5a"
+    
     On Error GoTo eh
        
     mErH.BoP ErrSrc(PROC)
@@ -368,83 +365,10 @@ Public Sub Test_5_No_Exit_Statement()
 ' -----------------------------------
 ' Exit statement missing
 ' -----------------------------------
-
     Const PROC = "Test_6_No_Exit_Statement"
+    
     On Error GoTo eh
     
 eh:
     If mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
-
-Public Sub Test_6_Execution_Trace()
-' ------------------------------------------------------
-' White-box- and regression-test procedure obligatory
-' to be performed after any code modification.
-' Display of an execution trace along with this test
-' requires a conditional compile argument ExecTrace = 1.
-' ------------------------------------------------------
-    
-    Const PROC = "Test_6_Execution_Trace"
-    On Error GoTo eh
-'    mTrc.DisplayedInfo = Compact
-    mTrc.DisplayedInfo = Detailed
-    
-    mTrc.BoP ErrSrc(PROC)
-    Test_6_Execution_Trace_TestProc_6a
-    mTrc.EoP ErrSrc(PROC)
-    Exit Sub
-
-eh:
-    If mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
-End Sub
-
-Private Sub Test_6_Execution_Trace_TestProc_6a()
-
-    On Error GoTo eh
-    Const PROC = "Test_6_Execution_Trace_TestProc_6a"
-    
-    mTrc.BoP ErrSrc(PROC)
-    mTrc.BoC ErrSrc(PROC) & " call of 6b and 6c"
-    Test_6_Execution_Trace_TestProc_6b
-    Test_6_Execution_Trace_TestProc_6c
-    mTrc.EoC ErrSrc(PROC) & " call of 6b and 6c"
-    mTrc.EoP ErrSrc(PROC)
-    Exit Sub
-
-eh:
-    If mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
-End Sub
-
-Private Sub Test_6_Execution_Trace_TestProc_6b()
-    
-    Const PROC = "Test_6_Execution_Trace_TestProc_6b"
-    On Error GoTo eh
-
-    mTrc.BoP ErrSrc(PROC)
-    
-    Dim i As Long
-    Dim s As String
-    For i = 1 To 10000
-        s = Application.Path ' to produce some execution time
-    Next i
-    
-    mTrc.EoP ErrSrc(PROC)
-    Exit Sub
-
-eh:
-    If mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
-End Sub
-
-Private Sub Test_6_Execution_Trace_TestProc_6c()
-    
-    Const PROC = "Test_6_Execution_Trace_TestProc_6c"
-    On Error GoTo eh
-
-    mTrc.BoP ErrSrc(PROC)
-
-xt: mTrc.EoP ErrSrc(PROC)
-    Exit Sub
-
-eh: mErH.ErrMsg err.Number, ErrSrc(PROC), err.Description, Erl
-End Sub
-
