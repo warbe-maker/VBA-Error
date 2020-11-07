@@ -34,17 +34,21 @@ Option Private Module
 '           eh: mErH.ErrMsg Err.Number, ErrSrc(PROC), Err.Description, Erl
 '           End ....
 '
-' Note: When the call stack is not maintained the ErrMsg will display the message
-'       immediately with the procedure the error occours. When the call stack is
-'       maintained, the error message will display the call path to the error beginning
-'       with the first (entry) procedure in which the call stack is maintained all the
-'       call sequence down to the procedure where the error occoured.
+' Note: When never a mErH.BoP/mErH.EoP procedure had been executed the ErrMsg
+'       is displayed with the procedure the error occoured. Else the error is
+'       passed on back up to the first procedure with a mErH.BoP/mErH.EoP code
+'       line executed and displayed when it had been reached.
 '
-' Uses: fMsg (only when the Conditional Compile Argument AlternativeMsgBox = 1)
+' Uses: fMsg
+'       mTrc (optionally, when the Conditional Compile Argument ExecTrace = 1)
 '
 ' Requires: Reference to "Microsoft Scripting Runtime"
 '
-' W. Rauschenberger, Berlin January 2020, https://github.com/warbe-maker/Common-VBA-Error-Handler
+'          For further details see the Github blog post
+'          "A comprehensive common VBA Error Handler inspired by the best of the web"
+' https://warbe-maker.github.io/vba/common/2020/10/02/Comprehensive-Common-VBA-Error-Handler.html
+'
+' W. Rauschenberger, Berlin, Nov 2020
 ' -----------------------------------------------------------------------------------------------
 
 Private Const TYPE_APP_ERR  As String = "Application error "
@@ -83,7 +87,7 @@ Private lInitialErrLine     As Long
 Private lInitialErrNo       As Long
 Private sInitialErrSource   As String
 Private sInitialErrDscrptn  As String
-Private sTrcErrInfo         As String
+Private sInitialErrInfo         As String
 
 ' Test button, displayed with Conditional Compile Argument Test = 1
 Public Property Get ExitAndContinue() As String:        ExitAndContinue = "Exit procedure" & vbLf & "and continue" & vbLf & "with next":    End Property
@@ -124,10 +128,19 @@ Public Sub BoP(ByVal s As String)
 ' ----------------------------------
 ' Trace and stack Begin of Procedure
 ' ----------------------------------
+    Const PROC = "BoP"
+    
+    On Error GoTo eh
+    
     StackPush s
 #If ExecTrace Then
     mTrc.BoP s    ' start of the procedure's execution trace
 #End If
+
+xt: Exit Sub
+
+eh: MsgBox err.Description, vbOKOnly, "Error in " & ErrSrc(PROC)
+    Stop: Resume
 End Sub
 
 Public Sub EoP(ByVal s As String)
@@ -147,9 +160,9 @@ Public Function ErrMsg(ByVal errnumber As Long, _
                 Optional ByVal buttons As Variant = vbNullString) As Variant
 ' ----------------------------------------------------------------------
 ' When the buttons argument specifies more than one button the error
-'      message is immediately displayed and the users choice is returned
+' message is immediately displayed and the users choice is returned,
 ' else when the caller (errsource) is the "Entry Procedure" the error
-'      is displayed with the path to the error
+' is displayed with the path to the error,
 ' else the error is passed on to the "Entry Procedure" whereby the
 ' .ErrorPath string is assebled.
 ' ----------------------------------------------------------------------
@@ -163,7 +176,7 @@ Public Function ErrMsg(ByVal errnumber As Long, _
 
     If sInitialErrSource = vbNullString Then
         '~~ This is the initial/first execution of the error handler within the error raising procedure.
-        sTrcErrInfo = ErrorDetails(errnumber, errsource, errline)
+        sInitialErrInfo = ErrorDetails(errnumber, errsource, errline)
         lInitialErrLine = errline
         lInitialErrNo = errnumber
         sInitialErrSource = errsource
@@ -173,53 +186,58 @@ Public Function ErrMsg(ByVal errnumber As Long, _
         And errsource <> sInitialErrSource Then
         '~~ In the rare case when the error number had changed during the process of passing it back up to the entry procedure
         lSubsequErrNo = errnumber
-        sTrcErrInfo = ErrorDetails(lSubsequErrNo, errsource, errline)
+        sInitialErrInfo = ErrorDetails(lSubsequErrNo, errsource, errline)
     End If
     
-    '~~ When the user has no choice to press any button but the only one displayed button
-    '~~ and the Entry Procedure is known but yet not reached the path back up to the Entry Procedure
-    '~~ is maintained and the error is passed on to the caller
-    If ErrorButtons(buttons) = 1 _
+    If ErrBttns(buttons) = 1 _
     And sErrHndlrEntryProc <> vbNullString _
     And StackEntryProc <> errsource Then
+        '~~ When the user has no choice to press any button but the only one displayed button
+        '~~ and the Entry Procedure is known but yet not reached the error is passed on back
+        '~~ up to the Entry Procedure whereupon the path to the error is assembled
         ErrPathAdd errsource
-        StackPop errsource, sTrcErrInfo
-        sTrcErrInfo = vbNullString
+#If ExecTrace Then
+        mTrc.EoP errsource, sInitialErrInfo
+#End If
+        StackPop errsource, sInitialErrInfo
+        sInitialErrInfo = vbNullString
         err.Raise errnumber, errsource, errdscrptn
     End If
     
-    If ErrorButtons(buttons) > 1 _
+    If ErrBttns(buttons) > 1 _
     Or StackEntryProc = errsource _
     Or StackEntryProc = vbNullString Then
-        ' More than one button is displayed with the error message for the user to choose one
-        ' or the Entry Procedure is unknown
-        ' or has been reached
+        '~~ When the user has the choice between several buttons displayed
+        '~~ or the Entry Procedure is unknown or has been reached
         If Not ErrPathIsEmpty Then ErrPathAdd errsource
-        StackPop errsource, sTrcErrInfo
-        sTrcErrInfo = vbNullString
         '~~ Display the error message
         ErrMsg = ErrDsply(errnumber:=lInitialErrNo, errsource:=sInitialErrSource, errdscrptn:=sInitialErrDscrptn, errline:=lInitialErrLine, buttons:=buttons)
         Select Case ErrMsg
             Case ResumeError, ResumeNext, ExitAndContinue
             Case Else: ErrPathErase
         End Select
-        lInitialErrNo = 0
+#If ExecTrace Then
+        mTrc.EoP errsource, sInitialErrInfo
+#End If
+        StackPop errsource, sInitialErrInfo
+        sInitialErrInfo = vbNullString
         sInitialErrSource = vbNullString
         sInitialErrDscrptn = vbNullString
+        lInitialErrNo = 0
     End If
     
     '~~ Each time a known Entry Procedure is reached the execution trace
     '~~ maintained by the BoP and mErH.EoP and the BoC and EoC statements is displayed
     If StackEntryProc = errsource _
     Or StackEntryProc = vbNullString Then
-        ErrHndlrDisplayTrace
         Select Case ErrMsg
             Case ResumeError, ResumeNext, ExitAndContinue
             Case vbOK
             Case Else: StackErase
         End Select
     End If
-            
+    StackPop errsource
+    
 End Function
 
 Private Sub ErrHndlrDisplayTrace()
@@ -368,7 +386,7 @@ Public Function ErrDsply( _
         .MsgButtons = buttons
         .Setup
         .Show
-        If ErrorButtons(buttons) = 1 Then
+        If ErrBttns(buttons) = 1 Then
             ErrDsply = buttons ' a single reply buttons return value cannot be obtained since the form is unloaded with its click
         Else
             ErrDsply = .ReplyValue ' when more than one button is displayed the form is unloadhen the return value is obtained
@@ -377,24 +395,24 @@ Public Function ErrDsply( _
 
 End Function
 
-Private Function ErrorButtons( _
-                 ByVal buttons As Variant) As Long
+Private Function ErrBttns( _
+                 ByVal bttns As Variant) As Long
 ' ------------------------------------------------
-' Returns the number of specified buttons.
+' Returns the number of specified bttns.
 ' ------------------------------------------------
     Dim v As Variant
     
-    For Each v In Split(buttons, ",")
+    For Each v In Split(bttns, ",")
         If IsNumeric(v) Then
             Select Case v
-                Case vbOKOnly:                              ErrorButtons = ErrorButtons + 1
-                Case vbOKCancel, vbYesNo, vbRetryCancel:    ErrorButtons = ErrorButtons + 2
-                Case vbAbortRetryIgnore, vbYesNoCancel:     ErrorButtons = ErrorButtons + 3
+                Case vbOKOnly:                              ErrBttns = ErrBttns + 1
+                Case vbOKCancel, vbYesNo, vbRetryCancel:    ErrBttns = ErrBttns + 2
+                Case vbAbortRetryIgnore, vbYesNoCancel:     ErrBttns = ErrBttns + 3
             End Select
         Else
             Select Case v
                 Case vbNullString, vbLf, vbCr, vbCrLf
-                Case Else:  ErrorButtons = ErrorButtons + 1
+                Case Else:  ErrBttns = ErrBttns + 1
             End Select
         End If
     Next v
@@ -563,25 +581,22 @@ Public Function StackIsEmpty() As Boolean
 End Function
 
 Public Function StackPop( _
-       Optional ByVal s As String = vbNullString, _
-       Optional ByVal errinfo As String = vbNullString) As String
-' ------------------------------------------------------------------
-' Returns the item removed from the top of the stack. When s is
-' provided and is not on the top of the stack pop is suspended.
-' ------------------------------------------------------------------
+       Optional ByVal itm As String = vbNullString, _
+       Optional ByVal inf As String = vbNullString) As String
+' -----------------------------------------------------------
+' Returns the popped of the stack. When itm is provided and
+' is not on the top of the stack pop is suspended.
+' -----------------------------------------------------------
+    Const PROC = "StackPop"
     
     On Error GoTo eh
-    Const PROC = "StackPop"
 
     If Not StackIsEmpty Then
-        If s <> vbNullString And StackTop = s Then
+        If itm <> vbNullString And StackTop = itm Then
             StackPop = dctStack.Items()(dctStack.Count - 1) ' Return the poped item
-            dctStack.Remove dctStack.Count                  ' Remove item s from stack
-#If ExecTrace Then
-            mTrc.EoP s, errinfo
-#End If
-        ElseIf s = vbNullString Then
-            dctStack.Remove dctStack.Count                  ' Unwind! Remove item s from stack
+            dctStack.Remove dctStack.Count                  ' Remove item itm from stack
+        ElseIf itm = vbNullString Then
+            dctStack.Remove dctStack.Count                  ' Unwind! Remove item itm from stack
         End If
     End If
     
@@ -595,6 +610,9 @@ Private Sub StackPush(ByVal s As String)
     If dctStack Is Nothing Then Set dctStack = New Dictionary
     If dctStack.Count = 0 Then
         sErrHndlrEntryProc = s ' First pushed = bottom item = entry procedure
+#If ExecTrace Then
+        mTrc.Terminate ' ensures any previous trace is erased
+#End If
     End If
     dctStack.Add dctStack.Count + 1, s
 
