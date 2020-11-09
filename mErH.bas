@@ -80,14 +80,14 @@ End Type                            ' -------------------
 
 Private cllErrPath          As Collection
 Private cllErrorPath        As Collection   ' managed by ErrPath... procedures exclusively
-Private dctStack            As Dictionary
+Private dctStck             As Dictionary
 Private sErrHndlrEntryProc  As String
 Private lSubsequErrNo       As Long ' a number possibly different from lInitialErrNo when it changes when passed on to the Entry Procedure
 Private lInitialErrLine     As Long
 Private lInitialErrNo       As Long
 Private sInitialErrSource   As String
 Private sInitialErrDscrptn  As String
-Private sInitialErrInfo         As String
+Private sInitialErrInfo     As String
 
 ' Test button, displayed with Conditional Compile Argument Test = 1
 Public Property Get ExitAndContinue() As String:        ExitAndContinue = "Exit procedure" & vbLf & "and continue" & vbLf & "with next":    End Property
@@ -103,7 +103,7 @@ Public Property Get ErrMsgDefaultButton() As String:    ErrMsgDefaultButton = "T
 
 Private Property Get StackEntryProc() As String
     If Not StackIsEmpty _
-    Then StackEntryProc = dctStack.Items()(0) _
+    Then StackEntryProc = dctStck.Items()(0) _
     Else StackEntryProc = vbNullString
 End Property
 
@@ -568,16 +568,16 @@ Public Function Space(ByVal l As Long) As String
 End Function
 
 Private Function StackBottom() As String
-    If Not StackIsEmpty Then StackBottom = dctStack.Items()(0)
+    If Not StackIsEmpty Then StackBottom = dctStck.Items()(0)
 End Function
 
 Private Sub StackErase()
-    If Not dctStack Is Nothing Then dctStack.RemoveAll
+    If Not dctStck Is Nothing Then dctStck.RemoveAll
 End Sub
 
 Public Function StackIsEmpty() As Boolean
-    StackIsEmpty = dctStack Is Nothing
-    If Not StackIsEmpty Then StackIsEmpty = dctStack.Count = 0
+    StackIsEmpty = dctStck Is Nothing
+    If Not StackIsEmpty Then StackIsEmpty = dctStck.Count = 0
 End Function
 
 Public Function StackPop( _
@@ -593,10 +593,10 @@ Public Function StackPop( _
 
     If Not StackIsEmpty Then
         If itm <> vbNullString And StackTop = itm Then
-            StackPop = dctStack.Items()(dctStack.Count - 1) ' Return the poped item
-            dctStack.Remove dctStack.Count                  ' Remove item itm from stack
+            StackPop = dctStck.Items()(dctStck.Count - 1) ' Return the poped item
+            dctStck.Remove dctStck.Count                  ' Remove item itm from stack
         ElseIf itm = vbNullString Then
-            dctStack.Remove dctStack.Count                  ' Unwind! Remove item itm from stack
+            dctStck.Remove dctStck.Count                  ' Unwind! Remove item itm from stack
         End If
     End If
     
@@ -607,18 +607,18 @@ End Function
 
 Private Sub StackPush(ByVal s As String)
 
-    If dctStack Is Nothing Then Set dctStack = New Dictionary
-    If dctStack.Count = 0 Then
+    If dctStck Is Nothing Then Set dctStck = New Dictionary
+    If dctStck.Count = 0 Then
         sErrHndlrEntryProc = s ' First pushed = bottom item = entry procedure
 #If ExecTrace Then
         mTrc.Terminate ' ensures any previous trace is erased
 #End If
     End If
-    dctStack.Add dctStack.Count + 1, s
+    dctStck.Add dctStck.Count + 1, s
 
 End Sub
 
 Private Function StackTop() As String
-    If Not StackIsEmpty Then StackTop = dctStack.Items()(dctStack.Count - 1)
+    If Not StackIsEmpty Then StackTop = dctStck.Items()(dctStck.Count - 1)
 End Function
 
