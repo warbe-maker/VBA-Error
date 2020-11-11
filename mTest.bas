@@ -11,7 +11,7 @@ Private Function RegressionTestInfo() As String
 ' ----------------------------------------------------
 ' Adds s to the Err.Description as an additional info.
 ' ----------------------------------------------------
-    RegressionTestInfo = err.Description
+    RegressionTestInfo = Err.Description
     If Not bRegressionTest Then Exit Function
     
     If InStr(RegressionTestInfo, CONCAT) <> 0 _
@@ -49,7 +49,7 @@ xt: mErH.EoP ErrSrc(PROC)
     bRegressionTest = False
     Exit Sub
     
-eh: mErH.ErrMsg errnumber:=err.Number, errsource:=ErrSrc(PROC), errdscrptn:=err.Description, errline:=Erl
+eh: mErH.ErrMsg errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl
 End Sub
 
 Public Sub Test_1_BoP_EoP()
@@ -65,7 +65,7 @@ Public Sub Test_1_BoP_EoP()
 xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
-eh: If mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
+eh: If mErH.ErrMsg(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_1_BoP_EoP_TestProc_1a_missing_BoP()
@@ -84,7 +84,7 @@ Private Sub Test_1_BoP_EoP_TestProc_1a_missing_BoP()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
+    If mErH.ErrMsg(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_1_BoP_EoP_TestProc_1b_paired_BoP_EoP()
@@ -97,7 +97,7 @@ Private Sub Test_1_BoP_EoP_TestProc_1b_paired_BoP_EoP()
     Exit Sub
     
 eh:
-    If mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
+    If mErH.ErrMsg(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_1_BoP_EoP_TestProc_1c_missing_EoC()
@@ -111,7 +111,7 @@ Private Sub Test_1_BoP_EoP_TestProc_1c_missing_EoC()
 xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
     
-eh: If mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
+eh: If mErH.ErrMsg(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_1_BoP_EoP_TestProc_1e_BoC_EoC()
@@ -131,7 +131,7 @@ Private Sub Test_1_BoP_EoP_TestProc_1e_BoC_EoC()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
+    If mErH.ErrMsg(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_1_BoP_EoP_TestProc_1d_missing_EoP()
@@ -145,7 +145,7 @@ Private Sub Test_1_BoP_EoP_TestProc_1d_missing_EoP()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
+    If mErH.ErrMsg(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Public Sub Test_2_Application_Error()
@@ -161,14 +161,14 @@ Public Sub Test_2_Application_Error()
     
     On Error GoTo eh
     
-'    mTrc.DisplayedInfo = Detailed
+    mTrc.DisplayedInfo = Detailed
     mErH.BoP ErrSrc(PROC)
     Test_2_Application_Error_TestProc_2a
 
 xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
-eh: Select Case mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl)
+eh: Select Case mErH.ErrMsg(Err.Number, ErrSrc(PROC), Err.Description, Erl)
         Case ResumeError: Stop: Resume
     End Select
 End Sub
@@ -184,7 +184,7 @@ Private Sub Test_2_Application_Error_TestProc_2a()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
+    If mErH.ErrMsg(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_2_Application_Error_TestProc_2b()
@@ -198,7 +198,7 @@ Private Sub Test_2_Application_Error_TestProc_2b()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
+    If mErH.ErrMsg(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_2_Application_Error_TestProc_2c()
@@ -212,7 +212,7 @@ Private Sub Test_2_Application_Error_TestProc_2c()
     Dim sErrDscrptn As String
 
     mErH.BoP ErrSrc(PROC)
-181 err.Raise AppErr(1), ErrSrc(PROC), _
+181 Err.Raise AppErr(1), ErrSrc(PROC), _
         "This is a programmed i.e. an ""Application Error""!" & CONCAT & _
         "The function AppErr() has been used to turn the positive into a negative number by adding the VB constant 'vbObjectError' to assure an error number which does not conflict with a VB Runtime error. " & _
         "The ErrMsg identified the negative number as an ""Application Error"" and converted it back to the orginal positive number by means of the AppErr() function." & vbLf & _
@@ -223,7 +223,7 @@ xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
 eh: sErrDscrptn = RegressionTestInfo
-    Select Case mErH.ErrMsg(err.Number, ErrSrc(PROC), sErrDscrptn, Erl)
+    Select Case mErH.ErrMsg(Err.Number, ErrSrc(PROC), sErrDscrptn, Erl)
         Case ResumeError:       Stop: Resume
         Case ResumeNext:        Resume Next
         Case ExitAndContinue:   GoTo xt
@@ -252,7 +252,7 @@ Public Sub Test_3_VB_Runtime_Error()
 xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
-eh: Select Case mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl)
+eh: Select Case mErH.ErrMsg(Err.Number, ErrSrc(PROC), Err.Description, Erl)
         Case ResumeError: Stop: Resume
         Case ResumeNext: Resume Next
         Case ExitAndContinue: GoTo xt
@@ -270,7 +270,7 @@ Private Sub Test_3_VB_Runtime_Error_TestProc_3a()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
+    If mErH.ErrMsg(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_3_VB_Runtime_Error_TestProc_3b()
@@ -284,7 +284,7 @@ Private Sub Test_3_VB_Runtime_Error_TestProc_3b()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
+    If mErH.ErrMsg(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_3_VB_Runtime_Error_TestProc_3c()
@@ -298,7 +298,7 @@ Private Sub Test_3_VB_Runtime_Error_TestProc_3c()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
+    If mErH.ErrMsg(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_3_VB_Runtime_Error_TestProc_3d()
@@ -320,7 +320,7 @@ xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
 eh: sErrDscrptn = RegressionTestInfo
-    Select Case mErH.ErrMsg(err.Number, ErrSrc(PROC), sErrDscrptn, Erl)
+    Select Case mErH.ErrMsg(Err.Number, ErrSrc(PROC), sErrDscrptn, Erl)
         Case ResumeError:       Stop: Resume
         Case ResumeNext:        Resume Next
         Case ExitAndContinue:   GoTo xt
@@ -342,7 +342,7 @@ Public Sub Test_4_DebugAndTest_with_ErrMsg()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
+    If mErH.ErrMsg(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_4_DebugAndTest_with_ErrMsg_TestProc_5a()
@@ -356,7 +356,7 @@ Private Sub Test_4_DebugAndTest_with_ErrMsg_TestProc_5a()
     Exit Sub
     
 eh:
-    Select Case mErH.ErrMsg(errnumber:=err.Number, errsource:=ErrSrc(PROC), errdscrptn:=err.Description, errline:=Erl)
+    Select Case mErH.ErrMsg(errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl)
         Case ResumeError: Stop: Resume ' Continue with F8 to end up at the code line which caused the error
     End Select
 End Sub
@@ -370,5 +370,5 @@ Public Sub Test_5_No_Exit_Statement()
     On Error GoTo eh
     
 eh:
-    If mErH.ErrMsg(err.Number, ErrSrc(PROC), err.Description, Erl) = ResumeError Then Stop: Resume
+    If mErH.ErrMsg(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
