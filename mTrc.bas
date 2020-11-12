@@ -440,16 +440,6 @@ Public Sub Dsply()
     If DisplayedInfo = 0 Then DisplayedInfo = Compact
 
     If Not DsplyNtryAllCnsstnt(dct) Then
-        For Each v In dct
-            sTrace = sTrace & dct(v) & v & vbLf
-        Next v
-        With fMsg
-            .msgtitle = "Inconsistent begin/end trace code lines!"
-            .MsgLabel(1) = "The following incositencies had been detected which made the display of the execution trace result useless:"
-            .MsgText(1) = sTrace:   .MsgMonoSpaced(1) = True
-            .Setup
-            .Show
-        End With
         mTrc.Terminate
         GoTo xt
     End If
@@ -691,13 +681,14 @@ Private Function DsplyNtryAllCnsstnt(ByRef dct As Dictionary) As Boolean
     Const PROC = "DsplyLn"
     
     On Error GoTo eh
-    Dim v                   As Variant
-    Dim cllEndEntry         As Collection
-    Dim cllBeginEntry       As Collection
-    Dim bConsistent         As Boolean
-    Dim i                   As Long
-    Dim j                   As Long
-    Dim sComment            As String
+    Dim v               As Variant
+    Dim cllEndEntry     As Collection
+    Dim cllBeginEntry   As Collection
+    Dim bConsistent     As Boolean
+    Dim i               As Long
+    Dim j               As Long
+    Dim sComment        As String
+    Dim sTrace          As String
     
     If dct Is Nothing Then Set dct = New Dictionary
         
@@ -736,16 +727,30 @@ next_begin_entry:
             If NtryTcksGrss(cllEndEntry) = 0 Then
                 '~~ No corresponding begin entry found
                 Select Case ItmDrctv(cllEndEntry)
-                    Case DIR_END_PROC: sComment = "No corresponding Begin of Procedure (BoP) code line in:  "
-                    Case DIR_END_CODE: sComment = "No corresponding Begin of CodeTrace (BoC) code line in:  "
+                    Case DIR_END_PROC: sComment = "Corresponding Begin of Procedure (BoP) code line missing in: "
+                    Case DIR_END_CODE: sComment = "Corresponding Begin of CodeTrace (BoC) code line missing in: "
                 End Select
-                If Not dct.Exists(ItmId(cllBeginEntry)) Then dct.Add ItmId(cllBeginEntry), sComment
+                If Not dct.Exists(ItmId(cllEndEntry)) Then dct.Add ItmId(cllEndEntry), sComment
             End If
         End If
     Next v
     
-    DsplyNtryAllCnsstnt = dct.Count = 0
-    Exit Function
+    If dct.Count > 0 Then
+        For Each v In dct
+            sTrace = sTrace & dct(v) & v & vbLf
+        Next v
+        With fMsg
+            .msgtitle = "Inconsistent begin/end trace code lines!"
+            .MsgLabel(1) = "The following incosistencies made a trace result display useless/impossible:"
+            .MsgText(1) = sTrace:   .MsgMonoSpaced(1) = True
+            .Setup
+            .Show
+        End With
+    Else
+        DsplyNtryAllCnsstnt = True
+    End If
+
+xt: Exit Function
 
 eh: ErrMsg errno:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl
 #If Debugging Then
@@ -1089,6 +1094,7 @@ Private Sub TrcAdd(ByVal id As String, _
     
     If cll Is Nothing Then Set cll = Ntry(tcks:=tcks, dir:=dir, id:=id, lvl:=lvl, inf:=inf)
     cllTrc.Add cll
+'    Debug.Print lvl & " " & dir & " " & id
     Set cllNtryLast = cll
 
 End Sub
@@ -1129,6 +1135,12 @@ Private Sub TrcEnd(ByVal id As String, _
         inf = COMMENT & inf & COMMENT
     End If
     
+    If Not StckEd(id:=id, lvl:=iTrcLvl) Then
+        '~~ The EoP/EoC statement does not match any BoP/BoC statement
+        TrcAdd id:=id, tcks:=cy, dir:=Trim(dir), lvl:=iTrcLvl + 1, inf:=inf, cll:=cll
+        Exit Sub
+    End If
+    
     If ItmId(top) <> id And ItmLvl(top) = iTrcLvl Then
         iTrcLvl = iTrcLvl - 1
         StckPop top
@@ -1145,6 +1157,26 @@ eh: ErrMsg errno:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Descripti
     Stop: Resume
 #End If
 End Sub
+
+Private Function StckEd(ByVal id As String, _
+                        ByVal lvl As Long) As Boolean
+' ---------------------------------------------------
+' Returns TRUE when an item (id) is on the stack with
+' a level (lvl)
+' ---------------------------------------------------
+    Dim v       As Variant
+    Dim cllNtry As Collection
+    
+    For Each v In cllStck
+        Set cllNtry = v
+        If ItmId(cllNtry) = id And ItmLvl(cllNtry) = lvl Then
+            StckEd = True
+            Exit Function
+        End If
+    Next v
+
+End Function
+
 
 Private Function TrcIsEmpty() As Boolean
     TrcIsEmpty = cllTrc Is Nothing
