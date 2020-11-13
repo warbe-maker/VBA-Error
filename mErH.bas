@@ -160,8 +160,8 @@ Public Function ErrMsg(ByVal errnumber As Long, _
     
     Static sLine    As String   ' provided error line (if any) for the the finally displayed message
     Dim sDetails    As String
-    
-    If ErrHndlrFailed(errnumber, errsource, errbuttons) Then Exit Function
+        
+    If ErrHndlrFailed(errnumber, errsource, errbuttons) Then GoTo xt
     If cllErrPath Is Nothing Then Set cllErrPath = New Collection
     If errline <> 0 Then sLine = errline Else sLine = "0"
     ErrHndlrManageButtons errbuttons
@@ -204,7 +204,13 @@ Public Function ErrMsg(ByVal errnumber As Long, _
         '~~ or the Entry Procedure is unknown or has been reached
         If Not ErrPathIsEmpty Then ErrPathAdd errsource
         '~~ Display the error message
+#If ExecTrace Then
+    mTrc.Pause
+#End If
         ErrMsg = ErrDsply(errnumber:=lInitialErrNo, errline:=lInitialErrLine, errbuttons:=errbuttons)
+#If ExecTrace Then
+    mTrc.Continue
+#End If
         Select Case ErrMsg
             Case ResumeError, ResumeNext, ExitAndContinue
             Case Else: ErrPathErase
@@ -219,18 +225,22 @@ Public Function ErrMsg(ByVal errnumber As Long, _
         lInitialErrNo = 0
     End If
     
-    '~~ Each time a known Entry Procedure is reached the execution trace
-    '~~ maintained by the BoP and mErH.EoP and the BoC and EoC statements is displayed
-    If StckEntryProc = errsource _
-    Or StckEntryProc = vbNullString Then
-        Select Case ErrMsg
-            Case ResumeError, ResumeNext, ExitAndContinue
-            Case vbOK
-            Case Else: StckErase
-        End Select
-    End If
-    mErH.StckPop errsource
-    
+'    '~~ Each time a known Entry Procedure is reached the execution trace
+'    '~~ maintained by the BoP and mErH.EoP and the BoC and EoC statements is displayed
+'    If StckEntryProc = errsource _
+'    Or StckEntryProc = vbNullString Then
+'        Select Case ErrMsg
+'            Case ResumeError, ResumeNext, ExitAndContinue
+'            Case vbOK
+'            Case Else: StckErase
+'        End Select
+'    End If
+'    mErH.StckPop errsource
+
+xt:
+#If ExecTrace Then
+'    mTrc.Continue
+#End If
 End Function
 
 Private Sub ErrHndlrManageButtons(ByRef errbuttons As Variant)

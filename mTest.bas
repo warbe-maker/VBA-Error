@@ -42,8 +42,8 @@ Public Sub Regression_Test()
     bRegressionTest = True
     mErH.BoP ErrSrc(PROC)
 '    Test_1_BoP_EoP
-    Test_2_Application_Error
-    Test_3_VB_Runtime_Error
+    Test_1_Application_Error
+    Test_2_VB_Runtime_Error
 
 xt: mErH.EoP ErrSrc(PROC)
     bRegressionTest = False
@@ -52,7 +52,7 @@ xt: mErH.EoP ErrSrc(PROC)
 eh: mErH.ErrMsg errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl
 End Sub
 
-Public Sub Test_2_Application_Error()
+Public Sub Test_1_Application_Error()
 ' -----------------------------------------------------------
 ' This test procedure obligatory after any code modification.
 ' The option to continue with the next test procedure (in
@@ -61,13 +61,13 @@ Public Sub Test_2_Application_Error()
 ' The display of an execution trace along with this test
 ' requires a Conditional Compile Argument ExecTrace = 1.
 ' ------------------------------------------------------
-    Const PROC = "Test_2_Application_Error"
+    Const PROC = "Test_1_Application_Error"
     
     On Error GoTo eh
     
     mTrc.DisplayedInfo = Detailed
     mErH.BoP ErrSrc(PROC)
-    Test_2_Application_Error_TestProc_2a
+    Test_1_Application_Error_TestProc_2a
 
 xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
@@ -77,13 +77,13 @@ eh: Select Case mErH.ErrMsg(Err.Number, ErrSrc(PROC), Err.Description, Erl)
     End Select
 End Sub
 
-Private Sub Test_2_Application_Error_TestProc_2a()
-    Const PROC = "Test_2_Application_Error_TestProc_2a"
+Private Sub Test_1_Application_Error_TestProc_2a()
+    Const PROC = "Test_1_Application_Error_TestProc_2a"
     
     On Error GoTo eh
     
     mErH.BoP ErrSrc(PROC)
-    Test_2_Application_Error_TestProc_2b
+    Test_1_Application_Error_TestProc_2b
     mErH.EoP ErrSrc(PROC)
     Exit Sub
 
@@ -91,13 +91,13 @@ eh:
     If mErH.ErrMsg(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
-Private Sub Test_2_Application_Error_TestProc_2b()
-    Const PROC = "Test_2_Application_Error_TestProc_2b"
+Private Sub Test_1_Application_Error_TestProc_2b()
+    Const PROC = "Test_1_Application_Error_TestProc_2b"
     
     On Error GoTo eh
     
     mErH.BoP ErrSrc(PROC)
-    Test_2_Application_Error_TestProc_2c
+    Test_1_Application_Error_TestProc_2c
     mErH.EoP ErrSrc(PROC)
     Exit Sub
 
@@ -105,12 +105,12 @@ eh:
     If mErH.ErrMsg(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
-Private Sub Test_2_Application_Error_TestProc_2c()
+Private Sub Test_1_Application_Error_TestProc_2c()
 ' ------------------------------------------------
 ' Note: The line number is added just for test to
 ' demonstrate how it effects the error message.
 ' ------------------------------------------------
-    Const PROC = "Test_2_Application_Error_TestProc_2c"
+    Const PROC = "Test_1_Application_Error_TestProc_2c"
     
     On Error GoTo eh
     Dim sErrDscrptn As String
@@ -134,7 +134,7 @@ eh: sErrDscrptn = RegressionTestInfo
     End Select
 End Sub
 
-Public Sub Test_3_VB_Runtime_Error()
+Public Sub Test_2_VB_Runtime_Error()
 ' -----------------------------------------------
 ' - With Conditional Compile Argument BopEop = 0:
 '   Display of the error with the error path only
@@ -145,13 +145,13 @@ Public Sub Test_3_VB_Runtime_Error()
 ' Requires:
 ' - Conditional Compile Argument ExecTrace = 1.
 ' -----------------------------------------------
-    Const PROC = "Test_3_VB_Runtime_Error"
+    Const PROC = "Test_2_VB_Runtime_Error"
     
     On Error GoTo eh
     
     mTrc.DisplayedInfo = Detailed
     mErH.BoP ErrSrc(PROC)
-    Test_3_VB_Runtime_Error_TestProc_3a
+    Test_2_VB_Runtime_Error_TestProc_3a
 
 xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
@@ -163,13 +163,13 @@ eh: Select Case mErH.ErrMsg(Err.Number, ErrSrc(PROC), Err.Description, Erl)
     End Select
 End Sub
 
-Private Sub Test_3_VB_Runtime_Error_TestProc_3a()
-    Const PROC = "Test_3_VB_Runtime_Error_TestProc_3a"
+Private Sub Test_2_VB_Runtime_Error_TestProc_3a()
+    Const PROC = "Test_2_VB_Runtime_Error_TestProc_3a"
     
     On Error GoTo eh
 
     mErH.BoP ErrSrc(PROC)
-    Test_3_VB_Runtime_Error_TestProc_3b
+    Test_2_VB_Runtime_Error_TestProc_3b
     mErH.EoP ErrSrc(PROC)
     Exit Sub
 
@@ -177,13 +177,13 @@ eh:
     If mErH.ErrMsg(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
-Private Sub Test_3_VB_Runtime_Error_TestProc_3b()
-    Const PROC = "Test_3_VB_Runtime_Error_TestProc_3b"
+Private Sub Test_2_VB_Runtime_Error_TestProc_3b()
+    Const PROC = "Test_2_VB_Runtime_Error_TestProc_3b"
     
     On Error GoTo eh
 
     mErH.BoP ErrSrc(PROC)
-    Test_3_VB_Runtime_Error_TestProc_3c
+    Test_2_VB_Runtime_Error_TestProc_3c
     mErH.EoP ErrSrc(PROC)
     Exit Sub
 
@@ -191,13 +191,13 @@ eh:
     If mErH.ErrMsg(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
-Private Sub Test_3_VB_Runtime_Error_TestProc_3c()
-    Const PROC = "Test_3_VB_Runtime_Error_TestProc_3c"
+Private Sub Test_2_VB_Runtime_Error_TestProc_3c()
+    Const PROC = "Test_2_VB_Runtime_Error_TestProc_3c"
     
     On Error GoTo eh
     
     mErH.BoP ErrSrc(PROC)
-    Test_3_VB_Runtime_Error_TestProc_3d
+    Test_2_VB_Runtime_Error_TestProc_3d
     mErH.EoP ErrSrc(PROC)
     Exit Sub
 
@@ -205,13 +205,13 @@ eh:
     If mErH.ErrMsg(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
 End Sub
 
-Private Sub Test_3_VB_Runtime_Error_TestProc_3d()
+Private Sub Test_2_VB_Runtime_Error_TestProc_3d()
 ' ------------------------------------------------
 ' Note: The error line intentionally has no line
 ' number to demonstrate how it effects the error
 ' message.
 ' ------------------------------------------------
-    Const PROC = "Test_3_VB_Runtime_Error_TestProc_3d"
+    Const PROC = "Test_2_VB_Runtime_Error_TestProc_3d"
     
     On Error GoTo eh
     Dim sErrDscrptn As String
