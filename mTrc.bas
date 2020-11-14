@@ -50,6 +50,7 @@ Private Const POS_ITMID         As Long = 2
 Private Const POS_ITMINF        As Long = 3
 Private Const POS_ITMLVL        As Long = 4
 Private Const POS_ITMTCKSSYS    As Long = 5
+Private Const POS_ITMARGS       As Long = 6
 
 Private cllStck             As Collection       ' Trace stack
 Private cllNtryLast         As Collection       '
@@ -112,6 +113,9 @@ End Property
 
 Private Property Get DsplyLnIndnttn(Optional ByRef entry As Collection) As String
     DsplyLnIndnttn = Repeat("|  ", ItmLvl(entry))
+End Property
+Private Property Get ItmArgs(Optional ByRef entry As Collection) As Variant
+    ItmArgs = entry("I")(POS_ITMARGS)
 End Property
 
 Private Property Get ItmDrctv(Optional ByRef entry As Collection) As String
@@ -249,38 +253,43 @@ Private Property Get SysFrequency() As Currency
     SysFrequency = cySysFrequency
 End Property
 
-Public Sub BoC(ByVal s As String)
-' -------------------------------
-' Begin of Code trace.
-' -------------------------------
+Public Sub BoC(ByVal traced_code As String)
+' ---------------------------------------------
+' Begin of the trace of a number of code lines.
+' Note: When the Conditional Compile Argument
+'       ExecTrace = 0 BoC is inactive.
+' ---------------------------------------------
 #If ExecTrace Then
     Dim cll As Collection
     cyTcksOvrhdTrcStrt = SysCrrntTcks
     
-    TrcBgn id:=s, dir:=DIR_BEGIN_CODE, cll:=cll
+    TrcBgn id:=traced_code, dir:=DIR_BEGIN_CODE, cll:=cll
     cyTcksOvrhdTrc = SysCrrntTcks - cyTcksOvrhdTrcStrt ' overhead ticks caused by the collection of the begin trace entry
 #End If
 End Sub
 
-Public Sub BoP(ByVal s As String)
-' -------------------------------
+Public Sub BoP(ByVal traced_procedure As String, _
+          ParamArray traced_arguments() As Variant)
+' -------------------------------------------------
 ' Trace Begin of Procedure
-' -------------------------------
+' Note: When the Conditional Compile Argument
+'       ExecTrace = 0 BoP is inactive.
+' -------------------------------------------------
 #If ExecTrace Then
     Dim cll As Collection
     
     cyTcksOvrhdTrcStrt = SysCrrntTcks
     If TrcIsEmpty Then
         Initialize
-        sFirstTraceItem = s
+        sFirstTraceItem = traced_procedure
     Else
-        If s = sFirstTraceItem Then
+        If traced_procedure = sFirstTraceItem Then
             '~~ A previous trace had not come to a regular end and thus will be erased
             Set cllTrc = Nothing
             Initialize
         End If
     End If
-    TrcBgn id:=s, dir:=DIR_BEGIN_PROC, cll:=cll
+    TrcBgn id:=traced_procedure, dir:=DIR_BEGIN_PROC, args:=traced_arguments, cll:=cll
     cyTcksOvrhdTrc = SysCrrntTcks - cyTcksOvrhdTrcStrt ' overhead ticks caused by the collection of the begin trace entry
 #End If
 End Sub
@@ -462,6 +471,8 @@ Public Sub Dsply()
     For Each v In cllTrc
         Set entry = v
         sTrace = sTrace & vbLf & DsplyLn(entry)
+        If DsplyArgs(entry) <> vbNullString Then
+        End If
     Next v
     sTrace = sTrace & vbLf & DsplyFtr(lLenHeader)
     With fMsg
@@ -636,12 +647,31 @@ Public Function DsplyHdrCntrAbv(ByVal s1 As String, _
     
 End Function
 
+Private Function DsplyArgs(ByVal entry As Collection) As String
+    Dim va()    As Variant
+    Dim i       As Long
+    
+    On Error Resume Next
+    va = ItmArgs(entry)
+    If Err.Number <> 0 Then Exit Function
+    i = LBound(va)
+    If Err.Number <> 0 Then Exit Function
+    
+    For i = i To UBound(va)
+        If DsplyArgs <> vbNullString Then DsplyArgs = DsplyArgs & "  "
+        DsplyArgs = DsplyArgs & ">" & CStr(va(i)) & "<"
+    Next i
+    If DsplyArgs <> vbNullString Then DsplyArgs = "|  Argument values: " & DsplyArgs
+End Function
+
 Private Function DsplyLn(ByVal entry As Collection) As String
 ' -------------------------------------------------------------
 ' Returns a trace line for being displayed.
 ' -------------------------------------------------------------
     Const PROC = "DsplyLn"
     On Error GoTo eh
+    Dim lLenData    As Long
+    Dim sArgs       As String
     
     Select Case DisplayedInfo
         Case Compact
@@ -650,8 +680,14 @@ Private Function DsplyLn(ByVal entry As Collection) As String
               & " " & DsplyValue(entry, NtryScsNt(entry), sFrmtScsNt) _
               & " " & DsplyLnIndnttn(entry) _
                     & ItmDrctv(entry) _
-              & " " & ItmId(entry) _
+              & " "
+              
+              lLenData = Len(DsplyLn)
+
+              DsplyLn = DsplyLn _
+                    & ItmId(entry) _
               & " " & ItmInf(entry)
+              
         Case Detailed
             DsplyLn = _
                         DsplyValue(entry, ItmTcksSys(entry), sFrmtTcksSys) _
@@ -665,11 +701,21 @@ Private Function DsplyLn(ByVal entry As Collection) As String
                 & " " & DsplyValue(entry, NtryScsOvrhdNtry(entry), sFrmtScsOvrhdItm) _
                 & " " & DsplyValue(entry, NtryScsOvrhdItm(entry), sFrmtScsOvrhdItm) _
                 & " " & DsplyValue(entry, NtryScsNt(entry), sFrmtScsNt) _
-                & " " & DsplyLnIndnttn(entry) _
+                & " "
+
+                lLenData = Len(DsplyLn)
+                
+                DsplyLn = DsplyLn _
+                      & DsplyLnIndnttn(entry) _
                       & ItmDrctv(entry) _
                 & " " & ItmId(entry) _
                 & " " & ItmInf(entry)
     End Select
+
+    sArgs = DsplyArgs(entry)
+    If sArgs <> vbNullString Then
+        DsplyLn = DsplyLn & vbLf & String(lLenData, " ") & DsplyLnIndnttn(entry) & sArgs
+    End If
 
 xt: Exit Function
 
@@ -818,9 +864,11 @@ End Sub
 
 Public Sub EoC(ByVal id As String, _
       Optional ByVal inf As String = vbNullString)
-' ---------------------------------------------------
-'
-' ---------------------------------------------------
+' ------------------------------------------------
+' End of the trace of a number of code lines.
+' Note: When the Conditional Compole Argument
+'       ExecTrace = 0 EoC is inactive.
+' ------------------------------------------------
 #If ExecTrace Then
     Dim cll As Collection
     
@@ -837,6 +885,8 @@ Public Sub EoP(ByVal id As String, _
       Optional ByVal inf As String = vbNullString)
 ' ------------------------------------------------
 ' Trace of the End of a Procedure.
+' Note: When the Conditional Compole Argument
+'       ExecTrace = 0 EoC is inactive.
 ' ------------------------------------------------
 #If ExecTrace Then
     Dim cll As Collection
@@ -956,18 +1006,20 @@ Private Function Itm( _
                ByVal id As String, _
                ByVal inf As String, _
                ByVal lvl As Long, _
-               ByVal tckssys As Currency) As Variant()
+               ByVal tckssys As Currency, _
+               ByVal args As Variant) As Variant()
 ' -------------------------------------------------------
 ' Returns an array with the arguments ordered by their
 ' position (alias key)
 ' -------------------------------------------------------
-    Dim av(1 To 5) As Variant
+    Dim av(1 To 6) As Variant
     
     av(POS_ITMDRCTV) = drctv
     av(POS_ITMID) = id
     av(POS_ITMINF) = inf
     av(POS_ITMLVL) = lvl
     av(POS_ITMTCKSSYS) = tckssys
+    av(POS_ITMARGS) = args
     Itm = av
     
 End Function
@@ -989,7 +1041,8 @@ Private Function Ntry(ByVal tcks As Currency, _
                       ByVal dir As String, _
                       ByVal id As String, _
                       ByVal lvl As Long, _
-                      ByVal inf As String) As Collection
+                      ByVal inf As String, _
+                      ByVal args As Variant) As Collection
 ' ------------------------------------------------------
 ' Return the arguments as elements in an array as an
 ' item in a collection.
@@ -998,7 +1051,7 @@ Private Function Ntry(ByVal tcks As Currency, _
     Dim cll As New Collection
     Dim VarItm  As Variant
     
-    VarItm = Itm(drctv:=dir, id:=id, inf:=inf, lvl:=lvl, tckssys:=tcks)
+    VarItm = Itm(drctv:=dir, id:=id, inf:=inf, lvl:=lvl, tckssys:=tcks, args:=args)
     NtryItm(cll) = VarItm
     Set Ntry = cll
     
@@ -1166,6 +1219,7 @@ Private Sub TrcAdd(ByVal id As String, _
                    ByVal tcks As Currency, _
                    ByVal dir As String, _
                    ByVal lvl As Long, _
+          Optional ByVal args As Variant, _
           Optional ByVal inf As String = vbNullString, _
           Optional ByRef cll As Collection)
 ' ------------------------------------------------------
@@ -1174,6 +1228,7 @@ Private Sub TrcAdd(ByVal id As String, _
     Static sLastDrctv   As String
     Static sLastId      As String
     Static lLastLvl     As String
+    
     Dim bAlreadyAdded   As Boolean
     
     If Not cllNtryLast Is Nothing Then
@@ -1185,9 +1240,9 @@ Private Sub TrcAdd(ByVal id As String, _
     End If
     
     If Not bAlreadyAdded Then
-        If cll Is Nothing Then Set cll = Ntry(tcks:=tcks, dir:=dir, id:=id, lvl:=lvl, inf:=inf)
+        Set cll = Ntry(tcks:=tcks, dir:=dir, id:=id, lvl:=lvl, inf:=inf, args:=args)
         cllTrc.Add cll
-        Debug.Print lvl & " " & dir & " " & id
+'        Debug.Print lvl & " " & dir & " " & id
         Set cllNtryLast = cll
         sLastDrctv = dir
         sLastId = id
@@ -1200,18 +1255,18 @@ End Sub
 
 Private Sub TrcBgn(ByVal id As String, _
                    ByVal dir As String, _
+          Optional ByVal args As Variant, _
           Optional ByRef cll As Collection)
-' -----------------------------------------
-' Collect a trace begin entry with the
-' current ticks count for the procedure or
-' code (item).
-' -----------------------------------------
+' ----------------------------------------------
+' Collect a trace begin entry with the current
+' ticks count for the procedure or code (item).
+' ----------------------------------------------
     
     Dim cy  As Currency:    cy = SysCrrntTcks - cyTcksPaused
-    
+    Dim i As Long
+           
     iTrcLvl = iTrcLvl + 1
-    Set cll = Ntry(tcks:=cy, dir:=dir, id:=id, lvl:=iTrcLvl, inf:=vbNullString)
-    TrcAdd id:=id, tcks:=cy, dir:=dir, lvl:=iTrcLvl, inf:=vbNullString, cll:=cll
+    TrcAdd id:=id, tcks:=cy, dir:=dir, lvl:=iTrcLvl, inf:=vbNullString, args:=args, cll:=cll
     StckPush cll
 
 End Sub
