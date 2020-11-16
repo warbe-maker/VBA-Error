@@ -318,7 +318,7 @@ Private Sub ComputeSecsGrssOvrhdNet()
 
 xt: Exit Sub
 
-eh: ErrMsg err_no:=Err.Number, err_source:=ErrSrc(PROC), err_dscrptn:=Err.Description, err_line:=Erl
+eh: ErrMsg err_source:=ErrSrc(PROC)
 #If Debugging Then
     Stop: Resume
 #End If
@@ -345,7 +345,7 @@ Private Function ComputeSecsOvrhdTtlEntry() As Double
 
 xt: Exit Function
 
-eh: ErrMsg err_no:=Err.Number, err_source:=ErrSrc(PROC), err_dscrptn:=Err.Description, err_line:=Erl
+eh: ErrMsg err_source:=ErrSrc(PROC)
 #If Debugging Then
     Stop: Resume
 #End If
@@ -374,7 +374,7 @@ Private Sub ComputeTcksElpsd()
 
 xt: Exit Sub
 
-eh: ErrMsg err_no:=Err.Number, err_source:=ErrSrc(PROC), err_dscrptn:=Err.Description, err_line:=Erl
+eh: ErrMsg err_source:=ErrSrc(PROC)
 #If Debugging Then
     Stop: Resume
 #End If
@@ -401,7 +401,7 @@ Private Sub ComputeTcksNet()
 
 xt: Exit Sub
 
-eh: ErrMsg err_no:=Err.Number, err_source:=ErrSrc(PROC), err_dscrptn:=Err.Description, err_line:=Erl
+eh: ErrMsg err_source:=ErrSrc(PROC)
 #If Debugging Then
     Stop: Resume
 #End If
@@ -428,7 +428,7 @@ Private Function ComputeTcksOvrhdItem() As Currency
 
 xt: Exit Function
 
-eh: ErrMsg err_no:=Err.Number, err_source:=ErrSrc(PROC), err_dscrptn:=Err.Description, err_line:=Erl
+eh: ErrMsg err_source:=ErrSrc(PROC)
 #If Debugging Then
     Stop: Resume
 #End If
@@ -477,7 +477,7 @@ Public Sub Dsply()
     sTrace = sTrace & vbLf & DsplyFtr(lLenHeader)
     With fMsg
         .MaxFormWidthPrcntgOfScreenSize = 95
-        .msgtitle = "Execution Trace, displayed because the Conditional Compile Argument ""ExecTrace = 1""!"
+        .MsgTitle = "Execution Trace, displayed because the Conditional Compile Argument ""ExecTrace = 1""!"
         .MsgText(1) = sTrace:   .MsgMonoSpaced(1) = True
         .MsgLabel(2) = "About overhead, precision, etc.:": .MsgText(2) = DsplyAbout
         .Setup
@@ -487,7 +487,7 @@ Public Sub Dsply()
 xt: mTrc.Terminate
     Exit Sub
     
-eh: ErrMsg err_no:=Err.Number, err_source:=ErrSrc(PROC), err_dscrptn:=Err.Description, err_line:=Erl
+eh: ErrMsg err_source:=ErrSrc(PROC)
 #If Debugging Then
     Stop: Resume
 #End If
@@ -621,7 +621,7 @@ Private Function DsplyHdr(ByRef lLenHeaderData As Long) As String
 
 xt: Exit Function
 
-eh: ErrMsg err_no:=Err.Number, err_source:=ErrSrc(PROC), err_dscrptn:=Err.Description, err_line:=Erl
+eh: ErrMsg err_source:=ErrSrc(PROC)
 #If Debugging Then
     Stop: Resume
 #End If
@@ -719,7 +719,7 @@ Private Function DsplyLn(ByVal entry As Collection) As String
 
 xt: Exit Function
 
-eh: ErrMsg err_no:=Err.Number, err_source:=ErrSrc(PROC), err_dscrptn:=Err.Description, err_line:=Erl
+eh: ErrMsg err_source:=ErrSrc(PROC)
 #If Debugging Then
     Stop: Resume
 #End If
@@ -796,7 +796,7 @@ next_begin_entry:
             sTrace = sTrace & dct(v) & v & vbLf
         Next v
         With fMsg
-            .msgtitle = "Inconsistent begin/end trace code lines!"
+            .MsgTitle = "Inconsistent begin/end trace code lines!"
             .MsgLabel(1) = "The following incosistencies made a trace result display useless/impossible:"
             .MsgText(1) = sTrace:   .MsgMonoSpaced(1) = True
             .Setup
@@ -808,7 +808,7 @@ next_begin_entry:
 
 xt: Exit Function
 
-eh: ErrMsg err_no:=Err.Number, err_source:=ErrSrc(PROC), err_dscrptn:=Err.Description, err_line:=Erl
+eh: ErrMsg err_source:=ErrSrc(PROC)
 #If Debugging Then
     Stop: Resume
 #End If
@@ -902,10 +902,11 @@ Public Sub EoP(ByVal id As String, _
 #End If
 End Sub
 
-Private Sub ErrMsg(ByVal err_no As Long, _
-                   ByVal err_source As String, _
-                   ByVal err_dscrptn As String, _
-                   ByVal err_line As Long)
+Private Sub ErrMsg( _
+             ByVal err_source As String, _
+    Optional ByVal err_no As Long = 0, _
+    Optional ByVal err_dscrptn As String = vbNullString, _
+    Optional ByVal err_line As Long = 0)
 ' --------------------------------------------------
 ' Note! Because the mTrc trace module is an optional
 '       module of the mErH error handler module it
@@ -915,6 +916,10 @@ Private Sub ErrMsg(ByVal err_no As Long, _
 ' --------------------------------------------------
     Dim sTitle      As String
     Dim sDetails    As String
+    
+    If err_no = 0 Then err_no = Err.Number
+    If err_dscrptn = vbNullString Then err_dscrptn = Err.Description
+    If err_line = 0 Then err_line = Erl
     
     ErrMsgMatter err_source:=err_source, err_no:=err_no, err_line:=err_line, err_dscrptn:=err_dscrptn, msg_title:=sTitle, msg_details:=sDetails
     
@@ -1306,7 +1311,7 @@ Private Sub TrcEnd(ByVal id As String, _
 
 xt: Exit Sub
     
-eh: ErrMsg err_no:=Err.Number, err_source:=ErrSrc(PROC), err_dscrptn:=Err.Description, err_line:=Erl
+eh: ErrMsg err_source:=ErrSrc(PROC)
 #If Debugging Then
     Stop: Resume
 #End If

@@ -23,17 +23,16 @@ End Function
 Public Sub Regression_Test()
 ' -----------------------------------------------------------------------------
 ' 1. This regression test requires the Conditional Compile Argument "Test = 1"
-'    which provides additional buttons to continue with the next test after a
-'    procedure which tests an error condition
-' 2. The BoP/EoP statements in this regression test procedure produce one
-'    execution trace at the end of this regression test provided the
-'    Conditional Compile Argument "ExecTrace = 1". Attention must be paid on
-'    the execution time however because it will include the time used by the
-'    user action when an error message is displayed!
-' 3. The Conditional Compile Argument "Debugging = 1" allows to identify the
-'    code line which causes the error through an extra "Resume error code line"
-'    button displayed with the error message and processed when clicked as
-'    "Stop: Resume" when the button is clicked.
+' 2. The BoP/EoP statements in this regression test procedure produce one final
+'    execution trace provided the Conditional Compile Argument "ExecTrace = 1".
+' 3. The Conditional Compile Argument "Debugging = 1" would allow to identify
+'    the code line which causes the error through an extra
+'    "Debug: Resume error code line" button displayed with the error message
+'    and processed when clicked as "Stop: Resume" when the button is clicked.
+' 4. Error conditions tested provide the asserted error number which bypasses
+'    the display of the error message - which is documented in the execution
+'    trace however. By avoiding a user action required when the error is
+'    displayed allows a fully automated regression test.
 ' ------------------------------------------------------------------------------
     Const PROC = "Regression_Test"
     
@@ -41,7 +40,6 @@ Public Sub Regression_Test()
     
     bRegressionTest = True
     mErH.BoP ErrSrc(PROC)
-'    Test_1_BoP_EoP
     Test_1_Application_Error
     Test_2_VB_Runtime_Error
 
@@ -49,7 +47,7 @@ xt: mErH.EoP ErrSrc(PROC)
     bRegressionTest = False
     Exit Sub
     
-eh: mErH.ErrMsg errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl
+eh: mErH.ErrMsg err_source:=ErrSrc(PROC)
 End Sub
 
 Public Sub Test_1_Application_Error()
@@ -72,7 +70,7 @@ Public Sub Test_1_Application_Error()
 xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
-eh: Select Case mErH.ErrMsg(Err.Number, ErrSrc(PROC), Err.Description, Erl)
+eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
         Case ResumeError: Stop: Resume
     End Select
 End Sub
@@ -88,7 +86,7 @@ Private Sub Test_1_Application_Error_TestProc_2a()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
+    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_1_Application_Error_TestProc_2b()
@@ -102,7 +100,7 @@ Private Sub Test_1_Application_Error_TestProc_2b()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
+    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_1_Application_Error_TestProc_2c()
@@ -113,7 +111,6 @@ Private Sub Test_1_Application_Error_TestProc_2c()
     Const PROC = "Test_1_Application_Error_TestProc_2c"
     
     On Error GoTo eh
-    Dim sErrDscrptn As String
 
     mErH.BoP ErrSrc(PROC)
 181 Err.Raise AppErr(1), ErrSrc(PROC), _
@@ -126,8 +123,7 @@ Private Sub Test_1_Application_Error_TestProc_2c()
 xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
-eh: sErrDscrptn = RegressionTestInfo
-    Select Case mErH.ErrMsg(Err.Number, ErrSrc(PROC), sErrDscrptn, Erl)
+eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC), err_dscrptn:=RegressionTestInfo, err_asserted:=AppErr(1))
         Case ResumeError:       Stop: Resume
         Case ResumeNext:        Resume Next
         Case ExitAndContinue:   GoTo xt
@@ -156,7 +152,7 @@ Public Sub Test_2_VB_Runtime_Error()
 xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
-eh: Select Case mErH.ErrMsg(Err.Number, ErrSrc(PROC), Err.Description, Erl)
+eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
         Case ResumeError: Stop: Resume
         Case ResumeNext: Resume Next
         Case ExitAndContinue: GoTo xt
@@ -174,7 +170,7 @@ Private Sub Test_2_VB_Runtime_Error_TestProc_3a()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
+    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_2_VB_Runtime_Error_TestProc_3b()
@@ -188,7 +184,7 @@ Private Sub Test_2_VB_Runtime_Error_TestProc_3b()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
+    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_2_VB_Runtime_Error_TestProc_3c()
@@ -202,7 +198,7 @@ Private Sub Test_2_VB_Runtime_Error_TestProc_3c()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
+    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_2_VB_Runtime_Error_TestProc_3d()
@@ -214,7 +210,6 @@ Private Sub Test_2_VB_Runtime_Error_TestProc_3d()
     Const PROC = "Test_2_VB_Runtime_Error_TestProc_3d"
     
     On Error GoTo eh
-    Dim sErrDscrptn As String
     
     mErH.BoP ErrSrc(PROC)
     Dim l As Long
@@ -223,8 +218,7 @@ Private Sub Test_2_VB_Runtime_Error_TestProc_3d()
 xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
-eh: sErrDscrptn = RegressionTestInfo
-    Select Case mErH.ErrMsg(Err.Number, ErrSrc(PROC), sErrDscrptn, Erl)
+eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC), err_dscrptn:=RegressionTestInfo, err_asserted:=11)
         Case ResumeError:       Stop: Resume
         Case ResumeNext:        Resume Next
         Case ExitAndContinue:   GoTo xt
@@ -246,7 +240,7 @@ Public Sub Test_4_DebugAndTest_with_ErrMsg()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
+    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_4_DebugAndTest_with_ErrMsg_TestProc_5a()
@@ -260,7 +254,7 @@ Private Sub Test_4_DebugAndTest_with_ErrMsg_TestProc_5a()
     Exit Sub
     
 eh:
-    Select Case mErH.ErrMsg(errnumber:=Err.Number, errsource:=ErrSrc(PROC), errdscrptn:=Err.Description, errline:=Erl)
+    Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
         Case ResumeError: Stop: Resume ' Continue with F8 to end up at the code line which caused the error
     End Select
 End Sub
@@ -274,5 +268,5 @@ Public Sub Test_5_No_Exit_Statement()
     On Error GoTo eh
     
 eh:
-    If mErH.ErrMsg(Err.Number, ErrSrc(PROC), Err.Description, Erl) = ResumeError Then Stop: Resume
+    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = ResumeError Then Stop: Resume
 End Sub

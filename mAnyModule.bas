@@ -20,7 +20,7 @@ xt: ' any "finally" code
     mErH.EoP ErrSrc(PROC) ' End of Procedure (pop stack and end of execution trace)
     Exit Sub
 
-eh: mErH.ErrMsg Err.Number, ErrSrc(PROC), Err.Description, Erl
+eh: mErH.ErrMsg err_source:=ErrSrc(PROC)
 End Sub
 
 Private Function ErrSrc(ByVal sProc As String) As String

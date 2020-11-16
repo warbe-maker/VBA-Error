@@ -443,7 +443,7 @@ Public Property Let MsgText(Optional ByVal section As Long, ByVal s As String)
     dctSectionsText(section) = s
 End Property
 
-Public Property Let msgtitle(ByVal s As String):                                        sTitle = s: SetupTitle:                                                     End Property
+Public Property Let MsgTitle(ByVal s As String):                                        sTitle = s: SetupTitle:                                                     End Property
 
 Private Property Get PrcntgHeightButtonsArea() As Single
     PrcntgHeightButtonsArea = Round(DsgnButtonsArea.Height / (DsgnMsgArea.Height + DsgnButtonsArea.Height), 2)
