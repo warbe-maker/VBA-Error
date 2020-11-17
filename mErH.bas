@@ -60,14 +60,14 @@ Public Enum StartupPosition         ' ---------------------------
     WindowsDefault = 3              ' centered on the screen
 End Enum                            ' ---------------------------
 
-Public Type tSection                ' ------------------
-       sLabel As String             ' Structure of the
-       sText As String              ' UserForm's
-       bMonspaced As Boolean        ' message area which
-End Type                            ' consists of
-Public Type tMessage                ' three message
-       section(1 To 4) As tSection  ' sections
-End Type                            ' -------------------
+Public Type tMsgSection                 ' ---------------------
+       sLabel As String                 ' Structure of the
+       sText As String                  ' UserForm's message
+       bMonspaced As Boolean            ' area which consists
+End Type                                ' of 4 message sections
+Public Type tMsg                        ' Attention: 4 is a
+       section(1 To 4) As tMsgSection   ' design constant!
+End Type                                ' ---------------------
 
 Private cllErrPath          As Collection
 Private cllErrorPath        As Collection   ' managed by ErrPath... procedures exclusively
@@ -461,7 +461,7 @@ Private Sub ErrMsgMatter(ByVal err_source As String, _
     msg_details = IIf(err_line <> 0, msg_type & msg_no & " in " & err_source & " (at line " & err_line & ")", msg_type & msg_no & " in " & err_source)
     msg_dscrptn = IIf(InStr(err_dscrptn, CONCAT) <> 0, Split(err_dscrptn, CONCAT)(0), err_dscrptn)
     If InStr(err_dscrptn, CONCAT) <> 0 Then msg_info = Split(err_dscrptn, CONCAT)(1)
-    msg_source = Application.Name & ":  " & Application.ActiveWindow.Caption & ":  " & err_source
+    msg_source = Application.Name & ":  " & Application.ActiveWindow.caption & ":  " & err_source
     
 End Sub
 

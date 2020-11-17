@@ -23,16 +23,17 @@ End Function
 Public Sub Regression_Test()
 ' -----------------------------------------------------------------------------
 ' 1. This regression test requires the Conditional Compile Argument "Test = 1"
+'    to run un-attended
 ' 2. The BoP/EoP statements in this regression test procedure produce one final
 '    execution trace provided the Conditional Compile Argument "ExecTrace = 1".
-' 3. The Conditional Compile Argument "Debugging = 1" would allow to identify
-'    the code line which causes the error through an extra
-'    "Debug: Resume error code line" button displayed with the error message
-'    and processed when clicked as "Stop: Resume" when the button is clicked.
-' 4. Error conditions tested provide the asserted error number which bypasses
+' 3. Error conditions tested provide the asserted error number which bypasses
 '    the display of the error message - which is documented in the execution
 '    trace however. By avoiding a user action required when the error is
 '    displayed allows a fully automated regression test.
+' 4. In case any tests fails: The Conditional Compile Argument "Debugging = 1"
+'    allows to identify the code line which causes the error through an extra
+'    "Debug: Resume error code line" button displayed with the error message
+'    and processed when clicked as "Stop: Resume" when the button is clicked.
 ' ------------------------------------------------------------------------------
     Const PROC = "Regression_Test"
     
