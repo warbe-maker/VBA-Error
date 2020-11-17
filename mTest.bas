@@ -64,7 +64,8 @@ Public Sub Test_1_Application_Error()
     On Error GoTo eh
     
     mTrc.DisplayedInfo = Detailed
-    mErH.BoP ErrSrc(PROC)
+    mErH.BoP ErrSrc(PROC), err_asserted:=AppErr(1)
+    
     Test_1_Application_Error_TestProc_2a
 
 xt: mErH.EoP ErrSrc(PROC)
@@ -123,7 +124,7 @@ Private Sub Test_1_Application_Error_TestProc_2c()
 xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
-eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC), err_dscrptn:=RegressionTestInfo, err_asserted:=AppErr(1))
+eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC), err_dscrptn:=RegressionTestInfo)
         Case ResumeError:       Stop: Resume
         Case ResumeNext:        Resume Next
         Case ExitAndContinue:   GoTo xt
@@ -146,7 +147,7 @@ Public Sub Test_2_VB_Runtime_Error()
     On Error GoTo eh
     
     mTrc.DisplayedInfo = Detailed
-    mErH.BoP ErrSrc(PROC)
+    mErH.BoP ErrSrc(PROC), err_asserted:=11
     Test_2_VB_Runtime_Error_TestProc_3a
 
 xt: mErH.EoP ErrSrc(PROC)
@@ -218,7 +219,7 @@ Private Sub Test_2_VB_Runtime_Error_TestProc_3d()
 xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
-eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC), err_dscrptn:=RegressionTestInfo, err_asserted:=11)
+eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC), err_dscrptn:=RegressionTestInfo)
         Case ResumeError:       Stop: Resume
         Case ResumeNext:        Resume Next
         Case ExitAndContinue:   GoTo xt

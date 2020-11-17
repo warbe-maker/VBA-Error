@@ -1,6 +1,6 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} fMsg 
-   ClientHeight    =   9255.001
+   ClientHeight    =   10560
    ClientLeft      =   150
    ClientTop       =   390
    ClientWidth     =   12390
@@ -388,6 +388,7 @@ Friend Property Let Msg(ByRef tMsg As tMessage)
         MsgLabel(1) = .section(1).sLabel: MsgText(1) = .section(1).sText:   MsgMonoSpaced(1) = .section(1).bMonspaced
         MsgLabel(2) = .section(2).sLabel: MsgText(2) = .section(2).sText:   MsgMonoSpaced(2) = .section(2).bMonspaced
         MsgLabel(3) = .section(3).sLabel: MsgText(3) = .section(3).sText:   MsgMonoSpaced(3) = .section(3).bMonspaced
+        MsgLabel(4) = .section(4).sLabel: MsgText(4) = .section(4).sText:   MsgMonoSpaced(4) = .section(4).bMonspaced
     End With
 End Property
 
@@ -824,7 +825,7 @@ Private Sub DisplayFramesWithCaptions(Optional ByVal b As Boolean = True)
     If Not b Then
         For Each ctl In Me.Controls
             If TypeName(ctl) = "Frame" Then
-                ctl.caption = vbNullString
+                ctl.Caption = vbNullString
             End If
         Next ctl
     End If
@@ -1299,7 +1300,7 @@ Private Sub SetupButton(ByVal buttonrow As Long, _
         .Visible = True
         .AutoSize = True
         .WordWrap = False ' the longest line determines the buttonindex's width
-        .caption = buttoncaption
+        .Caption = buttoncaption
         .AutoSize = False
         .Height = .Height + 1 ' safety margin to ensure proper multilin caption display
         siMaxButtonHeight = Max(siMaxButtonHeight, .Height)
@@ -1525,7 +1526,7 @@ Private Sub SetupMsgSection(ByVal section As Long)
             Set la = DsgnSectionLabel(section)
             With la
                 .width = Me.InsideWidth - (siHmarginFrames * 2)
-                .caption = sLabel
+                .Caption = sLabel
             End With
             frText.top = la.top + la.Height
             AppliedControl = la
@@ -1663,6 +1664,7 @@ Private Sub SetupMsgSectionsMonoSpaced()
     If MsgText(1) <> vbNullString And MsgMonoSpaced(1) = True Then SetupMsgSection section:=1
     If MsgText(2) <> vbNullString And MsgMonoSpaced(2) = True Then SetupMsgSection section:=2
     If MsgText(3) <> vbNullString And MsgMonoSpaced(3) = True Then SetupMsgSection section:=3
+    If MsgText(4) <> vbNullString And MsgMonoSpaced(4) = True Then SetupMsgSection section:=4
     bDoneMonoSpacedSections = True
     
 xt: Exit Sub
@@ -1676,6 +1678,7 @@ Private Sub SetupMsgSectionsPropSpaced()
     If MsgText(1) <> vbNullString And MsgMonoSpaced(1) = False Then SetupMsgSection section:=1
     If MsgText(2) <> vbNullString And MsgMonoSpaced(2) = False Then SetupMsgSection section:=2
     If MsgText(3) <> vbNullString And MsgMonoSpaced(3) = False Then SetupMsgSection section:=3
+    If MsgText(4) <> vbNullString And MsgMonoSpaced(4) = False Then SetupMsgSection section:=4
     bDonePropSpacedSections = True
     bDoneMsgArea = True
     
@@ -1707,7 +1710,7 @@ Private Sub SetupTitle()
                     .Font.Size = sTitleFontSize
                 End If
                 .AutoSize = True
-                .caption = " " & sTitle    ' some left margin
+                .Caption = " " & sTitle    ' some left margin
                 siTitleWidth = .width + HSPACE_RIGHT
             End With
             AppliedControl = .laMsgTitle
@@ -1722,10 +1725,10 @@ Private Sub SetupTitle()
                 End With
                 .Visible = False
                 .AutoSize = True
-                .caption = " " & sTitle    ' some left margin
+                .Caption = " " & sTitle    ' some left margin
                 siTitleWidth = .width + 30
             End With
-            .caption = " " & sTitle    ' some left margin
+            .Caption = " " & sTitle    ' some left margin
             .laMsgTitleSpaceBottom.Visible = False
         End If
                 

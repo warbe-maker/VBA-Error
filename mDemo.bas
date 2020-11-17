@@ -1,13 +1,14 @@
 Attribute VB_Name = "mDemo"
 Option Explicit
 
-Public Sub ErrorHandling_None_Demo()
+Public Sub Demo_NoErrorHandling()
     Dim l As Long
-    l = ErrorHandling_None(10, 0)
+    l = Demo_NoErrorHandling1(10, 0)
 End Sub
 
-Private Function ErrorHandling_None(ByVal op1 As Variant, _
-                                    ByVal op2 As Variant) As Variant
+Private Function Demo_NoErrorHandling1( _
+           ByVal op1 As Variant, _
+           ByVal op2 As Variant) As Variant
 ' ------------------------------------------------------------------
 ' - Error message:              Mere VBA only
 '   - Error source:             No
@@ -19,7 +20,7 @@ Private Function ErrorHandling_None(ByVal op1 As Variant, _
 ' - Execution Trace:            No
 ' - Debugging/Test choice:      No
 ' ------------------------------------------------------------------
-    ErrorHandling_None = op1 / op2
+    Demo_NoErrorHandling1 = op1 / op2
 End Function
 
 Public Sub ErrorHandling_BetterThanNothing_Demo()

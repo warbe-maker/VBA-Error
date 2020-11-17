@@ -66,14 +66,15 @@ Public Type tSection                ' ------------------
        bMonspaced As Boolean        ' message area which
 End Type                            ' consists of
 Public Type tMessage                ' three message
-       section(1 To 3) As tSection  ' sections
+       section(1 To 4) As tSection  ' sections
 End Type                            ' -------------------
 
 Private cllErrPath          As Collection
 Private cllErrorPath        As Collection   ' managed by ErrPath... procedures exclusively
 Private dctStck             As Dictionary
 Private sErrHndlrEntryProc  As String
-Private lSubsequErrNo       As Long ' a number possibly different from lInitialErrNo when it changes when passed on to the Entry Procedure
+Private lSubsequErrNo       As Long         ' possibly different from the initial error number if it changes when passed on
+Private lErrAsserted        As Long         ' possibly provided with BoP
 
 ' Test button, displayed with Conditional Compile Argument Test = 1
 Public Property Get ExitAndContinue() As String:        ExitAndContinue = "Exit procedure" & vbLf & "and continue" & vbLf & "with next":    End Property
@@ -110,13 +111,15 @@ Public Function AppErr(ByVal err_no As Long) As Long
     End If
 End Function
 
-Public Sub BoP(ByVal s As String)
-' ----------------------------------
+Public Sub BoP(ByVal s As String, _
+      Optional ByVal err_asserted = 0)
+' ------------------------------------
 ' Trace and stack Begin of Procedure
-' ----------------------------------
+' ------------------------------------
     Const PROC = "BoP"
     
     On Error GoTo eh
+    If err_asserted <> 0 Then lErrAsserted = err_asserted
     
     StckPush s
 #If ExecTrace Then
@@ -144,8 +147,7 @@ Public Function ErrMsg( _
          Optional ByVal err_number As Long = 0, _
          Optional ByVal err_dscrptn As String = vbNullString, _
          Optional ByVal err_line As Long = 0, _
-         Optional ByVal err_buttons As Variant = vbNullString, _
-         Optional ByVal err_asserted = 0) As Variant
+         Optional ByVal err_buttons As Variant = vbNullString) As Variant
 ' ----------------------------------------------------------------------
 ' When the errbuttons argument specifies more than one button the error
 ' message is immediately displayed and the users choice is returned,
@@ -217,7 +219,7 @@ Public Function ErrMsg( _
 #If Test Then
         '~~ When the Conditional Compile Argument Test = 1 and the error number is one asserted
         '~~ the display of the error message is suspended to avoid a user interaction
-        If lInitialErrNo <> err_asserted _
+        If lInitialErrNo <> lErrAsserted _
         Then ErrMsg = ErrDsply(err_source:=sInitialErrSource, err_number:=lInitialErrNo, err_dscrptn:=sInitialErrDscrptn, err_line:=lInitialErrLine, err_buttons:=err_buttons)
 #Else
         ErrMsg = ErrDsply(err_number:=lInitialErrNo, err_line:=lInitialErrLine, err_buttons:=err_buttons)
@@ -359,17 +361,17 @@ Private Sub ErrHndlrAddButtons(ByRef v1 As Variant, _
 End Sub
 
 Public Function ErrDsply( _
-                ByVal err_source, _
+                ByVal err_source As String, _
                 ByVal err_number As Long, _
                 ByVal err_dscrptn As String, _
                 ByVal err_line As Long, _
        Optional ByVal err_buttons As Variant = vbOKOnly) As Variant
-' -------------------------------------------------------------
-' Displays the error message either by means of VBA MsgBox or,
-' when the Conditional Compile Argument AlternativeMsgBox = 1 by
-' means of the Alternative VBA MsgBox (UserForm fMsg). In any
-' case the path to the error may be displayed, provided the
-' entry procedure has BoP/EoP code lines.
+' -----------------------------------------------------------------
+' Displays the error message either by means of VBA MsgBox or, when
+' the Conditional Compile Argument AlternativeMsgBox = 1 by means
+' of the Alternative VBA MsgBox (UserForm fMsg). In any case the
+' path to the error may be displayed, provided the entry procedure
+' has BoP/EoP code lines.
 '
 ' W. Rauschenberger, Berlin, Sept 2020
 ' -------------------------------------------------------------
@@ -380,21 +382,18 @@ Public Function ErrDsply( _
     Dim sDetails    As String
     Dim sDscrptn    As String
     Dim sInfo       As String
+    Dim sSource     As String
     
-    ErrMsgMatter err_source:=err_source, err_no:=err_number, err_line:=err_line, err_dscrptn:=err_dscrptn, msg_title:=sTitle, msg_line:=sErrLine, msg_details:=sDetails
+    ErrMsgMatter err_source:=err_source, err_no:=err_number, err_line:=err_line, err_dscrptn:=err_dscrptn, _
+                 msg_title:=sTitle, msg_line:=sErrLine, msg_details:=sDetails, msg_source:=sSource, msg_dscrptn:=sDscrptn, msg_info:=sInfo
     sErrPath = ErrPathErrMsg(msg_details:=sDetails, err_source:=err_source)
     '~~ Display the error message by means of the Common UserForm fMsg
     With fMsg
         .MsgTitle = sTitle
-        .MsgLabel(1) = "Error description:":            .MsgText(1) = sDscrptn
-        If Not ErrPathIsEmpty Then
-            .MsgLabel(2) = "Error path (call stack):":  .MsgText(2) = sErrPath:   .MsgMonoSpaced(2) = True
-        Else
-            .MsgLabel(2) = "Error source:":             .MsgText(2) = err_source & sErrLine
-        End If
-        If sInfo <> vbNullString Then
-            .MsgLabel(3) = "Info:":                     .MsgText(3) = sInfo
-        End If
+        .MsgLabel(1) = "Error description:":        .MsgText(1) = sDscrptn
+        .MsgLabel(2) = "Error source:":             .MsgText(2) = sSource & sErrLine:   .MsgMonoSpaced(2) = True
+        .MsgLabel(3) = "Error path (call stack):":  .MsgText(3) = sErrPath:             .MsgMonoSpaced(3) = True
+        .MsgLabel(4) = "Info:":                     .MsgText(4) = sInfo
         .MsgButtons = err_buttons
         .Setup
         .Show
@@ -441,7 +440,8 @@ Private Sub ErrMsgMatter(ByVal err_source As String, _
                 Optional ByRef msg_no As Long, _
                 Optional ByRef msg_details As String, _
                 Optional ByRef msg_dscrptn As String, _
-                Optional ByRef msg_info As String)
+                Optional ByRef msg_info As String, _
+                Optional ByRef msg_source As String)
 ' -------------------------------------------------------
 ' Returns all the matter to build a proper error message.
 ' -------------------------------------------------------
@@ -461,7 +461,8 @@ Private Sub ErrMsgMatter(ByVal err_source As String, _
     msg_details = IIf(err_line <> 0, msg_type & msg_no & " in " & err_source & " (at line " & err_line & ")", msg_type & msg_no & " in " & err_source)
     msg_dscrptn = IIf(InStr(err_dscrptn, CONCAT) <> 0, Split(err_dscrptn, CONCAT)(0), err_dscrptn)
     If InStr(err_dscrptn, CONCAT) <> 0 Then msg_info = Split(err_dscrptn, CONCAT)(1)
-
+    msg_source = Application.Name & ":  " & Application.ActiveWindow.Caption & ":  " & err_source
+    
 End Sub
 
 Private Sub ErrPathAdd(ByVal s As String)
@@ -511,8 +512,19 @@ Private Function ErrPathErrMsg(ByVal msg_details As String, _
             Else ErrPathErrMsg = ErrPathErrMsg & vbLf & Space(j * 2) & "|_" & s
             j = j + 1
         Next i
+    Else
+        '~~ When the error path is empty the stack may provide an alternative information
+        If Not StckIsEmpty Then
+            For i = 0 To dctStck.Count - 1
+                If ErrPathErrMsg <> vbNullString Then
+                   ErrPathErrMsg = ErrPathErrMsg & vbLf & Space((i - 1) * 2) & "|_" & dctStck.Items()(i)
+                Else
+                   ErrPathErrMsg = dctStck.Items()(i)
+                End If
+            Next i
+        End If
+        ErrPathErrMsg = ErrPathErrMsg & " " & msg_details
     End If
-    ErrPathErrMsg = ErrPathErrMsg & vbLf & Space(j * 2) & "|_" & err_source & " " & msg_details
 End Function
 
 Private Function ErrPathIsEmpty() As Boolean
