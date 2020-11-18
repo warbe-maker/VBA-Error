@@ -40,7 +40,7 @@ Public Sub Regression_Test()
     On Error GoTo eh
     
     bRegressionTest = True
-    mErH.BoP ErrSrc(PROC)
+    mErH.BoTP ErrSrc(PROC), AppErr(1), 11
     Test_1_Application_Error
     Test_2_VB_Runtime_Error
 
@@ -65,7 +65,7 @@ Public Sub Test_1_Application_Error()
     On Error GoTo eh
     
     mTrc.DisplayedInfo = Detailed
-    mErH.BoP ErrSrc(PROC), err_asserted:=AppErr(1)
+    mErH.BoP ErrSrc(PROC)
     
     Test_1_Application_Error_TestProc_2a
 
@@ -148,7 +148,7 @@ Public Sub Test_2_VB_Runtime_Error()
     On Error GoTo eh
     
     mTrc.DisplayedInfo = Detailed
-    mErH.BoP ErrSrc(PROC), err_asserted:=11
+    mErH.BoP ErrSrc(PROC)
     Test_2_VB_Runtime_Error_TestProc_3a
 
 xt: mErH.EoP ErrSrc(PROC)

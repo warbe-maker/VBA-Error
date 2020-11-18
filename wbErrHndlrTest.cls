@@ -30,7 +30,7 @@ Option Explicit
 '
 ' W. Rauschenberger, Berlin, Nov 2020
 ' ------------------------------------------------------------------------------
-Const HOSTED_COMMON_COMPS = "mErrHndlr"
+Const HOSTED_COMMON_COMPS = "mErH"
 
 Private Sub Workbook_Open()
 #If CompMan Then

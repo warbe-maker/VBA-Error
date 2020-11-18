@@ -74,7 +74,7 @@ Private cllErrorPath        As Collection   ' managed by ErrPath... procedures e
 Private dctStck             As Dictionary
 Private sErrHndlrEntryProc  As String
 Private lSubsequErrNo       As Long         ' possibly different from the initial error number if it changes when passed on
-Private lErrAsserted        As Long         ' possibly provided with BoP
+Private vErrsAsserted       As Variant      ' possibly provided with BoTP
 
 ' Test button, displayed with Conditional Compile Argument Test = 1
 Public Property Get ExitAndContinue() As String:        ExitAndContinue = "Exit procedure" & vbLf & "and continue" & vbLf & "with next":    End Property
@@ -111,19 +111,43 @@ Public Function AppErr(ByVal err_no As Long) As Long
     End If
 End Function
 
-Public Sub BoP(ByVal s As String, _
-      Optional ByVal err_asserted = 0)
+Public Sub BoTP(ByVal s As String, _
+           ParamArray errs_asserted() As Variant)
 ' ------------------------------------
 ' Trace and stack Begin of Procedure
 ' ------------------------------------
+    Const PROC = "BoTP"
+    
+    On Error GoTo eh
+    
+    mErH.BoP s
+    vErrsAsserted = errs_asserted
+
+xt: Exit Sub
+
+eh: MsgBox Err.Description, vbOKOnly, "Error in " & ErrSrc(PROC)
+    Stop: Resume
+End Sub
+
+Public Sub BoP(ByVal s As String, _
+          ParamArray traced_arguments() As Variant)
+' -------------------------------------------------
+' Trace and stack Begin of Procedure.
+' The traced_arguments argument is passed on to the
+' mTrc.BoP and displayed with the error message in
+' case.
+' -------------------------------------------------
     Const PROC = "BoP"
     
     On Error GoTo eh
-    If err_asserted <> 0 Then lErrAsserted = err_asserted
+    Dim vTracedArguments() As Variant
+    
+    If StckIsEmpty Then Set vErrsAsserted = Nothing
     
     StckPush s
 #If ExecTrace Then
-    mTrc.BoP s    ' start of the procedure's execution trace
+    vTracedArguments = traced_arguments
+    mTrc.BoP s, vTracedArguments    ' start of the procedure's execution trace
 #End If
 
 xt: Exit Sub
@@ -219,7 +243,7 @@ Public Function ErrMsg( _
 #If Test Then
         '~~ When the Conditional Compile Argument Test = 1 and the error number is one asserted
         '~~ the display of the error message is suspended to avoid a user interaction
-        If lInitialErrNo <> lErrAsserted _
+        If Not ErrIsAsserted(lInitialErrNo) _
         Then ErrMsg = ErrDsply(err_source:=sInitialErrSource, err_number:=lInitialErrNo, err_dscrptn:=sInitialErrDscrptn, err_line:=lInitialErrLine, err_buttons:=err_buttons)
 #Else
         ErrMsg = ErrDsply(err_number:=lInitialErrNo, err_line:=lInitialErrLine, err_buttons:=err_buttons)
@@ -258,6 +282,23 @@ xt:
 #If ExecTrace Then
 '    mTrc.Continue
 #End If
+End Function
+
+Private Function ErrIsAsserted(ByVal err_no As Long) As Boolean
+' -------------------------------------------------------------
+' Returns TRUE when err_no is an asserted error number, which
+' had been provided with BoTP.
+' -------------------------------------------------------------
+    Dim i As Long
+    
+    On Error GoTo xt ' no asserted errors provided
+    For i = LBound(vErrsAsserted) To UBound(vErrsAsserted)
+        If vErrsAsserted(i) = err_no Then
+            ErrIsAsserted = True
+            Exit Function
+        End If
+    Next i
+xt:
 End Function
 
 Private Sub ErrHndlrManageButtons(ByRef err_buttons As Variant)

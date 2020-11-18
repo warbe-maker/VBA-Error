@@ -253,7 +253,8 @@ Private Property Get SysFrequency() As Currency
     SysFrequency = cySysFrequency
 End Property
 
-Public Sub BoC(ByVal traced_code As String)
+Public Sub BoC(ByVal traced_code As String, _
+          ParamArray traced_arguments() As Variant)
 ' ---------------------------------------------
 ' Begin of the trace of a number of code lines.
 ' Note: When the Conditional Compile Argument
@@ -261,9 +262,11 @@ Public Sub BoC(ByVal traced_code As String)
 ' ---------------------------------------------
 #If ExecTrace Then
     Dim cll As Collection
-    cyTcksOvrhdTrcStrt = SysCrrntTcks
+    Dim vTracedArguments()  As Variant
     
-    TrcBgn id:=traced_code, dir:=DIR_BEGIN_CODE, cll:=cll
+    cyTcksOvrhdTrcStrt = SysCrrntTcks
+    vTracedArguments = traced_arguments
+    TrcBgn id:=traced_code, dir:=DIR_BEGIN_CODE, args:=vTracedArguments, cll:=cll
     cyTcksOvrhdTrc = SysCrrntTcks - cyTcksOvrhdTrcStrt ' overhead ticks caused by the collection of the begin trace entry
 #End If
 End Sub
@@ -276,9 +279,12 @@ Public Sub BoP(ByVal traced_procedure As String, _
 '       ExecTrace = 0 BoP is inactive.
 ' -------------------------------------------------
 #If ExecTrace Then
-    Dim cll As Collection
+    Dim cll                 As Collection
+    Dim vTracedArguments()  As Variant
+    
     
     cyTcksOvrhdTrcStrt = SysCrrntTcks
+    vTracedArguments = traced_arguments
     If TrcIsEmpty Then
         Initialize
         sFirstTraceItem = traced_procedure
@@ -289,7 +295,7 @@ Public Sub BoP(ByVal traced_procedure As String, _
             Initialize
         End If
     End If
-    TrcBgn id:=traced_procedure, dir:=DIR_BEGIN_PROC, args:=traced_arguments, cll:=cll
+    TrcBgn id:=traced_procedure, dir:=DIR_BEGIN_PROC, args:=vTracedArguments, cll:=cll
     cyTcksOvrhdTrc = SysCrrntTcks - cyTcksOvrhdTrcStrt ' overhead ticks caused by the collection of the begin trace entry
 #End If
 End Sub
@@ -648,8 +654,15 @@ Public Function DsplyHdrCntrAbv(ByVal s1 As String, _
 End Function
 
 Private Function DsplyArgs(ByVal entry As Collection) As String
+' -------------------------------------------------------------
+' Returns a string with the collection of the traced arguments
+' Any entry ending with a ":" or "=" is an arguments name with
+' its value in the subsequent item.
+' -------------------------------------------------------------
     Dim va()    As Variant
     Dim i       As Long
+    Dim sL      As String
+    Dim sR      As String
     
     On Error Resume Next
     va = ItmArgs(entry)
@@ -658,12 +671,40 @@ Private Function DsplyArgs(ByVal entry As Collection) As String
     If Err.Number <> 0 Then Exit Function
     
     For i = i To UBound(va)
-        If DsplyArgs <> vbNullString Then DsplyArgs = DsplyArgs & "  "
-        DsplyArgs = DsplyArgs & ">" & CStr(va(i)) & "<"
+        If DsplyArgs = vbNullString Then
+            ' This is the very first argument
+            If DsplyArgName(va(i)) Then
+                ' The element is the name of an argument followed by a subsequent value
+                DsplyArgs = "|  " & va(i) & CStr(va(i + 1))
+                i = i + 1
+            Else
+                sL = ">": sR = "<"
+                DsplyArgs = "|  Argument values: " & sL & va(i) & sR
+            End If
+        Else
+            If DsplyArgName(va(i)) Then
+                ' The element is the name of an argument followed by a subsequent value
+                DsplyArgs = DsplyArgs & ", " & va(i) & CStr(va(i + 1))
+                i = i + 1
+            Else
+                sL = ">": sR = "<"
+                DsplyArgs = DsplyArgs & "  " & sL & va(i) & sR
+            End If
+        End If
     Next i
-    If DsplyArgs <> vbNullString Then DsplyArgs = "|  Argument values: " & DsplyArgs
 End Function
 
+Private Function DsplyArgName(ByVal s As String) As Boolean
+    If Right(s, 1) = ":" _
+    Or Right(s, 1) = "=" _
+    Or Right(s, 2) = ": " _
+    Or Right(s, 2) = " :" _
+    Or Right(s, 2) = "= " _
+    Or Right(s, 2) = " =" _
+    Or Right(s, 3) = " : " _
+    Or Right(s, 3) = " = " _
+    Then DsplyArgName = True
+End Function
 Private Function DsplyLn(ByVal entry As Collection) As String
 ' -------------------------------------------------------------
 ' Returns a trace line for being displayed.
@@ -975,7 +1016,7 @@ Private Function ErrSrc(ByVal sProc As String) As String
     ErrSrc = "mTrc." & sProc
 End Function
 
-Public Sub Finish(Optional ByVal inf As String = vbNullString)
+Public Sub Finish(Optional ByRef inf As String = vbNullString)
 ' ------------------------------------------------------------
 ' Finishes an unfinished traced items by means of the stack.
 ' All items on the the stack are processed via EoP/EoC.
@@ -987,6 +1028,7 @@ Public Sub Finish(Optional ByVal inf As String = vbNullString)
         If NtryIsCode(cll) _
         Then mTrc.EoC id:=ItmId(cll), inf:=inf _
         Else mTrc.EoP id:=ItmId(cll), inf:=inf
+        inf = vbNullString
     Wend
     
 End Sub
