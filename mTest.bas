@@ -74,7 +74,7 @@ xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
 eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
-        Case ResumeError: Stop: Resume
+        Case DebugOpt1ResumeError: Stop: Resume
     End Select
 End Sub
 
@@ -89,7 +89,7 @@ Private Sub Test_1_Application_Error_TestProc_2a()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = ResumeError Then Stop: Resume
+    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOpt1ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_1_Application_Error_TestProc_2b()
@@ -103,7 +103,7 @@ Private Sub Test_1_Application_Error_TestProc_2b()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = ResumeError Then Stop: Resume
+    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOpt1ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_1_Application_Error_TestProc_2c()
@@ -127,9 +127,9 @@ xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
 eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC), err_dscrptn:=RegressionTestInfo)
-        Case ResumeError:       Stop: Resume
-        Case ResumeNext:        Resume Next
-        Case ExitAndContinue:   GoTo xt
+        Case DebugOpt1ResumeError:       Stop: Resume
+        Case TestOpt1ResumeNext:        Resume Next
+        Case TestOpt2ExitAndContinue:   GoTo xt
     End Select
 End Sub
 
@@ -155,9 +155,9 @@ xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
 eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
-        Case ResumeError: Stop: Resume
-        Case ResumeNext: Resume Next
-        Case ExitAndContinue: GoTo xt
+        Case DebugOpt1ResumeError: Stop: Resume
+        Case TestOpt1ResumeNext: Resume Next
+        Case TestOpt2ExitAndContinue: GoTo xt
     End Select
 End Sub
 
@@ -172,7 +172,7 @@ Private Sub Test_2_VB_Runtime_Error_TestProc_3a()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = ResumeError Then Stop: Resume
+    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOpt1ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_2_VB_Runtime_Error_TestProc_3b()
@@ -186,7 +186,7 @@ Private Sub Test_2_VB_Runtime_Error_TestProc_3b()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = ResumeError Then Stop: Resume
+    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOpt1ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_2_VB_Runtime_Error_TestProc_3c()
@@ -200,7 +200,7 @@ Private Sub Test_2_VB_Runtime_Error_TestProc_3c()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = ResumeError Then Stop: Resume
+    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOpt1ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_2_VB_Runtime_Error_TestProc_3d()
@@ -221,9 +221,9 @@ xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
 eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC), err_dscrptn:=RegressionTestInfo)
-        Case ResumeError:       Stop: Resume
-        Case ResumeNext:        Resume Next
-        Case ExitAndContinue:   GoTo xt
+        Case DebugOpt1ResumeError:       Stop: Resume
+        Case TestOpt1ResumeNext:        Resume Next
+        Case TestOpt2ExitAndContinue:   GoTo xt
     End Select
 End Sub
 
@@ -242,7 +242,7 @@ Public Sub Test_4_DebugAndTest_with_ErrMsg()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = ResumeError Then Stop: Resume
+    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOpt1ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Test_4_DebugAndTest_with_ErrMsg_TestProc_5a()
@@ -257,7 +257,7 @@ Private Sub Test_4_DebugAndTest_with_ErrMsg_TestProc_5a()
     
 eh:
     Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
-        Case ResumeError: Stop: Resume ' Continue with F8 to end up at the code line which caused the error
+        Case DebugOpt1ResumeError: Stop: Resume ' Continue with F8 to end up at the code line which caused the error
     End Select
 End Sub
 
@@ -270,5 +270,5 @@ Public Sub Test_5_No_Exit_Statement()
     On Error GoTo eh
     
 eh:
-    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = ResumeError Then Stop: Resume
+    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOpt1ResumeError Then Stop: Resume
 End Sub

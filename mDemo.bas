@@ -191,7 +191,7 @@ xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
 eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
-        Case ResumeError: Stop: Resume
+        Case DebugOpt1ResumeError: Stop: Resume
     End Select
 End Sub
 
@@ -206,7 +206,7 @@ Private Sub Demo_2_Application_Error_DemoProc_2a()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = ResumeError Then Stop: Resume
+    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOpt1ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Demo_2_Application_Error_DemoProc_2b()
@@ -220,7 +220,7 @@ Private Sub Demo_2_Application_Error_DemoProc_2b()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = ResumeError Then Stop: Resume
+    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOpt1ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Demo_2_Application_Error_DemoProc_2c()
@@ -244,9 +244,9 @@ xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
 eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
-        Case ResumeError:       Stop: Resume
-        Case ResumeNext:        Resume Next
-        Case ExitAndContinue:   GoTo xt
+        Case DebugOpt1ResumeError:       Stop: Resume
+        Case TestOpt1ResumeNext:        Resume Next
+        Case TestOpt2ExitAndContinue:   GoTo xt
     End Select
 End Sub
 
@@ -272,9 +272,9 @@ xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
 eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
-        Case ResumeError: Stop: Resume
-        Case ResumeNext: Resume Next
-        Case ExitAndContinue: GoTo xt
+        Case DebugOpt1ResumeError: Stop: Resume
+        Case TestOpt1ResumeNext: Resume Next
+        Case TestOpt2ExitAndContinue: GoTo xt
     End Select
 End Sub
 
@@ -289,7 +289,7 @@ Private Sub Demo_3_VB_Runtime_Error_DemoProc_3a()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = ResumeError Then Stop: Resume
+    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOpt1ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Demo_3_VB_Runtime_Error_DemoProc_3b()
@@ -303,7 +303,7 @@ Private Sub Demo_3_VB_Runtime_Error_DemoProc_3b()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = ResumeError Then Stop: Resume
+    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOpt1ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Demo_3_VB_Runtime_Error_DemoProc_3c()
@@ -317,7 +317,7 @@ Private Sub Demo_3_VB_Runtime_Error_DemoProc_3c()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = ResumeError Then Stop: Resume
+    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOpt1ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Demo_3_VB_Runtime_Error_DemoProc_3d()
@@ -338,9 +338,9 @@ xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
 eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
-        Case ResumeError:       Stop: Resume
-        Case ResumeNext:        Resume Next
-        Case ExitAndContinue:   GoTo xt
+        Case DebugOpt1ResumeError:       Stop: Resume
+        Case TestOpt1ResumeNext:        Resume Next
+        Case TestOpt2ExitAndContinue:   GoTo xt
     End Select
 End Sub
 
@@ -359,7 +359,7 @@ Public Sub Demo_4_With_Debugging_Support()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = ResumeError Then Stop: Resume
+    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOpt1ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Demo_4_With_Debugging_Support_DemoProc_5a()
@@ -374,7 +374,7 @@ Private Sub Demo_4_With_Debugging_Support_DemoProc_5a()
     
 eh:
     Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
-        Case ResumeError: Stop: Resume ' Continue with F8 to end up at the code line which caused the error
+        Case DebugOpt1ResumeError: Stop: Resume ' Continue with F8 to end up at the code line which caused the error
     End Select
 End Sub
 
@@ -387,7 +387,7 @@ Public Sub Demo_5_No_Exit_Statement()
     On Error GoTo eh
     
 eh:
-    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = ResumeError Then Stop: Resume
+    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOpt1ResumeError Then Stop: Resume
 End Sub
 
 Public Sub Demo_6_Execution_Trace()
@@ -407,7 +407,7 @@ Public Sub Demo_6_Execution_Trace()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = ResumeError Then Stop: Resume
+    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOpt1ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Demo_6_Execution_Trace_DemoProc_6a()
@@ -421,7 +421,7 @@ Private Sub Demo_6_Execution_Trace_DemoProc_6a()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = ResumeError Then Stop: Resume
+    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOpt1ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Demo_6_Execution_Trace_DemoProc_6b()
@@ -443,7 +443,7 @@ Private Sub Demo_6_Execution_Trace_DemoProc_6b()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = ResumeError Then Stop: Resume
+    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOpt1ResumeError Then Stop: Resume
 End Sub
 
 Private Sub Demo_6_Execution_Trace_DemoProc_6c()
