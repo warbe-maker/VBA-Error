@@ -53,13 +53,6 @@ Option Private Module
 
 Public Const CONCAT         As String = "||"
 
-Public Enum StartupPosition         ' ---------------------------
-    Manual = 0                      ' Used to position the
-    CenterOwner = 1                 ' final setup message form
-    CenterScreen = 2                ' horizontally and vertically
-    WindowsDefault = 3              ' centered on the screen
-End Enum                            ' ---------------------------
-
 Public Type tMsgSection                 ' ---------------------
        sLabel As String                 ' Structure of the
        sText As String                  ' UserForm's message
@@ -181,13 +174,15 @@ Public Function ErrMsg( _
 ' .ErrorPath string is assebled.
 ' ----------------------------------------------------------------------
     
-    Static sLine                As String   ' provided error line (if any) for the the finally displayed message
-    Static lInitialErrNo        As Long
-    Static lInitialErrLine      As Long
-    Static sInitialErrSource    As String
-    Static sInitialErrDscrptn   As String
-    Static sInitialErrInfo      As String
-    Dim sDetails                As String
+    Static lInitErrNo       As Long
+    Static lInitErrLine     As Long
+    Static sInitErrSource   As String
+    Static sInitErrDscrptn  As String
+    Static sInitErrInfo     As String
+    Dim sDetails            As String
+    Dim sType               As String
+    Dim lNo                 As Long
+    Dim sLine               As String
         
     If err_number = 0 Then err_number = Err.Number
     If err_dscrptn = vbNullString Then err_dscrptn = Err.Description
@@ -195,23 +190,22 @@ Public Function ErrMsg( _
     
     If ErrHndlrFailed(err_number, err_source, err_buttons) Then GoTo xt
     If cllErrPath Is Nothing Then Set cllErrPath = New Collection
-    If err_line <> 0 Then sLine = err_line Else sLine = "0"
     ErrHndlrManageButtons err_buttons
     ErrMsgMatter err_source:=err_source, err_no:=err_number, err_line:=err_line, err_dscrptn:=err_dscrptn, msg_details:=sDetails
     
-    If sInitialErrSource = vbNullString Then
+    If sInitErrSource = vbNullString Then
         '~~ This is the initial/first execution of the error handler within the error raising procedure.
-        sInitialErrInfo = sDetails
-        lInitialErrLine = err_line
-        lInitialErrNo = err_number
-        sInitialErrSource = err_source
-        sInitialErrDscrptn = err_dscrptn
-    ElseIf err_number <> lInitialErrNo _
+        sInitErrInfo = sDetails
+        lInitErrLine = err_line
+        lInitErrNo = err_number
+        sInitErrSource = err_source
+        sInitErrDscrptn = err_dscrptn
+    ElseIf err_number <> lInitErrNo _
         And err_number <> lSubsequErrNo _
-        And err_source <> sInitialErrSource Then
+        And err_source <> sInitErrSource Then
         '~~ In the rare case when the error number had changed during the process of passing it back up to the entry procedure
         lSubsequErrNo = err_number
-        sInitialErrInfo = sDetails
+        sInitErrInfo = sDetails
     End If
     
     If ErrBttns(err_buttons) = 1 _
@@ -222,10 +216,10 @@ Public Function ErrMsg( _
         '~~ up to the Entry Procedure whereupon the path to the error is assembled
         ErrPathAdd err_source
 #If ExecTrace Then
-        mTrc.EoP err_source, sInitialErrInfo
+        mTrc.EoP err_source, sInitErrInfo
 #End If
         mErH.StckPop Itm:=err_source
-        sInitialErrInfo = vbNullString
+        sInitErrInfo = vbNullString
         Err.Raise err_number, err_source, err_dscrptn
     End If
     
@@ -243,10 +237,10 @@ Public Function ErrMsg( _
 #If Test Then
         '~~ When the Conditional Compile Argument Test = 1 and the error number is one asserted
         '~~ the display of the error message is suspended to avoid a user interaction
-        If Not ErrIsAsserted(lInitialErrNo) _
-        Then ErrMsg = ErrDsply(err_source:=sInitialErrSource, err_number:=lInitialErrNo, err_dscrptn:=sInitialErrDscrptn, err_line:=lInitialErrLine, err_buttons:=err_buttons)
+        If Not ErrIsAsserted(lInitErrNo) _
+        Then ErrMsg = ErrDsply(err_source:=sInitErrSource, err_number:=lInitErrNo, err_dscrptn:=sInitErrDscrptn, err_line:=lInitErrLine, err_buttons:=err_buttons)
 #Else
-        ErrMsg = ErrDsply(err_number:=lInitialErrNo, err_line:=lInitialErrLine, err_buttons:=err_buttons)
+        ErrMsg = ErrDsply(err_number:=lInitErrNo, err_line:=lInitErrLine, err_buttons:=err_buttons)
 #End If
 
 #If ExecTrace Then
@@ -257,27 +251,17 @@ Public Function ErrMsg( _
             Case Else: ErrPathErase
         End Select
 #If ExecTrace Then
-        mTrc.EoP err_source, sInitialErrInfo
+        ErrMsgMatter err_source:=sInitErrSource, err_no:=lInitErrNo, err_line:=lInitErrLine, err_dscrptn:=sInitErrDscrptn, _
+                     msg_type:=sType, msg_line:=sLine, msg_no:=lNo
+        mTrc.EoP err_source, sType & lNo & " " & sLine
 #End If
         mErH.StckPop Itm:=err_source
-        sInitialErrInfo = vbNullString
-        sInitialErrSource = vbNullString
-        sInitialErrDscrptn = vbNullString
-        lInitialErrNo = 0
+        sInitErrInfo = vbNullString
+        sInitErrSource = vbNullString
+        sInitErrDscrptn = vbNullString
+        lInitErrNo = 0
     End If
     
-'    '~~ Each time a known Entry Procedure is reached the execution trace
-'    '~~ maintained by the BoP and mErH.EoP and the BoC and EoC statements is displayed
-'    If StckEntryProc = err_source _
-'    Or StckEntryProc = vbNullString Then
-'        Select Case ErrMsg
-'            Case ResumeError, ResumeNext, ExitAndContinue
-'            Case vbOK
-'            Case Else: StckErase
-'        End Select
-'    End If
-'    mErH.StckPop err_source
-
 xt:
 #If ExecTrace Then
 '    mTrc.Continue

@@ -68,6 +68,13 @@ Private Declare PtrSafe Function GetDC Lib "user32" (ByVal hWnd As Long) As Long
 Private Declare PtrSafe Function GetDeviceCaps Lib "gdi32" (ByVal hDC As Long, ByVal nIndex As Long) As Long
 Private Declare PtrSafe Function ReleaseDC Lib "user32" (ByVal hWnd As Long, ByVal hDC As Long) As Long
 
+Private Enum enStartupPosition      ' ---------------------------
+    sup_Manual = 0                  ' Used to position the
+    sup_CenterOwner = 1             ' final setup message form
+    sup_CenterScreen = 2            ' horizontally and vertically
+    sup_WindowsDefault = 3          ' centered on the screen
+End Enum                            ' ---------------------------
+
 Dim bDoneButtonsArea            As Boolean
 Dim bDoneHeightDecrement        As Boolean
 Dim bDoneMonoSpacedSections     As Boolean
@@ -491,17 +498,17 @@ Public Sub AdjustStartupPosition(ByRef pUserForm As Object, _
     On Error Resume Next
         
     Select Case pUserForm.StartupPosition
-        Case Manual, WindowsDefault ' Do nothing
-        Case CenterOwner            ' Position centered on top of the 'Owner'. Usually this is Application.
+        Case sup_Manual, sup_WindowsDefault ' Do nothing
+        Case sup_CenterOwner            ' Position centered on top of the 'Owner'. Usually this is Application.
             If Not pOwner Is Nothing Then Set pOwner = Application
             With pUserForm
                 .StartupPosition = 0
                 .left = pOwner.left + ((pOwner.width - .width) / 2)
                 .top = pOwner.top + ((pOwner.Height - .Height) / 2)
             End With
-        Case CenterScreen           ' Assign the Left and Top properties after switching to Manual positioning.
+        Case sup_CenterScreen           ' Assign the Left and Top properties after switching to sup_Manual positioning.
             With pUserForm
-                .StartupPosition = Manual
+                .StartupPosition = sup_Manual
                 .left = (wVirtualScreenWidth - .width) / 2
                 .top = (wVirtualScreenHeight - .Height) / 2
             End With
