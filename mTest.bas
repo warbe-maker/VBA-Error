@@ -40,7 +40,7 @@ Public Sub Regression_Test()
     On Error GoTo eh
     
     bRegressionTest = True
-    mTrc.DisplayedInfo = Compact
+    mTrc.DisplayedInfo = Detailed
     
     mErH.BoTP ErrSrc(PROC), AppErr(1), 11
     Test_1_Application_Error
@@ -154,7 +154,8 @@ Public Sub Test_2_VB_Runtime_Error()
 xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
-eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
+eh: mErH.ErrMsg err_source:=ErrSrc(PROC)
+    Select Case mErH.ErrReply
         Case DebugOpt1ResumeError: Stop: Resume
         Case TestOpt1ResumeNext: Resume Next
         Case TestOpt2ExitAndContinue: GoTo xt
@@ -195,7 +196,7 @@ Private Sub Test_2_VB_Runtime_Error_TestProc_3c()
     On Error GoTo eh
     
     mErH.BoP ErrSrc(PROC)
-    Test_2_VB_Runtime_Error_TestProc_3d
+    Test_2_VB_Runtime_Error_TestProc_3d test_arg1:="Test string", test_arg2:=20.5
     mErH.EoP ErrSrc(PROC)
     Exit Sub
 
@@ -203,7 +204,9 @@ eh:
     If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOpt1ResumeError Then Stop: Resume
 End Sub
 
-Private Sub Test_2_VB_Runtime_Error_TestProc_3d()
+Private Sub Test_2_VB_Runtime_Error_TestProc_3d( _
+      ByVal test_arg1 As String, _
+      ByVal test_arg2 As Currency)
 ' ------------------------------------------------
 ' Note: The error line intentionally has no line
 ' number to demonstrate how it effects the error
@@ -213,7 +216,7 @@ Private Sub Test_2_VB_Runtime_Error_TestProc_3d()
     
     On Error GoTo eh
     
-    mErH.BoP ErrSrc(PROC)
+    mErH.BoP ErrSrc(PROC), "test_arg1 = ", test_arg1, "test_arg2 = ", test_arg2
     Dim l As Long
     l = 7 / 0
 

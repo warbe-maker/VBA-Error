@@ -68,6 +68,12 @@ Private dctStck             As Dictionary
 Private sErrHndlrEntryProc  As String
 Private lSubsequErrNo       As Long         ' possibly different from the initial error number if it changes when passed on
 Private vErrsAsserted       As Variant      ' possibly provided with BoTP
+Private vErrReply           As Variant
+Private vArguments()        As Variant      ' The last procedures (with BoP) provided arguments
+
+Public Property Get ErrReply() As Variant
+    ErrReply = vErrReply
+End Property
 
 Public Property Get DebugOpt1ResumeError() As String
 ' --------------------------------------------------------------------
@@ -123,8 +129,8 @@ Public Function AppErr(ByVal err_no As Long) As Long
     End If
 End Function
 
-Public Sub BoP(ByVal s As String, _
-          ParamArray traced_arguments() As Variant)
+Public Sub BoP(ByVal bop_id As String, _
+          ParamArray bop_arguments() As Variant)
 ' -------------------------------------------------
 ' Trace and stack Begin of Procedure.
 ' The traced_arguments argument is passed on to the
@@ -134,14 +140,13 @@ Public Sub BoP(ByVal s As String, _
     Const PROC = "BoP"
     
     On Error GoTo eh
-    Dim vTracedArguments() As Variant
     
     If StckIsEmpty Then Set vErrsAsserted = Nothing
     
-    StckPush s
+    StckPush bop_id
 #If ExecTrace Then
-    vTracedArguments = traced_arguments
-    mTrc.BoP s, vTracedArguments    ' start of the procedure's execution trace
+    vArguments = bop_arguments
+    mTrc.BoP_ErH bop_id, vArguments    ' start of the procedure's execution trace
 #End If
 
 xt: Exit Sub
@@ -168,21 +173,21 @@ eh: MsgBox Err.Description, vbOKOnly, "Error in " & ErrSrc(PROC)
     Stop: Resume
 End Sub
 
-Public Sub EoP(ByVal s As String)
-' --------------------------------
+Public Sub EoP(ByVal eop_id As String)
+' ------------------------------------
 ' Trace and stack End of Procedure
-' --------------------------------
+' ------------------------------------
 #If ExecTrace Then
-    mTrc.EoP s
-    mErH.StckPop s
+    mTrc.EoP eop_id
+    mErH.StckPop eop_id
 #End If
 End Sub
 
 Private Function ErrBttns( _
-                 ByVal bttns As Variant) As Long
-' ------------------------------------------------
+           ByVal bttns As Variant) As Long
+' ----------------------------------------
 ' Returns the number of specified bttns.
-' ------------------------------------------------
+' -----------------------------------------
     Dim v As Variant
     
     For Each v In Split(bttns, ",")
@@ -234,12 +239,19 @@ Public Function ErrDsply( _
     '~~ Display the error message by means of the Common UserForm fMsg
     With fMsg
         .MsgTitle = sTitle
-        .MsgLabel(1) = "Error description:":        .MsgText(1) = sDscrptn
-        .MsgLabel(2) = "Error source:":             .MsgText(2) = sSource & sLine:      .MsgMonoSpaced(2) = True
-        .MsgLabel(3) = "Error path (call stack):":  .MsgText(3) = sErrPath:             .MsgMonoSpaced(3) = True
-        .MsgLabel(4) = "Info:":                     .MsgText(4) = sInfo
+        .MsgLabel(1) = "Error description:": .MsgText(1) = sDscrptn
+        
+        If ErrArgs = vbNullString _
+        Then .MsgLabel(2) = "Error source:": .MsgText(2) = sSource & sLine: .MsgMonoSpaced(2) = True _
+        Else .MsgLabel(2) = "Error source:": .MsgText(2) = sSource & sLine & vbLf & _
+                                                                       "(with arguments: " & ErrArgs & ")"
+        .MsgMonoSpaced(2) = True
+        .MsgLabel(3) = "Error path (call stack):":  .MsgText(3) = sErrPath
+        .MsgMonoSpaced(3) = True
+        .MsgLabel(4) = "Info:":              .MsgText(4) = sInfo
         .MsgButtons = err_buttons
         .Setup
+        
         .Show
         If ErrBttns(err_buttons) = 1 Then
             ErrDsply = err_buttons ' a single reply errbuttons return value cannot be obtained since the form is unloaded with its click
@@ -249,6 +261,61 @@ Public Function ErrDsply( _
     End With
 
 End Function
+
+Private Function ErrArgs() As String
+' -------------------------------------------------------------
+' Returns a string with the collection of the traced arguments
+' Any entry ending with a ":" or "=" is an arguments name with
+' its value in the subsequent item.
+' -------------------------------------------------------------
+    Dim va()    As Variant
+    Dim i       As Long
+    Dim sL      As String
+    Dim sR      As String
+    
+    On Error Resume Next
+    va = vArguments
+    If Err.Number <> 0 Then Exit Function
+    i = LBound(va)
+    If Err.Number <> 0 Then Exit Function
+    
+    For i = i To UBound(va)
+        If ErrArgs = vbNullString Then
+            ' This is the very first argument
+            If ErrArgName(va(i)) Then
+                ' The element is the name of an argument followed by a subsequent value
+                ErrArgs = va(i) & CStr(va(i + 1))
+                i = i + 1
+            Else
+                sL = ">": sR = "<"
+                ErrArgs = "Argument values: " & sL & va(i) & sR
+            End If
+        Else
+            If ErrArgName(va(i)) Then
+                ' The element is the name of an argument followed by a subsequent value
+                ErrArgs = ErrArgs & ", " & va(i) & CStr(va(i + 1))
+                i = i + 1
+            Else
+                sL = ">": sR = "<"
+                ErrArgs = ErrArgs & "  " & sL & va(i) & sR
+            End If
+        End If
+    Next i
+
+End Function
+
+Private Function ErrArgName(ByVal s As String) As Boolean
+    If Right(s, 1) = ":" _
+    Or Right(s, 1) = "=" _
+    Or Right(s, 2) = ": " _
+    Or Right(s, 2) = " :" _
+    Or Right(s, 2) = "= " _
+    Or Right(s, 2) = " =" _
+    Or Right(s, 3) = " : " _
+    Or Right(s, 3) = " = " _
+    Then ErrArgName = True
+End Function
+
 
 Private Sub ErrHndlrAddButtons(ByRef v1 As Variant, _
                                ByRef v2 As Variant)
@@ -374,7 +441,8 @@ Public Function ErrMsg( _
          Optional ByVal err_number As Long = 0, _
          Optional ByVal err_dscrptn As String = vbNullString, _
          Optional ByVal err_line As Long = 0, _
-         Optional ByVal err_buttons As Variant = vbNullString) As Variant
+         Optional ByVal err_buttons As Variant = vbNullString, _
+         Optional ByRef err_reply As Variant) As Variant
 ' ----------------------------------------------------------------------
 ' When the errbuttons argument specifies more than one button the error
 ' message is immediately displayed and the users choice is returned,
@@ -451,16 +519,17 @@ Public Function ErrMsg( _
         '~~ When the Conditional Compile Argument Test = 1 and the error number is one asserted
         '~~ the display of the error message is suspended to avoid a user interaction
         If Not ErrIsAsserted(lInitErrNo) _
-        Then ErrMsg = ErrDsply(err_source:=sInitErrSource, err_number:=lInitErrNo, err_dscrptn:=sInitErrDscrptn, err_line:=lInitErrLine, err_buttons:=err_buttons)
+        Then vErrReply = ErrDsply(err_source:=sInitErrSource, err_number:=lInitErrNo, err_dscrptn:=sInitErrDscrptn, err_line:=lInitErrLine, err_buttons:=err_buttons)
 #Else
-        ErrMsg = ErrDsply(err_source:=sInitErrSource, err_number:=lInitErrNo, err_dscrptn:=sInitErrDscrptn, err_line:=lInitErrLine, err_buttons:=err_buttons)
+        vErrReply = ErrDsply(err_source:=sInitErrSource, err_number:=lInitErrNo, err_dscrptn:=sInitErrDscrptn, err_line:=lInitErrLine, err_buttons:=err_buttons)
 #End If
-
+        ErrMsg = vErrReply
+        err_reply = vErrReply
 #If ExecTrace Then
     mTrc.Continue
 #End If
-        Select Case ErrMsg
-            Case DebugOpt1ResumeError, TestOpt1ResumeNext, TestOpt2ExitAndContinue
+        Select Case vErrReply
+            Case DebugOpt1ResumeError, DebugOpt2ResumeNext, TestOpt1ResumeNext, TestOpt2ExitAndContinue
             Case Else: ErrPathErase
         End Select
 #If ExecTrace Then

@@ -253,49 +253,74 @@ Private Property Get SysFrequency() As Currency
     SysFrequency = cySysFrequency
 End Property
 
-Public Sub BoC(ByVal traced_code As String, _
-          ParamArray traced_arguments() As Variant)
+Public Sub BoC(ByVal boc_id As String, _
+          ParamArray boc_arguments() As Variant)
 ' ---------------------------------------------
 ' Begin of the trace of a number of code lines.
 ' Note: When the Conditional Compile Argument
 '       ExecTrace = 0 BoC is inactive.
 ' ---------------------------------------------
 #If ExecTrace Then
-    Dim cll As Collection
-    Dim vTracedArguments()  As Variant
+    Dim cll             As Collection
+    Dim vArguments()    As Variant
     
     cyTcksOvrhdTrcStrt = SysCrrntTcks
-    vTracedArguments = traced_arguments
-    TrcBgn id:=traced_code, dir:=DIR_BEGIN_CODE, args:=vTracedArguments, cll:=cll
+    vArguments = boc_arguments
+    TrcBgn id:=boc_id, dir:=DIR_BEGIN_CODE, args:=vArguments, cll:=cll
     cyTcksOvrhdTrc = SysCrrntTcks - cyTcksOvrhdTrcStrt ' overhead ticks caused by the collection of the begin trace entry
 #End If
 End Sub
 
-Public Sub BoP(ByVal traced_procedure As String, _
-          ParamArray traced_arguments() As Variant)
-' -------------------------------------------------
+Public Sub BoP(ByVal bop_id As String, _
+          ParamArray bop_arguments() As Variant)
+' ----------------------------------------------
 ' Trace Begin of Procedure
 ' Note: When the Conditional Compile Argument
 '       ExecTrace = 0 BoP is inactive.
-' -------------------------------------------------
+' ----------------------------------------------
 #If ExecTrace Then
-    Dim cll                 As Collection
-    Dim vTracedArguments()  As Variant
-    
+    Dim cll           As Collection
+    Dim vArguments()  As Variant
     
     cyTcksOvrhdTrcStrt = SysCrrntTcks
-    vTracedArguments = traced_arguments
+    vArguments = bop_arguments
     If TrcIsEmpty Then
         Initialize
-        sFirstTraceItem = traced_procedure
+        sFirstTraceItem = bop_id
     Else
-        If traced_procedure = sFirstTraceItem Then
+        If bop_id = sFirstTraceItem Then
             '~~ A previous trace had not come to a regular end and thus will be erased
             Set cllTrc = Nothing
             Initialize
         End If
     End If
-    TrcBgn id:=traced_procedure, dir:=DIR_BEGIN_PROC, args:=vTracedArguments, cll:=cll
+    TrcBgn id:=bop_id, dir:=DIR_BEGIN_PROC, args:=vArguments, cll:=cll
+    cyTcksOvrhdTrc = SysCrrntTcks - cyTcksOvrhdTrcStrt ' overhead ticks caused by the collection of the begin trace entry
+#End If
+End Sub
+
+Public Sub BoP_ErH(ByVal bopeh_id As String, _
+                   ByVal bopeh_args As Variant)
+' ---------------------------------------------
+' Trace Begin of Procedure, specifically for
+' being called by mErh.BoP which has already
+' transformed the ParamArray into an array.
+' ---------------------------------------------
+#If ExecTrace Then
+    Dim cll           As Collection
+    
+    cyTcksOvrhdTrcStrt = SysCrrntTcks
+    If TrcIsEmpty Then
+        Initialize
+        sFirstTraceItem = bopeh_id
+    Else
+        If bopeh_id = sFirstTraceItem Then
+            '~~ A previous trace had not come to a regular end and thus will be erased
+            Set cllTrc = Nothing
+            Initialize
+        End If
+    End If
+    TrcBgn id:=bopeh_id, dir:=DIR_BEGIN_PROC, args:=bopeh_args, cll:=cll
     cyTcksOvrhdTrc = SysCrrntTcks - cyTcksOvrhdTrcStrt ' overhead ticks caused by the collection of the begin trace entry
 #End If
 End Sub
@@ -705,6 +730,7 @@ Private Function DsplyArgName(ByVal s As String) As Boolean
     Or Right(s, 3) = " = " _
     Then DsplyArgName = True
 End Function
+
 Private Function DsplyLn(ByVal entry As Collection) As String
 ' -------------------------------------------------------------
 ' Returns a trace line for being displayed.
@@ -712,23 +738,28 @@ Private Function DsplyLn(ByVal entry As Collection) As String
     Const PROC = "DsplyLn"
     On Error GoTo eh
     Dim lLenData    As Long
-    Dim sArgs       As String
+    Dim sArgs       As String: sArgs = DsplyArgs(entry)
+    Dim sArgsLine   As String
     
     Select Case DisplayedInfo
         Case Compact
             DsplyLn = _
                       DsplyValue(entry, NtryScsElpsd(entry), sFrmtScsElpsd) _
-              & " " & DsplyValue(entry, NtryScsNt(entry), sFrmtScsNt) _
+              & " " & DsplyValue(entry, NtryScsNt(entry), sFrmtScsNt)
+            
+            If sArgs <> vbNullString _
+            Then sArgsLine = vbLf & " " & String(Len(DsplyLn), " ") & DsplyLnIndnttn(entry) & sArgs
+            
+            DsplyLn = DsplyLn _
               & " " & DsplyLnIndnttn(entry) _
                     & ItmDrctv(entry) _
               & " "
               
               lLenData = Len(DsplyLn)
-
               DsplyLn = DsplyLn _
                     & ItmId(entry) _
               & " " & ItmInf(entry)
-              
+                          
         Case Detailed
             DsplyLn = _
                         DsplyValue(entry, ItmTcksSys(entry), sFrmtTcksSys) _
@@ -744,19 +775,19 @@ Private Function DsplyLn(ByVal entry As Collection) As String
                 & " " & DsplyValue(entry, NtryScsNt(entry), sFrmtScsNt) _
                 & " "
 
-                lLenData = Len(DsplyLn)
+            lLenData = Len(DsplyLn)
+            
+            If sArgs <> vbNullString _
+            Then sArgsLine = vbLf & String(Len(DsplyLn), " ") & DsplyLnIndnttn(entry) & sArgs
                 
-                DsplyLn = DsplyLn _
-                      & DsplyLnIndnttn(entry) _
-                      & ItmDrctv(entry) _
-                & " " & ItmId(entry) _
-                & " " & ItmInf(entry)
+            DsplyLn = DsplyLn _
+                  & DsplyLnIndnttn(entry) _
+                  & ItmDrctv(entry) _
+            & " " & ItmId(entry) _
+            & " " & ItmInf(entry)
+    
     End Select
-
-    sArgs = DsplyArgs(entry)
-    If sArgs <> vbNullString Then
-        DsplyLn = DsplyLn & vbLf & String(lLenData, " ") & DsplyLnIndnttn(entry) & sArgs
-    End If
+    DsplyLn = DsplyLn & sArgsLine
 
 xt: Exit Function
 
@@ -903,8 +934,8 @@ Private Sub DsplyValuesFormatSet()
     DsplyValueFormat thisformat:=sFrmtScsNt, forvalue:=NtryScsNt(cllLast)
 End Sub
 
-Public Sub EoC(ByVal id As String, _
-      Optional ByVal inf As String = vbNullString)
+Public Sub EoC(ByVal eoc_id As String, _
+      Optional ByVal eoc_inf As String = vbNullString)
 ' ------------------------------------------------
 ' End of the trace of a number of code lines.
 ' Note: When the Conditional Compole Argument
@@ -916,14 +947,14 @@ Public Sub EoC(ByVal id As String, _
     cyTcksOvrhdTrcStrt = SysCrrntTcks
     If StckIsEmpty Then Exit Sub
     If cllTrc Is Nothing Then Exit Sub
-    TrcEnd id:=id, dir:=DIR_END_CODE, inf:=inf, cll:=cll
+    TrcEnd id:=eoc_id, dir:=DIR_END_CODE, inf:=eoc_inf, cll:=cll
     cyTcksOvrhdTrc = SysCrrntTcks - cyTcksOvrhdTrcStrt ' overhead ticks caused by the collection of the begin trace entry
 
 #End If
 End Sub
 
-Public Sub EoP(ByVal id As String, _
-      Optional ByVal inf As String = vbNullString)
+Public Sub EoP(ByVal eop_id As String, _
+      Optional ByVal eop_inf As String = vbNullString)
 ' ------------------------------------------------
 ' Trace of the End of a Procedure.
 ' Note: When the Conditional Compole Argument
@@ -935,7 +966,7 @@ Public Sub EoP(ByVal id As String, _
     cyTcksOvrhdTrcStrt = SysCrrntTcks
     If StckIsEmpty Then Exit Sub        ' Nothing to trace any longer. Stack has been emptied after an error to finish the trace
     If cllTrc Is Nothing Then Exit Sub  ' No trace or trace has finished
-    TrcEnd id:=id, dir:=DIR_END_PROC, inf:=inf, cll:=cll
+    TrcEnd id:=eop_id, dir:=DIR_END_PROC, inf:=eop_inf, cll:=cll
     If StckIsEmpty Then
         Dsply
     End If
@@ -1026,8 +1057,8 @@ Public Sub Finish(Optional ByRef inf As String = vbNullString)
     While Not StckIsEmpty
         Set cll = StckTop
         If NtryIsCode(cll) _
-        Then mTrc.EoC id:=ItmId(cll), inf:=inf _
-        Else mTrc.EoP id:=ItmId(cll), inf:=inf
+        Then mTrc.EoC eoc_id:=ItmId(cll), eoc_inf:=inf _
+        Else mTrc.EoP eop_id:=ItmId(cll), eop_inf:=inf
         inf = vbNullString
     Wend
     
@@ -1211,9 +1242,9 @@ Private Sub StckPop(ByVal pop As Collection)
     While ItmId(pop) <> ItmId(cllTop) And Not StckIsEmpty
         '~~ Finish any unfinished code trace still on the stack which needs to be finished first
         If NtryIsCode(cllTop) Then
-            mTrc.EoC id:=ItmId(cllTop), inf:="ended by stack!!"
+            mTrc.EoC eoc_id:=ItmId(cllTop), eoc_inf:="ended by stack!!"
         Else
-            mTrc.EoP id:=ItmId(cllTop), inf:="ended by stack!!"
+            mTrc.EoP eop_id:=ItmId(cllTop), eop_inf:="ended by stack!!"
         End If
         If Not StckIsEmpty Then Set cllTop = StckTop
     Wend
