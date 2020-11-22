@@ -155,8 +155,8 @@ eh: MsgBox Err.Description, vbOKOnly, "Error in " & ErrSrc(PROC)
     Stop: Resume
 End Sub
 
-Public Sub BoTP(ByVal s As String, _
-           ParamArray errs_asserted() As Variant)
+Public Sub BoTP(ByVal botp_id As String, _
+           ParamArray botp_errs_asserted() As Variant)
 ' ------------------------------------
 ' Trace and stack Begin of Procedure
 ' ------------------------------------
@@ -164,8 +164,8 @@ Public Sub BoTP(ByVal s As String, _
     
     On Error GoTo eh
     
-    mErH.BoP s
-    vErrsAsserted = errs_asserted
+    mErH.BoP botp_id
+    vErrsAsserted = botp_errs_asserted
 
 xt: Exit Sub
 
