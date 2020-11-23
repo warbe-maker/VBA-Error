@@ -40,7 +40,7 @@ Public Sub Regression_Test()
     On Error GoTo eh
     
     bRegressionTest = True
-    mTrc.DisplayedInfo = Detailed
+    mTrc.DisplayedInfo = Compact
     
     mErH.BoTP ErrSrc(PROC), AppErr(1), 11
     Test_1_Application_Error

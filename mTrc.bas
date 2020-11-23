@@ -41,10 +41,10 @@ Alias "QueryPerformanceFrequency" (cySysFrequency As Currency) As Long
 Private Declare PtrSafe Function getTickCount Lib "kernel32" _
 Alias "QueryPerformanceCounter" (cyTickCount As Currency) As Long
 
-Private Const DIR_BEGIN_ID  As String = ">"     ' Begin procedure or code trace indicator
-Private Const DIR_END_ID    As String = "<"     ' End procedure or code trace indicator
-Private Const COMMENT       As String = " !!! "
-
+Private Const DIR_BEGIN_ID      As String = ">"     ' Begin procedure or code trace indicator
+Private Const DIR_END_ID        As String = "<"     ' End procedure or code trace indicator
+Private Const COMMENT           As String = " !!! "
+Private Const CONCAT            As String = "||"
 Private Const POS_ITMDRCTV      As Long = 1
 Private Const POS_ITMID         As Long = 2
 Private Const POS_ITMINF        As Long = 3
