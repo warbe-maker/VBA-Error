@@ -46,6 +46,9 @@ Public Sub Regression_Test()
     Test_1_Application_Error
     Test_2_VB_Runtime_Error
 
+    Debug.Assert RecentErrors(1) = AppErr(1)
+    Debug.Assert RecentErrors(2) = 11
+    
 xt: mErH.EoP ErrSrc(PROC)
     bRegressionTest = False
     Exit Sub
@@ -70,6 +73,8 @@ Public Sub Test_1_Application_Error()
     
     Test_1_Application_Error_TestProc_2a
 
+    Debug.Assert mErH.MostRecentError = AppErr(1)
+    
 xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
@@ -150,6 +155,8 @@ Public Sub Test_2_VB_Runtime_Error()
     
     mErH.BoP ErrSrc(PROC)
     Test_2_VB_Runtime_Error_TestProc_3a
+
+    Debug.Assert mErH.MostRecentError = 11
 
 xt: mErH.EoP ErrSrc(PROC)
     Exit Sub

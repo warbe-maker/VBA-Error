@@ -19,21 +19,6 @@ Option Private Module
 '                     The local Conditional Compile Argument "AlternativeMsgBox = 1" enforces the use
 '                     of the Alternative VBA MsgBox which provideds an improved readability.
 '
-' Usage:   Private/Public Sub/Function any()
-'              Const PROC = "any"  ' procedure's name as error source
-'
-'              On Error GoTo eh
-'              mErH.BoP ErrSrc(PROC)   ' puts the procedure on the call stack
-'
-'              ' <any code>
-'
-'          xt: ' <any "finally" code like re-protecting an unprotected sheet for instance>
-'                               mErH.EoP ErrSrc(PROC)   ' takes the procedure off from the call stack
-'                               Exit Sub/Function
-'
-'           eh: mErH.ErrMsg err_source:=ErrSrc(PROC)
-'           End ....
-'
 ' Note: When never a mErH.BoP/mErH.EoP procedure had been executed the ErrMsg
 '       is displayed with the procedure the error occoured. Else the error is
 '       passed on back up to the first procedure with a mErH.BoP/mErH.EoP code
@@ -44,8 +29,7 @@ Option Private Module
 '
 ' Requires: Reference to "Microsoft Scripting Runtime"
 '
-'          For further details see the Github blog post
-'          "A comprehensive common VBA Error Handler inspired by the best of the web"
+' For further details see the Github blog post: "Comprehensive Common VBA Error Handler"
 ' https://warbe-maker.github.io/vba/common/2020/10/02/Comprehensive-Common-VBA-Error-Handler.html
 '
 ' W. Rauschenberger, Berlin, Nov 2020
@@ -70,7 +54,24 @@ Private lSubsequErrNo       As Long         ' possibly different from the initia
 Private vErrsAsserted       As Variant      ' possibly provided with BoTP
 Private vErrReply           As Variant
 Private vArguments()        As Variant      ' The last procedures (with BoP) provided arguments
+Private cllRecentErrors     As Collection
 
+Private Property Let MostRecentError(ByVal lErrNo As Long)
+    If cllRecentErrors Is Nothing Then Set cllRecentErrors = New Collection
+    cllRecentErrors.Add lErrNo
+End Property
+
+Public Property Get MostRecentError() As Long
+    If Not cllRecentErrors Is Nothing Then
+        If cllRecentErrors.Count <> 0 Then
+            MostRecentError = cllRecentErrors(cllRecentErrors.Count)
+        End If
+    End If
+End Property
+
+Public Property Get RecentErrors() As Collection
+    Set RecentErrors = cllRecentErrors
+End Property
 Public Property Get ErrReply() As Variant
     ErrReply = vErrReply
 End Property
@@ -141,7 +142,10 @@ Public Sub BoP(ByVal bop_id As String, _
     
     On Error GoTo eh
     
-    If StckIsEmpty Then Set vErrsAsserted = Nothing
+    If StckIsEmpty Then
+        Set vErrsAsserted = Nothing
+        Set cllRecentErrors = Nothing: Set cllRecentErrors = New Collection
+    End If
     
     StckPush bop_id
 #If ExecTrace Then
@@ -157,9 +161,10 @@ End Sub
 
 Public Sub BoTP(ByVal botp_id As String, _
            ParamArray botp_errs_asserted() As Variant)
-' ------------------------------------
-' Trace and stack Begin of Procedure
-' ------------------------------------
+' ----------------------------------------------------
+' Trace and stack Begin of Procedure and keep a record
+' of any asserted errors (error numbers).
+' ----------------------------------------------------
     Const PROC = "BoTP"
     
     On Error GoTo eh
@@ -207,21 +212,21 @@ Private Function ErrBttns( _
 
 End Function
 
-Public Function ErrDsply( _
-                ByVal err_source As String, _
-                ByVal err_number As Long, _
-                ByVal err_dscrptn As String, _
-                ByVal err_line As Long, _
-       Optional ByVal err_buttons As Variant = vbOKOnly) As Variant
-' -----------------------------------------------------------------
-' Displays the error message either by means of VBA MsgBox or, when
-' the Conditional Compile Argument AlternativeMsgBox = 1 by means
-' of the Alternative VBA MsgBox (UserForm fMsg). In any case the
-' path to the error may be displayed, provided the entry procedure
-' has BoP/EoP code lines.
+Private Function ErrDsply( _
+                    ByVal err_source As String, _
+                    ByVal err_number As Long, _
+                    ByVal err_dscrptn As String, _
+                    ByVal err_line As Long, _
+           Optional ByVal err_buttons As Variant = vbOKOnly) As Variant
+' ---------------------------------------------------------------------
+' Displays the error message. The displayed path to the error may be
+' provided as the error is passed on to the Entry Procedure or based on
+' the passed BoP/EoP services. In the first case the path to the error
+' may be pretty complete which in the second case the extent of detail
+' depends on which (how many) procedures do call the BoP/EoP service.
 '
-' W. Rauschenberger, Berlin, Sept 2020
-' -------------------------------------------------------------
+' W. Rauschenberger, Berlin, Nov 2020
+' ---------------------------------------------------------------------
     
     Dim sErrPath    As String
     Dim sTitle      As String
@@ -443,14 +448,14 @@ Public Function ErrMsg( _
          Optional ByVal err_line As Long = 0, _
          Optional ByVal err_buttons As Variant = vbNullString, _
          Optional ByRef err_reply As Variant) As Variant
-' ----------------------------------------------------------------------
-' When the errbuttons argument specifies more than one button the error
-' message is immediately displayed and the users choice is returned,
-' else when the caller (err_source) is the "Entry Procedure" the error
-' is displayed with the path to the error,
-' else the error is passed on to the "Entry Procedure" whereby the
-' .ErrorPath string is assebled.
-' ----------------------------------------------------------------------
+' ---------------------------------------------------------------
+' When the errbuttons argument specifies more than one button
+' the error message is immediately displayed and the users choice
+' is returned to the caller, else when the caller (err_source)
+' is the "Entry Procedure" the error is displayed with the path
+' to the error, else the error is passed on to the Entry
+' Procedure whereby the path to the error is composed/assembled.
+' ---------------------------------------------------------------
     
     Static lInitErrNo       As Long
     Static lInitErrLine     As Long
@@ -478,6 +483,7 @@ Public Function ErrMsg( _
         lInitErrNo = err_number
         sInitErrSource = err_source
         sInitErrDscrptn = err_dscrptn
+        MostRecentError = err_number
     ElseIf err_number <> lInitErrNo _
         And err_number <> lSubsequErrNo _
         And err_source <> sInitErrSource Then
