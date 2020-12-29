@@ -512,7 +512,7 @@ Public Sub Dsply()
         .MsgText(1) = sTrace:   .MsgMonoSpaced(1) = True
         .MsgLabel(2) = "About overhead, precision, etc.:": .MsgText(2) = DsplyAbout
         .Setup
-        .Show
+        .show
     End With
     
 xt: mTrc.Terminate
@@ -872,7 +872,7 @@ next_begin_entry:
             .MsgLabel(1) = "The following incosistencies made a trace result display useless/impossible:"
             .MsgText(1) = sTrace:   .MsgMonoSpaced(1) = True
             .Setup
-            .Show
+            .show
         End With
     Else
         DsplyNtryAllCnsstnt = True
@@ -999,7 +999,7 @@ Private Sub ErrMsg( _
                     err_dscrptn & vbLf & vbLf & _
                    "Error source/details:" & vbLf & _
                    sDetails, _
-           buttons:=vbOKOnly, _
+           Buttons:=vbOKOnly, _
            Title:=sTitle
     mTrc.Finish sTitle
     mTrc.Terminate

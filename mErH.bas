@@ -2,7 +2,7 @@ Attribute VB_Name = "mErH"
 Option Explicit
 Option Private Module
 ' -----------------------------------------------------------------------------------------------
-' Standard  Module mErrHndlr: Global error handling for any VBA Project.
+' Standard  Module mErH: Global error handling for any VBA Project.
 '
 ' Methods: - AppErr   Converts a positive number into a negative error number ensuring it not
 '                     conflicts with a VB Runtime Error. A negative error number is turned back into the
@@ -36,15 +36,6 @@ Option Private Module
 ' -----------------------------------------------------------------------------------------------
 
 Public Const CONCAT         As String = "||"
-
-Public Type tMsgSection                 ' ---------------------
-       sLabel As String                 ' Structure of the
-       sText As String                  ' UserForm's message
-       bMonspaced As Boolean            ' area which consists
-End Type                                ' of 4 message sections
-Public Type tMsg                        ' Attention: 4 is a
-       section(1 To 4) As tMsgSection   ' design constant!
-End Type                                ' ---------------------
 
 Private cllErrPath          As Collection
 Private cllErrorPath        As Collection   ' managed by ErrPath... procedures exclusively
@@ -257,7 +248,7 @@ Private Function ErrDsply( _
         .MsgButtons = err_buttons
         .Setup
         
-        .Show
+        .show
         If ErrBttns(err_buttons) = 1 Then
             ErrDsply = err_buttons ' a single reply errbuttons return value cannot be obtained since the form is unloaded with its click
         Else
@@ -620,7 +611,7 @@ Private Function ErrPathErrMsg(ByVal msg_details As String, _
             s = cllErrorPath.TrcEntryItem(i)
             If i = cllErrorPath.Count _
             Then ErrPathErrMsg = s _
-            Else ErrPathErrMsg = ErrPathErrMsg & vbLf & Space(j * 2) & "|_" & s
+            Else ErrPathErrMsg = ErrPathErrMsg & vbLf & Space$(j * 2) & "|_" & s
             j = j + 1
         Next i
     Else
@@ -628,7 +619,7 @@ Private Function ErrPathErrMsg(ByVal msg_details As String, _
         If Not StckIsEmpty Then
             For i = 0 To dctStck.Count - 1
                 If ErrPathErrMsg <> vbNullString Then
-                   ErrPathErrMsg = ErrPathErrMsg & vbLf & Space((i - 1) * 2) & "|_" & dctStck.Items()(i)
+                   ErrPathErrMsg = ErrPathErrMsg & vbLf & Space$((i - 1) * 2) & "|_" & dctStck.Items()(i)
                 Else
                    ErrPathErrMsg = dctStck.Items()(i)
                 End If
@@ -658,14 +649,6 @@ End Function
 
 Private Function ErrSrc(ByVal sProc As String) As String
     ErrSrc = "mErH." & sProc
-End Function
-
-Public Function Space(ByVal l As Long) As String
-' --------------------------------------------------
-' Unifies the VB differences SPACE$ and Space$ which
-' lead to code diferences where there aren't any.
-' --------------------------------------------------
-    Space = VBA.Space$(l)
 End Function
 
 Private Function StckBottom() As String

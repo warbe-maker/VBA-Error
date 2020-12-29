@@ -51,7 +51,7 @@ Private Function ErrorHandling_BetterThanNothing(ByVal op1 As Variant, _
 eh:
     MsgBox Prompt:="Error description" & vbLf & _
                     Err.Description, _
-           buttons:=vbOKOnly, _
+           Buttons:=vbOKOnly, _
            Title:="VB Runtime error " & Err.Number & " in " & ErrSrc(PROC) & IIf(Erl <> 0, " at line " & Erl, "")
 End Function
 
