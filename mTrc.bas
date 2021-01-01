@@ -41,10 +41,10 @@ Alias "QueryPerformanceFrequency" (cySysFrequency As Currency) As Long
 Private Declare PtrSafe Function getTickCount Lib "kernel32" _
 Alias "QueryPerformanceCounter" (cyTickCount As Currency) As Long
 
-Private Const DIR_BEGIN_ID      As String = ">"     ' Begin procedure or code trace indicator
-Private Const DIR_END_ID        As String = "<"     ' End procedure or code trace indicator
-Private Const COMMENT           As String = " !!! "
-Private Const CONCAT            As String = "||"
+Private Const DIR_BEGIN_ID  As String = ">"     ' Begin procedure or code trace indicator
+Private Const DIR_END_ID    As String = "<"     ' End procedure or code trace indicator
+Private Const COMMENT       As String = " !!! "
+
 Private Const POS_ITMDRCTV      As Long = 1
 Private Const POS_ITMID         As Long = 2
 Private Const POS_ITMINF        As Long = 3
@@ -536,8 +536,8 @@ Private Function DsplyAbout() As String
     dblOvrhdPcntg = (dblTtlScsOvrhdNtry / NtryScsElpsd(NtryLst)) * 100
     
     DsplyAbout = "> The trace itself, i.e. the collection of the begin and end data for each traced item " & _
-                 "(procedure or code) caused a performance loss of " & Format(dblTtlScsOvrhdNtry, sFrmtScsOvrhdItm) & _
-                 " seconds (=" & Format(dblOvrhdPcntg, "0.00") & "%). " _
+                 "(procedure or code) caused a performance loss of " & Format$(dblTtlScsOvrhdNtry, sFrmtScsOvrhdItm) & _
+                 " seconds (=" & Format$(dblOvrhdPcntg, "0.00") & "%). " _
                & "For a best possible execution time precision the overhead per traced item " _
                & "has been deducted from each of the " & cllTrc.Count / 2 & " traced item's execution time." _
       & vbLf _
@@ -557,7 +557,7 @@ Private Function DsplyFtr(ByVal lLenHeaderData As Long) ' Displayed trace footer
         Space$(lLenHeaderData) _
       & DIR_END_PROC _
       & " End execution trace " _
-      & Format(Now(), "hh:mm:ss")
+      & Format$(Now(), "hh:mm:ss")
 End Function
 
 Private Function DsplyHdr(ByRef lLenHeaderData As Long) As String
@@ -581,7 +581,7 @@ Private Function DsplyHdr(ByRef lLenHeaderData As Long) As String
     sHeaderTrace = _
       DIR_BEGIN_PROC _
     & " Begin execution trace " _
-    & Format(dtTraceBegin, "hh:mm:ss") _
+    & Format$(dtTraceBegin, "hh:mm:ss") _
     & " (exec time in seconds)"
 
     Select Case DisplayedInfo
@@ -899,7 +899,7 @@ Private Function DsplyValue(ByVal entry As Collection, _
                             ByVal frmt As String) As String
     If NtryIsBegin(entry) And value = 0 _
     Then DsplyValue = Space$(Len(frmt)) _
-    Else DsplyValue = IIf(value >= 0, Format(value, frmt), Space$(Len(frmt)))
+    Else DsplyValue = IIf(value >= 0, Format$(value, frmt), Space$(Len(frmt)))
 End Function
 
 Private Function DsplyValueFormat(ByRef thisformat As String, _
