@@ -34,7 +34,7 @@ Const HOSTED_COMMON_COMPS = "mErH"
 
 Private Sub Workbook_Open()
 #If CompMan Then
-    mCompMan.UpdateClonesTheRawHasChanged uc_wb:=ThisWorkbook, uc_hosted:=HOSTED_COMMON_COMPS
+    mCompMan.UpdateRawClones uc_wb:=ThisWorkbook, uc_hosted:=HOSTED_COMMON_COMPS
 #End If
 End Sub
 
