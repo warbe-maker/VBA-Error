@@ -229,9 +229,20 @@ Private Function ErrDsply( _
     Dim sType       As String
     Dim lNo         As Long
     
-    ErrMsgMatter err_source:=err_source, err_no:=err_number, err_line:=err_line, err_dscrptn:=err_dscrptn, _
-                 msg_title:=sTitle, msg_line:=sLine, msg_details:=sDetails, msg_source:=sSource, msg_dscrptn:=sDscrptn, msg_info:=sInfo, msg_type:=sType, msg_no:=lNo
-    sErrPath = ErrPathErrMsg(msg_details:=sType & lNo & " " & sLine, err_source:=err_source)
+    ErrMsgMatter err_source:=err_source _
+               , err_no:=err_number _
+               , err_line:=err_line _
+               , err_dscrptn:=err_dscrptn _
+               , msg_title:=sTitle _
+               , msg_line:=sLine _
+               , msg_details:=sDetails _
+               , msg_source:=sSource _
+               , msg_dscrptn:=sDscrptn _
+               , msg_info:=sInfo _
+               , msg_type:=sType _
+               , msg_no:=lNo
+    sErrPath = ErrPathErrMsg(msg_details:=sType & lNo & " " & sLine _
+                           , err_source:=err_source)
     '~~ Display the error message by means of the Common UserForm fMsg
     With fMsg
         .MsgTitle = sTitle
@@ -368,13 +379,13 @@ Private Function ErrHndlrFailed( _
 ' ------------------------------------------
 
     If err_number = 0 Then
-        MsgBox "The error handling has been called with an error number = 0 !" & vbLf & vbLf & _
-               "This indicates that in procedure" & vbLf & _
-               ">>>>> " & err_source & " <<<<<" & vbLf & _
-               "an ""Exit ..."" statement before the call of the error handling is missing!" _
-               , vbExclamation, _
-               "Exit ... statement missing in " & err_source & "!"
-                ErrHndlrFailed = True
+        MsgBox Prompt:="The error handling has been called with an error number = 0 !" & vbLf & vbLf & _
+                       "This indicates that in procedure" & vbLf & _
+                       ">>>>> " & err_source & " <<<<<" & vbLf & _
+                       "an ""Exit ..."" statement before the call of the error handling is missing!" _
+             , Buttons:=vbExclamation _
+             , Title:="Exit ... statement missing in " & err_source & "!"
+        ErrHndlrFailed = True
         Exit Function
     End If
     
