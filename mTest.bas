@@ -79,7 +79,7 @@ xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
 eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
-        Case DebugOpt1ResumeError: Stop: Resume
+        Case DebugOptResumeErrorLine: Stop: Resume
     End Select
 End Sub
 
@@ -94,7 +94,7 @@ Private Sub Test_1_Application_Error_TestProc_2a()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOpt1ResumeError Then Stop: Resume
+    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOptResumeErrorLine Then Stop: Resume
 End Sub
 
 Private Sub Test_1_Application_Error_TestProc_2b()
@@ -108,7 +108,7 @@ Private Sub Test_1_Application_Error_TestProc_2b()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOpt1ResumeError Then Stop: Resume
+    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOptResumeErrorLine Then Stop: Resume
 End Sub
 
 Private Sub Test_1_Application_Error_TestProc_2c()
@@ -123,18 +123,21 @@ Private Sub Test_1_Application_Error_TestProc_2c()
     mErH.BoP ErrSrc(PROC)
 181 Err.Raise AppErr(1), ErrSrc(PROC), _
         "This is a programmed i.e. an ""Application Error""!" & CONCAT & _
-        "The function AppErr() has been used to turn the positive into a negative number by adding the VB constant 'vbObjectError' to assure an error number which does not conflict with a VB Runtime error. " & _
-        "The ErrMsg identified the negative number as an ""Application Error"" and converted it back to the orginal positive number by means of the AppErr() function." & vbLf & _
+        "The AppErr service has been used to turn the positive into a negative number by adding " & _
+        "the VB constant 'vbObjectError' to assure the error number is not confused with a VB Runtime error. " & _
+        "The ErrMsg service used the AppErr service to identify the number as an 'Application Error' " & _
+        "and turn the negative number back into the orginal positive number." & vbLf & _
         vbLf & _
-        "Also note that this information is part of the raised error message but concatenated with two vertical bars indicating that it is an additional information regarding this error."
+        "By the way: Note that all the above information had been provided with the err.Description " & _
+        "by concatenating it with two vertical bars indicating that it as this additional information."
 
 xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
 eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC), err_dscrptn:=RegressionTestInfo)
-        Case DebugOpt1ResumeError:       Stop: Resume
-        Case TestOpt1ResumeNext:        Resume Next
-        Case TestOpt2ExitAndContinue:   GoTo xt
+        Case DebugOptResumeErrorLine:       Stop: Resume
+        Case DebugOptResumeNext:        Resume Next
+        Case DebugOptCleanExitAndContinue:   GoTo xt
     End Select
 End Sub
 
@@ -163,9 +166,9 @@ xt: mErH.EoP ErrSrc(PROC)
 
 eh: mErH.ErrMsg err_source:=ErrSrc(PROC)
     Select Case mErH.ErrReply
-        Case DebugOpt1ResumeError: Stop: Resume
-        Case TestOpt1ResumeNext: Resume Next
-        Case TestOpt2ExitAndContinue: GoTo xt
+        Case DebugOptResumeErrorLine: Stop: Resume
+        Case DebugOptResumeNext: Resume Next
+        Case DebugOptCleanExitAndContinue: GoTo xt
     End Select
 End Sub
 
@@ -180,7 +183,7 @@ Private Sub Test_2_VB_Runtime_Error_TestProc_3a()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOpt1ResumeError Then Stop: Resume
+    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOptResumeErrorLine Then Stop: Resume
 End Sub
 
 Private Sub Test_2_VB_Runtime_Error_TestProc_3b()
@@ -194,7 +197,7 @@ Private Sub Test_2_VB_Runtime_Error_TestProc_3b()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOpt1ResumeError Then Stop: Resume
+    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOptResumeErrorLine Then Stop: Resume
 End Sub
 
 Private Sub Test_2_VB_Runtime_Error_TestProc_3c()
@@ -208,7 +211,7 @@ Private Sub Test_2_VB_Runtime_Error_TestProc_3c()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOpt1ResumeError Then Stop: Resume
+    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOptResumeErrorLine Then Stop: Resume
 End Sub
 
 Private Sub Test_2_VB_Runtime_Error_TestProc_3d( _
@@ -231,9 +234,9 @@ xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
 eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC), err_dscrptn:=RegressionTestInfo)
-        Case DebugOpt1ResumeError:       Stop: Resume
-        Case TestOpt1ResumeNext:        Resume Next
-        Case TestOpt2ExitAndContinue:   GoTo xt
+        Case DebugOptResumeErrorLine:       Stop: Resume
+        Case DebugOptResumeNext:        Resume Next
+        Case DebugOptCleanExitAndContinue:   GoTo xt
     End Select
 End Sub
 
@@ -252,7 +255,7 @@ Public Sub Test_4_DebugAndTest_with_ErrMsg()
     Exit Sub
 
 eh:
-    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOpt1ResumeError Then Stop: Resume
+    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOptResumeErrorLine Then Stop: Resume
 End Sub
 
 Private Sub Test_4_DebugAndTest_with_ErrMsg_TestProc_5a()
@@ -267,7 +270,7 @@ Private Sub Test_4_DebugAndTest_with_ErrMsg_TestProc_5a()
     
 eh:
     Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
-        Case DebugOpt1ResumeError: Stop: Resume ' Continue with F8 to end up at the code line which caused the error
+        Case DebugOptResumeErrorLine: Stop: Resume ' Continue with F8 to end up at the code line which caused the error
     End Select
 End Sub
 
@@ -280,5 +283,5 @@ Public Sub Test_5_No_Exit_Statement()
     On Error GoTo eh
     
 eh:
-    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOpt1ResumeError Then Stop: Resume
+    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOptResumeErrorLine Then Stop: Resume
 End Sub

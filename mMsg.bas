@@ -22,13 +22,14 @@ Public Type tMsgSection                 ' ---------------------
        bMonspaced As Boolean            ' area which consists
 End Type                                ' of 4 message sections
 Public Type tMsg                        ' Attention: 4 is a
-       section(1 To 4) As tMsgSection   ' design constant!
+       Section(1 To 4) As tMsgSection   ' design constant!
 End Type                                ' ---------------------
 
 Public Function Box(ByVal msg_title As String, _
            Optional ByVal msg As String = vbNullString, _
            Optional ByVal msg_monospaced As Boolean = False, _
            Optional ByVal msg_buttons As Variant = vbOKOnly, _
+           Optional ByVal msg_button_default = 1, _
            Optional ByVal msg_returnindex As Boolean = False, _
            Optional ByVal msg_min_width As Long = 400, _
            Optional ByVal msg_max_width As Long = 80, _
@@ -53,6 +54,7 @@ Public Function Box(ByVal msg_title As String, _
         .MsgText(1) = msg
         .MsgMonoSpaced(1) = msg_monospaced
         .MsgButtons = msg_buttons
+        .DefaultButton = msg_button_default
         '+------------------------------------------------------------------------+
         '|| Setup prior showing the form improves the performance significantly  ||
         '|| and avoids any flickering message window with its setup.             ||
@@ -125,6 +127,7 @@ End Function
 Public Function Dsply(ByVal msg_title As String, _
                       ByRef msg As tMsg, _
              Optional ByVal msg_buttons As Variant = vbOKOnly, _
+             Optional ByVal msg_button_default = 1, _
              Optional ByVal msg_returnindex As Boolean = False, _
              Optional ByVal msg_min_width As Long = 300, _
              Optional ByVal msg_max_width As Long = 80, _
@@ -150,12 +153,13 @@ Public Function Dsply(ByVal msg_title As String, _
         .MinButtonWidth = msg_min_button_width
         .MsgTitle = msg_title
         For i = 1 To fMsg.NoOfDesignedMsgSections
-            .MsgLabel(i) = msg.section(i).sLabel
-            .MsgText(i) = msg.section(i).sText
-            .MsgMonoSpaced(i) = msg.section(i).bMonspaced
+            .MsgLabel(i) = msg.Section(i).sLabel
+            .MsgText(i) = msg.Section(i).sText
+            .MsgMonoSpaced(i) = msg.Section(i).bMonspaced
         Next i
         
         .MsgButtons = msg_buttons
+        .DefaultButton = msg_button_default
         '+------------------------------------------------------------------------+
         '|| Setup prior showing the form improves the performance significantly  ||
         '|| and avoids any flickering message window with its setup.             ||
@@ -197,4 +201,21 @@ Public Function ReplyString( _
     End If
     
 End Function
+
+Private Sub ErrMsg( _
+             ByVal err_source As String, _
+    Optional ByVal err_no As Long = 0, _
+    Optional ByVal err_dscrptn As String = vbNullString)
+' ------------------------------------------------------
+' This Common Component does not have its own error
+' handling. Instead it passes on any error to the
+' caller's error handling.
+' ------------------------------------------------------
+    
+    If err_no = 0 Then err_no = Err.Number
+    If err_dscrptn = vbNullString Then err_dscrptn = Err.Description
+
+    Err.Raise Number:=err_no, Source:=err_source, Description:=err_dscrptn
+
+End Sub
 
