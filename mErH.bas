@@ -163,8 +163,8 @@ Public Sub EoP(ByVal eop_id As String)
 ' ------------------------------------
 #If ExecTrace Then
     mTrc.EoP eop_id
-    mErH.StckPop eop_id
 #End If
+    mErH.StckPop eop_id
 End Sub
 
 Private Function ErrArgName(ByVal s As String) As Boolean
