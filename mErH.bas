@@ -254,8 +254,8 @@ Private Function ErrDsply( _
 ' ---------------------------------------------------------------------
 ' Displays the error message. The displayed path to the error may be
 ' provided as the error is passed on to the Entry Procedure or based on
-' the passed BoP/EoP services. In the first case the path to the error
-' may be pretty complete which in the second case the extent of detail
+' all passed BoP/EoP services. In the first case the path to the error
+' may be pretty complete, in the second case the extent of detail
 ' depends on which (how many) procedures do call the BoP/EoP service.
 '
 ' W. Rauschenberger, Berlin, Nov 2020
@@ -285,6 +285,21 @@ Private Function ErrDsply( _
                , msg_no:=lNo
     sErrPath = ErrPathErrMsg(msg_details:=sType & lNo & " " & sLine _
                            , err_source:=err_source)
+#If Debuggin = 0 Then
+    If err_line = 0 Then
+        '~~ In case no error line is provided with the error message (commonly the case)
+        '~~ a hint regarding the Conditional Compile Argument which may be used to get
+        '~~ an option which supports 'resuming' it will be displayed.
+        If sInfo <> vbNullString Then sInfo = sInfo & vbLf & vbLf
+        sInfo = sInfo & "Attention Developers: The code line which caused/raised the error may be identified " & _
+                        "by setting the Conditional Compile Argument 'Debugging = 1'. The addtional displayed " & _
+                        "Debugging Option Button 'Stop and Resume error' can be used for example:" & vbLf & _
+                        "If mErH.ErrMsg(ErrSrc(PROC)) = mErH.DebugOptResumeErrorLine Then Stop: Resume"
+    End If
+#End If
+    
+    
+    
     '~~ Display the error message by means of the Common UserForm fMsg
     With fMsg
         .MsgTitle = sTitle
@@ -539,7 +554,7 @@ Private Function ErrPathErrMsg(ByVal msg_details As String, _
     If Not ErrPathIsEmpty Then
         '~~ When the error path is not empty and not only contains the error source procedure
         For i = cllErrorPath.Count To 1 Step -1
-            s = cllErrorPath.TrcEntryItem(i)
+            s = cllErrorPath(i)
             If i = cllErrorPath.Count _
             Then ErrPathErrMsg = s _
             Else ErrPathErrMsg = ErrPathErrMsg & vbLf & Space$(j * 2) & "|_" & s

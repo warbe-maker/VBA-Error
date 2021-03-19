@@ -235,8 +235,8 @@ xt: mErH.EoP ErrSrc(PROC)
 
 eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC), err_dscrptn:=RegressionTestInfo)
         Case DebugOptResumeErrorLine:       Stop: Resume
-        Case DebugOptResumeNext:        Resume Next
-        Case DebugOptCleanExitAndContinue:   GoTo xt
+        Case DebugOptResumeNext:            Resume Next
+        Case DebugOptCleanExitAndContinue:  GoTo xt
     End Select
 End Sub
 
