@@ -43,7 +43,7 @@ Alias "QueryPerformanceCounter" (cyTickCount As Currency) As Long
 
 Private Const DIR_BEGIN_ID  As String = ">"     ' Begin procedure or code trace indicator
 Private Const DIR_END_ID    As String = "<"     ' End procedure or code trace indicator
-Private Const COMMENT       As String = " !!! "
+Private Const TRC_INFO_DELIM As String = " !!! "
 
 Private Const POS_ITMDRCTV      As Long = 1
 Private Const POS_ITMID         As Long = 2
@@ -111,135 +111,136 @@ Public Property Let DisplayedSecsPrecision(ByVal l As Long)
     lPrecision = l
 End Property
 
-Private Property Get DsplyLnIndnttn(Optional ByRef entry As Collection) As String
-    DsplyLnIndnttn = repeat("|  ", ItmLvl(entry))
-End Property
-Private Property Get ItmArgs(Optional ByRef entry As Collection) As Variant
-    ItmArgs = entry("I")(POS_ITMARGS)
+Private Property Get DsplyLnIndnttn(Optional ByRef trc_entry As Collection) As String
+    DsplyLnIndnttn = repeat("|  ", ItmLvl(trc_entry))
 End Property
 
-Private Property Get ItmDrctv(Optional ByRef entry As Collection) As String
-    ItmDrctv = entry("I")(POS_ITMDRCTV)
+Private Property Get ItmArgs(Optional ByRef trc_entry As Collection) As Variant
+    ItmArgs = trc_entry("I")(POS_ITMARGS)
 End Property
 
-Private Property Get ItmId(Optional ByRef entry As Collection) As String
-    ItmId = entry("I")(POS_ITMID)
+Private Property Get ItmDrctv(Optional ByRef trc_entry As Collection) As String
+    ItmDrctv = trc_entry("I")(POS_ITMDRCTV)
 End Property
 
-Private Property Get ItmInf(Optional ByRef entry As Collection) As String
+Private Property Get ItmId(Optional ByRef trc_entry As Collection) As String
+    ItmId = trc_entry("I")(POS_ITMID)
+End Property
+
+Private Property Get ItmInf(Optional ByRef trc_entry As Collection) As String
     On Error Resume Next ' in case this has never been collected
-    ItmInf = entry("I")(POS_ITMINF)
+    ItmInf = trc_entry("I")(POS_ITMINF)
     If Err.Number <> 0 Then ItmInf = vbNullString
 End Property
 
-Private Property Get ItmLvl(Optional ByRef entry As Collection) As Long
-    ItmLvl = entry("I")(POS_ITMLVL)
+Private Property Get ItmLvl(Optional ByRef trc_entry As Collection) As Long
+    ItmLvl = trc_entry("I")(POS_ITMLVL)
 End Property
 
-Private Property Get ItmTcksSys(Optional ByRef entry As Collection) As Currency
-    ItmTcksSys = entry("I")(POS_ITMTCKSSYS)
+Private Property Get ItmTcksSys(Optional ByRef trc_entry As Collection) As Currency
+    ItmTcksSys = trc_entry("I")(POS_ITMTCKSSYS)
 End Property
 
-Private Property Let NtryItm(Optional ByVal entry As Collection, ByVal v As Variant)
-    entry.Add v, "I"
+Private Property Let NtryItm(Optional ByVal trc_entry As Collection, ByVal v As Variant)
+    trc_entry.Add v, "I"
 End Property
 
-Private Property Get NtryScsElpsd(Optional ByRef entry As Collection) As Currency
+Private Property Get NtryScsElpsd(Optional ByRef trc_entry As Collection) As Currency
     On Error Resume Next
-    NtryScsElpsd = entry("SE")
+    NtryScsElpsd = trc_entry("SE")
     If Err.Number <> 0 Then NtryScsElpsd = Space$(Len(sFrmtScsElpsd))
 End Property
 
-Private Property Let NtryScsElpsd(Optional ByRef entry As Collection, ByRef cy As Currency)
-    entry.Add cy, "SE"
+Private Property Let NtryScsElpsd(Optional ByRef trc_entry As Collection, ByRef cy As Currency)
+    trc_entry.Add cy, "SE"
 End Property
 
-Private Property Get NtryScsGrss(Optional ByRef entry As Collection) As Currency
+Private Property Get NtryScsGrss(Optional ByRef trc_entry As Collection) As Currency
     On Error Resume Next ' in case no value exists (the case for each begin entry)
-    NtryScsGrss = entry("SG")
+    NtryScsGrss = trc_entry("SG")
     If Err.Number <> 0 Then NtryScsGrss = Space$(Len(sFrmtScsGrss))
 End Property
 
-Private Property Let NtryScsGrss(Optional ByRef entry As Collection, ByRef cy As Currency)
-    entry.Add cy, "SG"
+Private Property Let NtryScsGrss(Optional ByRef trc_entry As Collection, ByRef cy As Currency)
+    trc_entry.Add cy, "SG"
 End Property
 
-Private Property Get NtryScsNt(Optional ByRef entry As Collection) As Double
+Private Property Get NtryScsNt(Optional ByRef trc_entry As Collection) As Double
     On Error Resume Next
-    NtryScsNt = entry("SN")
+    NtryScsNt = trc_entry("SN")
     If Err.Number <> 0 Then NtryScsNt = Space$(Len(sFrmtScsNt))
 End Property
 
-Private Property Let NtryScsNt(Optional ByRef entry As Collection, ByRef dbl As Double)
-    entry.Add dbl, "SN"
+Private Property Let NtryScsNt(Optional ByRef trc_entry As Collection, ByRef dbl As Double)
+    trc_entry.Add dbl, "SN"
 End Property
 
-Private Property Get NtryScsOvrhdItm(Optional ByRef entry As Collection) As Double
+Private Property Get NtryScsOvrhdItm(Optional ByRef trc_entry As Collection) As Double
     On Error Resume Next
-    NtryScsOvrhdItm = entry("SOI")
+    NtryScsOvrhdItm = trc_entry("SOI")
     If Err.Number <> 0 Then NtryScsOvrhdItm = Space$(Len(sFrmtScsOvrhdItm))
 End Property
 
-Private Property Let NtryScsOvrhdItm(Optional ByRef entry As Collection, ByRef dbl As Double)
-    entry.Add dbl, "SOI"
+Private Property Let NtryScsOvrhdItm(Optional ByRef trc_entry As Collection, ByRef dbl As Double)
+    trc_entry.Add dbl, "SOI"
 End Property
 
-Private Property Get NtryScsOvrhdNtry(Optional ByRef entry As Collection) As Double
+Private Property Get NtryScsOvrhdNtry(Optional ByRef trc_entry As Collection) As Double
     On Error Resume Next
-    NtryScsOvrhdNtry = entry("SON")
+    NtryScsOvrhdNtry = trc_entry("SON")
     If Err.Number <> 0 Then NtryScsOvrhdNtry = Space$(Len(sFrmtScsOvrhdItm))
 End Property
 
-Private Property Let NtryScsOvrhdNtry(Optional ByRef entry As Collection, ByRef dbl As Double)
-    entry.Add dbl, "SON"
+Private Property Let NtryScsOvrhdNtry(Optional ByRef trc_entry As Collection, ByRef dbl As Double)
+    trc_entry.Add dbl, "SON"
 End Property
 
-Private Property Get NtryTcksElpsd(Optional ByRef entry As Collection) As Currency
-    NtryTcksElpsd = entry("TE")
+Private Property Get NtryTcksElpsd(Optional ByRef trc_entry As Collection) As Currency
+    NtryTcksElpsd = trc_entry("TE")
 End Property
 
-Private Property Let NtryTcksElpsd(Optional ByRef entry As Collection, ByRef cy As Currency)
-    entry.Add cy, "TE"
+Private Property Let NtryTcksElpsd(Optional ByRef trc_entry As Collection, ByRef cy As Currency)
+    trc_entry.Add cy, "TE"
 End Property
 
-Private Property Get NtryTcksGrss(Optional ByRef entry As Collection) As Currency
+Private Property Get NtryTcksGrss(Optional ByRef trc_entry As Collection) As Currency
     On Error Resume Next
-    NtryTcksGrss = entry("TG")
+    NtryTcksGrss = trc_entry("TG")
     If Err.Number <> 0 Then NtryTcksGrss = 0
 End Property
 
-Private Property Let NtryTcksGrss(Optional ByRef entry As Collection, ByRef cy As Currency)
-    entry.Add cy, "TG"
+Private Property Let NtryTcksGrss(Optional ByRef trc_entry As Collection, ByRef cy As Currency)
+    trc_entry.Add cy, "TG"
 End Property
 
-Private Property Get NtryTcksNt(Optional ByRef entry As Collection) As Currency
+Private Property Get NtryTcksNt(Optional ByRef trc_entry As Collection) As Currency
     On Error Resume Next
-    NtryTcksNt = entry("TN")
+    NtryTcksNt = trc_entry("TN")
     If Err.Number <> 0 Then NtryTcksNt = 0
 End Property
 
-Private Property Let NtryTcksNt(Optional ByRef entry As Collection, ByRef cy As Currency)
-    entry.Add cy, "TN"
+Private Property Let NtryTcksNt(Optional ByRef trc_entry As Collection, ByRef cy As Currency)
+    trc_entry.Add cy, "TN"
 End Property
 
-Private Property Get NtryTcksOvrhdItm(Optional ByRef entry As Collection) As Currency
+Private Property Get NtryTcksOvrhdItm(Optional ByRef trc_entry As Collection) As Currency
     On Error Resume Next
-    NtryTcksOvrhdItm = entry("TOI")
+    NtryTcksOvrhdItm = trc_entry("TOI")
     If Err.Number <> 0 Then NtryTcksOvrhdItm = 0
 End Property
 
-Private Property Let NtryTcksOvrhdItm(Optional ByRef entry As Collection, ByRef cy As Currency)
-    entry.Add cy, "TOI"
+Private Property Let NtryTcksOvrhdItm(Optional ByRef trc_entry As Collection, ByRef cy As Currency)
+    trc_entry.Add cy, "TOI"
 End Property
 
-Private Property Get NtryTcksOvrhdNtry(Optional ByRef entry As Collection) As Currency
+Private Property Get NtryTcksOvrhdNtry(Optional ByRef trc_entry As Collection) As Currency
     On Error Resume Next
-    NtryTcksOvrhdNtry = entry("TON")
+    NtryTcksOvrhdNtry = trc_entry("TON")
     If Err.Number <> 0 Then NtryTcksOvrhdNtry = 0
 End Property
 
-Private Property Let NtryTcksOvrhdNtry(Optional ByRef entry As Collection, ByRef cy As Currency)
-    entry.Add cy, "TON"
+Private Property Let NtryTcksOvrhdNtry(Optional ByRef trc_entry As Collection, ByRef cy As Currency)
+    trc_entry.Add cy, "TON"
 End Property
 
 Private Property Get SysCrrntTcks() As Currency
@@ -480,7 +481,7 @@ Public Sub Dsply()
     On Error GoTo eh
     Dim dct         As Dictionary
     Dim v           As Variant
-    Dim entry       As Collection
+    Dim cllTrcEntry As Collection
     Dim sTrace      As String
     Dim lLenHeader  As Long
     
@@ -500,9 +501,9 @@ Public Sub Dsply()
     
     sTrace = DsplyHdr(lLenHeader)
     For Each v In cllTrc
-        Set entry = v
-        sTrace = sTrace & vbLf & DsplyLn(entry)
-        If DsplyArgs(entry) <> vbNullString Then
+        Set cllTrcEntry = v
+        sTrace = sTrace & vbLf & DsplyLn(cllTrcEntry)
+        If DsplyArgs(cllTrcEntry) <> vbNullString Then
         End If
     Next v
     sTrace = sTrace & vbLf & DsplyFtr(lLenHeader)
@@ -678,7 +679,7 @@ Public Function DsplyHdrCntrAbv(ByVal s1 As String, _
     
 End Function
 
-Private Function DsplyArgs(ByVal entry As Collection) As String
+Private Function DsplyArgs(ByVal trc_entry As Collection) As String
 ' -------------------------------------------------------------
 ' Returns a string with the collection of the traced arguments
 ' Any entry ending with a ":" or "=" is an arguments name with
@@ -690,7 +691,7 @@ Private Function DsplyArgs(ByVal entry As Collection) As String
     Dim sR      As String
     
     On Error Resume Next
-    va = ItmArgs(entry)
+    va = ItmArgs(trc_entry)
     If Err.Number <> 0 Then Exit Function
     i = LBound(va)
     If Err.Number <> 0 Then Exit Function
@@ -731,60 +732,60 @@ Private Function DsplyArgName(ByVal s As String) As Boolean
     Then DsplyArgName = True
 End Function
 
-Private Function DsplyLn(ByVal entry As Collection) As String
+Private Function DsplyLn(ByVal trc_entry As Collection) As String
 ' -------------------------------------------------------------
 ' Returns a trace line for being displayed.
 ' -------------------------------------------------------------
     Const PROC = "DsplyLn"
     On Error GoTo eh
     Dim lLenData    As Long
-    Dim sArgs       As String: sArgs = DsplyArgs(entry)
+    Dim sArgs       As String: sArgs = DsplyArgs(trc_entry)
     Dim sArgsLine   As String
     
     Select Case DisplayedInfo
         Case Compact
             DsplyLn = _
-                      DsplyValue(entry, NtryScsElpsd(entry), sFrmtScsElpsd) _
-              & " " & DsplyValue(entry, NtryScsNt(entry), sFrmtScsNt)
+                      DsplyValue(trc_entry, NtryScsElpsd(trc_entry), sFrmtScsElpsd) _
+              & " " & DsplyValue(trc_entry, NtryScsNt(trc_entry), sFrmtScsNt)
             
             If sArgs <> vbNullString _
-            Then sArgsLine = vbLf & " " & String(Len(DsplyLn), " ") & DsplyLnIndnttn(entry) & sArgs
+            Then sArgsLine = vbLf & " " & String(Len(DsplyLn), " ") & DsplyLnIndnttn(trc_entry) & sArgs
             
             DsplyLn = DsplyLn _
-              & " " & DsplyLnIndnttn(entry) _
-                    & ItmDrctv(entry) _
+              & " " & DsplyLnIndnttn(trc_entry) _
+                    & ItmDrctv(trc_entry) _
               & " "
               
               lLenData = Len(DsplyLn)
               DsplyLn = DsplyLn _
-                    & ItmId(entry) _
-              & " " & ItmInf(entry)
+                    & ItmId(trc_entry) _
+              & " " & ItmInf(trc_entry)
                           
         Case Detailed
             DsplyLn = _
-                        DsplyValue(entry, ItmTcksSys(entry), sFrmtTcksSys) _
-                & " " & DsplyValue(entry, NtryTcksElpsd(entry), sFrmtTcksElpsd) _
-                & " " & DsplyValue(entry, NtryTcksGrss(entry), sFrmtTcksGrss) _
-                & " " & DsplyValue(entry, NtryTcksOvrhdNtry(entry), sFrmtTcksOvrhdItm) _
-                & " " & DsplyValue(entry, NtryTcksOvrhdItm(entry), sFrmtTcksOvrhdItm) _
-                & " " & DsplyValue(entry, NtryTcksNt(entry), sFrmtTcksNt) _
-                & " " & DsplyValue(entry, NtryScsElpsd(entry), sFrmtScsElpsd) _
-                & " " & DsplyValue(entry, NtryScsGrss(entry), sFrmtScsGrss) _
-                & " " & DsplyValue(entry, NtryScsOvrhdNtry(entry), sFrmtScsOvrhdItm) _
-                & " " & DsplyValue(entry, NtryScsOvrhdItm(entry), sFrmtScsOvrhdItm) _
-                & " " & DsplyValue(entry, NtryScsNt(entry), sFrmtScsNt) _
+                        DsplyValue(trc_entry, ItmTcksSys(trc_entry), sFrmtTcksSys) _
+                & " " & DsplyValue(trc_entry, NtryTcksElpsd(trc_entry), sFrmtTcksElpsd) _
+                & " " & DsplyValue(trc_entry, NtryTcksGrss(trc_entry), sFrmtTcksGrss) _
+                & " " & DsplyValue(trc_entry, NtryTcksOvrhdNtry(trc_entry), sFrmtTcksOvrhdItm) _
+                & " " & DsplyValue(trc_entry, NtryTcksOvrhdItm(trc_entry), sFrmtTcksOvrhdItm) _
+                & " " & DsplyValue(trc_entry, NtryTcksNt(trc_entry), sFrmtTcksNt) _
+                & " " & DsplyValue(trc_entry, NtryScsElpsd(trc_entry), sFrmtScsElpsd) _
+                & " " & DsplyValue(trc_entry, NtryScsGrss(trc_entry), sFrmtScsGrss) _
+                & " " & DsplyValue(trc_entry, NtryScsOvrhdNtry(trc_entry), sFrmtScsOvrhdItm) _
+                & " " & DsplyValue(trc_entry, NtryScsOvrhdItm(trc_entry), sFrmtScsOvrhdItm) _
+                & " " & DsplyValue(trc_entry, NtryScsNt(trc_entry), sFrmtScsNt) _
                 & " "
 
             lLenData = Len(DsplyLn)
             
             If sArgs <> vbNullString _
-            Then sArgsLine = vbLf & String(Len(DsplyLn), " ") & DsplyLnIndnttn(entry) & sArgs
+            Then sArgsLine = vbLf & String(Len(DsplyLn), " ") & DsplyLnIndnttn(trc_entry) & sArgs
                 
             DsplyLn = DsplyLn _
-                  & DsplyLnIndnttn(entry) _
-                  & ItmDrctv(entry) _
-            & " " & ItmId(entry) _
-            & " " & ItmInf(entry)
+                  & DsplyLnIndnttn(trc_entry) _
+                  & ItmDrctv(trc_entry) _
+            & " " & ItmId(trc_entry) _
+            & " " & ItmInf(trc_entry)
     
     End Select
     DsplyLn = DsplyLn & sArgsLine
@@ -894,12 +895,13 @@ Private Function DsplyTcksDffToScs(ByVal beginticks As Currency, _
     IIf endticks - beginticks > 0, DsplyTcksDffToScs = (endticks - beginticks) / cySysFrequency, DsplyTcksDffToScs = 0
 End Function
 
-Private Function DsplyValue(ByVal entry As Collection, _
-                            ByVal Value As Variant, _
-                            ByVal frmt As String) As String
-    If NtryIsBegin(entry) And Value = 0 _
-    Then DsplyValue = Space$(Len(frmt)) _
-    Else DsplyValue = IIf(Value >= 0, Format$(Value, frmt), Space$(Len(frmt)))
+Private Function DsplyValue( _
+                      ByVal dv_entry As Collection, _
+                      ByVal dv_value As Variant, _
+                      ByVal dv_frmt As String) As String
+    If NtryIsBegin(dv_entry) And dv_value = 0 _
+    Then DsplyValue = Space$(Len(dv_frmt)) _
+    Else DsplyValue = IIf(dv_value >= 0, Format$(dv_value, dv_frmt), Space$(Len(dv_frmt)))
 End Function
 
 Private Function DsplyValueFormat(ByRef thisformat As String, _
@@ -1365,7 +1367,7 @@ Private Sub TrcEnd(ByVal id As String, _
     Dim top As Collection:  Set top = StckTop
     
     If inf <> vbNullString Then
-        inf = COMMENT & inf & COMMENT
+        inf = TRC_INFO_DELIM & inf & TRC_INFO_DELIM
     End If
     
     If Not StckEd(id:=id, lvl:=iTrcLvl) Then

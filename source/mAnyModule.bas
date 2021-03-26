@@ -24,5 +24,5 @@ eh: mErH.ErrMsg err_source:=ErrSrc(PROC)
 End Sub
 
 Private Function ErrSrc(ByVal sProc As String) As String
-    ErrSrc = Split(ThisWorkbook.Name, ".")(0) & "." & MODNAME & "." & sProc
+    ErrSrc = Split(ThisWorkbook.name, ".")(0) & "." & MODNAME & "." & sProc
 End Function
