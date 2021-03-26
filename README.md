@@ -26,7 +26,7 @@ The _ErrMsg_ service has these named arguments:
 | err_buttons | Optional. Variant. Defaults to "Terminate execution" button when omitted.<br>May be a VBA MsgBox like value or any descriptive button caption string (including line breaks for a multi-line caption). The buttons may be provided as a comma delimited string, a collection or a dictionary. vbLf items display the following buttons in a new row (up to 7 rows are available). |
 
 ### The _AppErr_ service
-In order to not confuse errors raised with `err.Raise ...` the service adds the [_vbObjectError_][10] constant to a given positive number to turn it into a negative. An advantage by the way: Each procedure can have it's own positive error numbers ranging from 1 to n with `err.Raise mErH.AppErr(n)`. The _ErrMsg_ service, when detecting a negative error number uses the _AppErr_ service to turn it back into it's original positive error number.
+In order to not confuse errors raised with `err.Raise ...` the service adds the [_vbObjectError_][7] constant to a given positive number to turn it into a negative. An advantage by the way: Each procedure can have it's own positive error numbers ranging from 1 to n with `err.Raise mErH.AppErr(n)`. The _ErrMsg_ service, when detecting a negative error number uses the _AppErr_ service to turn it back into it's original positive error number.
 
 ### The _BoP/EoP_ path to the error service
 The _ErrMsg_ service only displays a path to the error when an _Entry Procedure_ had been indicated. The path to the error is assembled when the error is passed back on from the error source back up to the _Entry Procedure_ where the error is displayed when reached.
@@ -69,15 +69,15 @@ with the following named arguments:
 See blog-post [A common VBA Error Handler][6] for the details
 
 ## Contribution, development, test, maintenance
-The dedicated _Common VBA Component Workbook_ **[ErH.xlsm][11]** is used for development, test, and maintenance. I keep this Workbook in a dedicated folder which is the local equivalent (in github terminology the clone of this public GitHub repo. The module **_mTest_** contains all obligatory test procedures executed when the code is modified. Code modifications are preferrably made in a Github branch which is merged to the master once a code change has finished and successfully tested.
+The dedicated _Common VBA Component Workbook_ **[ErH.xlsm][8]** is used for development, test, and maintenance. I keep this Workbook in a dedicated folder which is the local equivalent (in github terminology the clone of this public GitHub repo. The module **_mTest_** contains all obligatory test procedures executed when the code is modified. Code modifications are preferrably made in a Github branch which is merged to the master once a code change has finished and successfully tested.
 
 Those interested not only in using the _Common VBA Error Services_ but also feel prepared to ask question, make suggestions, open raising issues may fork or clone the [public repo][8] to their own computer. A process which is very well supported by the [GitHub Desktop for Windows][9] which is the environment I do uses for the version control and a a continuous improvement process.
 
-[1]:https://gitcdn.link/repo/warbe-maker/Common-VBA-Error-Services/master/mErH.bas
-[2]:https://gitcdn.link/repo/warbe-maker/Common-VBA-Message-Service/master/fMsg.frm
-[3]:https://gitcdn.link/repo/warbe-maker/Common-VBA-Message-Service/master/fMsg.frx
-[4]:https://gitcdn.link/repo/warbe-maker/Common-VBA-Message-Service/master/mMsg.bas
-[5]:https://gitcdn.link/repo/warbe-maker/Common-VBA-Message-Service/master/mTrc.bas
+[1]:https://gitcdn.link/repo/warbe-maker/Common-VBA-Error-Services/master/source/mErH.bas
+[2]:https://gitcdn.link/repo/warbe-maker/Common-VBA-Message-Service/master/source/fMsg.frm
+[3]:https://gitcdn.link/repo/warbe-maker/Common-VBA-Message-Service/master/source/fMsg.frx
+[4]:https://gitcdn.link/repo/warbe-maker/Common-VBA-Message-Service/master/source/mMsg.bas
+[5]:https://gitcdn.link/repo/warbe-maker/Common-VBA-Message-Service/master/source/mTrc.bas
 [6]:https://warbe-maker.github.io/warbe-maker.github.io/vba/common/error/handling/2021/01/16/Common-VBA-Error-Services.html
-[10]:https://docs.microsoft.com/en-us/dotnet/api/microsoft.visualbasic.constants.vbobjecterror?view=netcore-3.1
-[11]:https://gitcdn.link/repo/warbe-maker/Common-VBA-Error-Services/master/ErH.xlsm
+[7]:https://docs.microsoft.com/en-us/dotnet/api/microsoft.visualbasic.constants.vbobjecterror?view=netcore-3.1
+[8]:https://gitcdn.link/repo/warbe-maker/Common-VBA-Error-Services/master/source/ErH.xlsm
