@@ -137,7 +137,7 @@ xt: mErH.EoP ErrSrc(PROC)
 eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC), err_dscrptn:=RegressionTestInfo)
         Case DebugOptResumeErrorLine:       Stop: Resume
         Case DebugOptResumeNext:        Resume Next
-        Case DebugOptCleanExitAndContinue:   GoTo xt
+        Case DebugOptCleanExit:   GoTo xt
     End Select
 End Sub
 
@@ -168,7 +168,7 @@ eh: mErH.ErrMsg err_source:=ErrSrc(PROC)
     Select Case mErH.ErrReply
         Case DebugOptResumeErrorLine: Stop: Resume
         Case DebugOptResumeNext: Resume Next
-        Case DebugOptCleanExitAndContinue: GoTo xt
+        Case DebugOptCleanExit: GoTo xt
     End Select
 End Sub
 
@@ -236,7 +236,7 @@ xt: mErH.EoP ErrSrc(PROC)
 eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC), err_dscrptn:=RegressionTestInfo)
         Case DebugOptResumeErrorLine:       Stop: Resume
         Case DebugOptResumeNext:            Resume Next
-        Case DebugOptCleanExitAndContinue:  GoTo xt
+        Case DebugOptCleanExit:             GoTo xt
     End Select
 End Sub
 
@@ -284,4 +284,102 @@ Public Sub Test_5_No_Exit_Statement()
     
 eh:
     If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOptResumeErrorLine Then Stop: Resume
+End Sub
+
+Public Sub Test_6_VB_Runtime_Error_Pass_on()
+' ----------------------------------------------------------------------
+' About this test (with the Conditional Compile Argument Debugging = 1):
+'
+' The tester presses the 'Pass on' button in order to finally end up with
+' the error message is displayed again at the 'Entry.Procedure' now with
+' the full path to the error displayed - which is not available with the
+' initial error message because only the 'Entry-Procedure' is known but
+' none of the sub-procedures. = 1.
+' ----------------------------------------------------------------------
+    Const PROC = "Test_6_VB_Runtime_Error_Pass_on"
+    
+    On Error GoTo eh
+    
+    mErH.BoP ErrSrc(PROC)
+    Test_6_VB_Runtime_Error_TestProc_3a
+
+    Debug.Assert mErH.MostRecentError = 11
+
+xt: mErH.EoP ErrSrc(PROC)
+    Exit Sub
+
+eh: mErH.ErrMsg ErrSrc(PROC)
+    Select Case mErH.ErrReply
+        Case DebugOptResumeErrorLine:   Stop: Resume
+        Case DebugOptResumeNext:        Resume Next
+        Case DebugOptCleanExit:         GoTo xt
+    End Select
+End Sub
+
+Private Sub Test_6_VB_Runtime_Error_TestProc_3a()
+    Const PROC = "Test_6_VB_Runtime_Error_TestProc_3a"
+    
+    On Error GoTo eh
+    Test_6_VB_Runtime_Error_TestProc_3b
+
+xt: Exit Sub
+
+eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC), err_dscrptn:=RegressionTestInfo)
+        Case DebugOptResumeErrorLine:   Stop: Resume
+        Case DebugOptResumeNext:        Resume Next
+        Case DebugOptCleanExit:         GoTo xt
+    End Select
+End Sub
+
+Private Sub Test_6_VB_Runtime_Error_TestProc_3b()
+    Const PROC = "Test_6_VB_Runtime_Error_TestProc_3b"
+    
+    On Error GoTo eh
+    Test_6_VB_Runtime_Error_TestProc_3c
+
+xt: Exit Sub
+
+eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC), err_dscrptn:=RegressionTestInfo)
+        Case DebugOptResumeErrorLine:   Stop: Resume
+        Case DebugOptResumeNext:        Resume Next
+        Case DebugOptCleanExit:         GoTo xt
+    End Select
+End Sub
+
+Private Sub Test_6_VB_Runtime_Error_TestProc_3c()
+    Const PROC = "Test_6_VB_Runtime_Error_TestProc_3c"
+    
+    On Error GoTo eh
+    Test_6_VB_Runtime_Error_TestProc_3d test_arg1:="Test string", test_arg2:=20.5
+
+xt: Exit Sub
+
+eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC), err_dscrptn:=RegressionTestInfo)
+        Case DebugOptResumeErrorLine:   Stop: Resume
+        Case DebugOptResumeNext:        Resume Next
+        Case DebugOptCleanExit:         GoTo xt
+    End Select
+End Sub
+
+Private Sub Test_6_VB_Runtime_Error_TestProc_3d( _
+      ByVal test_arg1 As String, _
+      ByVal test_arg2 As Currency)
+' ------------------------------------------------
+' Note: The error line intentionally has no line
+' number to demonstrate how it effects the error
+' message.
+' ------------------------------------------------
+    Const PROC = "Test_6_VB_Runtime_Error_TestProc_3d"
+    
+    On Error GoTo eh
+    Dim l As Long
+    l = 7 / 0
+
+xt: Exit Sub
+
+eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC), err_dscrptn:=RegressionTestInfo)
+        Case DebugOptResumeErrorLine:   Stop: Resume
+        Case DebugOptResumeNext:        Resume Next
+        Case DebugOptCleanExit:         GoTo xt
+    End Select
 End Sub

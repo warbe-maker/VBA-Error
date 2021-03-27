@@ -69,7 +69,7 @@ Private Function ErrorHandling_Reasonable(ByVal op1 As Variant, _
 '   - Info about error:         Possible, when attached to the error description
 '                               by means of tw vertical bars (||)
 '   - Path to the error:        No, because a call stack is not maintained from the
-'                               entry procedure down to the error causing procedure
+'                               'Entry-Procedure' down to the error causing procedure
 ' - Variant value assertion:    No
 ' - Execution Trace:            No
 ' - Debug/Test choice:          No
@@ -94,14 +94,14 @@ Public Sub ErrorHandling_Eleborated_Demo()
 '   - Info about error:         Possible, when attached to the error description
 '                               by means of tw vertical bars (||)
 '   - Path to the error:        Yes, because a call stack is maintained from the
-'                               entry procedure down to the error causing procedure
+'                               'Entry-Procedure' down to the error causing procedure
 '                               and the error is passed on to the calling procedure by
 '                               the common ErrMsg procedure
 ' - Variant value assertion:    Yes, with programmed "Application" error numbers supported
 '                               by the function AppErr()
 ' - Execution Trace:            Yes, by the use of the common ErrMsg procedure which
 '                               automatically displays it in the immediate window when the
-'                               entry procedure is reached.
+'                               'Entry-Procedure' is reached.
 ' - Debug/Test choice:          Yes, demonstrated
 ' -----------------------------------------------------------------------------------------
 Const PROC  As String = "ErrorHandling_Eleborated_Demo"
@@ -246,7 +246,7 @@ xt: mErH.EoP ErrSrc(PROC)
 eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
         Case DebugOptResumeErrorLine:       Stop: Resume
         Case DebugOptResumeNext:        Resume Next
-        Case DebugOptCleanExitAndContinue:   GoTo xt
+        Case DebugOptCleanExit:   GoTo xt
     End Select
 End Sub
 
@@ -274,7 +274,7 @@ xt: mErH.EoP ErrSrc(PROC)
 eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
         Case DebugOptResumeErrorLine: Stop: Resume
         Case DebugOptResumeNext: Resume Next
-        Case DebugOptCleanExitAndContinue: GoTo xt
+        Case DebugOptCleanExit: GoTo xt
     End Select
 End Sub
 
@@ -340,7 +340,7 @@ xt: mErH.EoP ErrSrc(PROC)
 eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
         Case DebugOptResumeErrorLine:       Stop: Resume
         Case DebugOptResumeNext:        Resume Next
-        Case DebugOptCleanExitAndContinue:   GoTo xt
+        Case DebugOptCleanExit:   GoTo xt
     End Select
 End Sub
 
