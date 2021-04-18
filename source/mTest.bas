@@ -42,7 +42,8 @@ Public Sub Regression_Test()
     bRegressionTest = True
     mTrc.DisplayedInfo = Compact
     
-    mErH.BoTP ErrSrc(PROC), AppErr(1), 11
+'    mErH.BoTP ErrSrc(PROC), AppErr(1), 11
+    mErH.BoP ErrSrc(PROC)
     Test_1_Application_Error
     Test_2_VB_Runtime_Error
 

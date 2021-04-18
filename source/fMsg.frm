@@ -13,8 +13,6 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 
-
-
 Option Explicit
 ' -------------------------------------------------------------------------------
 ' UserForm fMsg Provides all means for a message with up to 5 separated text
@@ -32,40 +30,46 @@ Option Explicit
 '
 ' W. Rauschenberger Berlin, Jan 2021 (last revision)
 ' --------------------------------------------------------------------------
-Const NO_OF_DESIGNED_SECTIONS   As Single = 4               ' Needs to be changed when the design is changed !
-Const MIN_BTTN_WIDTH            As Single = 70              ' Default minimum reply button width
-Const FONT_MONOSPACED_NAME      As String = "Courier New"   ' Default monospaced font
-Const FONT_MONOSPACED_SIZE      As Single = 9               ' Default monospaced font size
-Const FORM_MAX_HEIGHT_POW       As Long = 80                ' Max form height as a percentage of the screen size
-Const FORM_MAX_WIDTH_POW        As Long = 80                ' Max form width as a percentage of the screen size
-Const FORM_MIN_WIDTH            As Single = 400             ' Default minimum message form width
-Const TEST_WITH_FRAME_BORDERS   As Boolean = False          ' For test purpose only! Display frames with visible border
-Const TEST_WITH_FRAME_CAPTIONS  As Boolean = False          ' For test purpose only! Display frames with their test captions (erased by default)
-Const HSPACE_BUTTONS            As Single = 4               ' Horizontal space between reply buttons
-Const HSPACE_BTTN_AREA          As Single = 10              ' Minimum margin between buttons area and form when centered
-Const HSPACE_LEFT               As Single = 0               ' Left margin for labels and text boxes
-Const HSPACE_RIGHT              As Single = 15              ' Horizontal right space for labels and text boxes
-Const HSPACE_SCROLLBAR          As Single = 18              ' Additional horizontal space required for a frame with a vertical scroll bar
-Const NEXT_ROW                  As String = vbLf            ' Reply button row break
-Const VSPACE_AREAS              As Single = 10              ' Vertical space between message area and replies area
-Const VSPACE_BOTTOM             As Single = 50              ' Bottom space after the last displayed reply row
-Const VSPACE_BTTN_ROWS          As Single = 5               ' Vertical space between button rows
-Const VSPACE_LABEL              As Single = 0               ' Vertical space between label and the following text
-Const VSPACE_SCROLLBAR          As Single = 12              ' Additional vertical space required for a frame with a horizontal scroll barr
-Const VSPACE_SECTIONS           As Single = 5               ' Vertical space between displayed message sections
-Const VSPACE_TEXTBOXES          As Single = 18              ' Vertical bottom marging for all textboxes
-Const VSPACE_TOP                As Single = 2               ' Top position for the first displayed control
+Const NO_OF_DESIGNED_SECTIONS               As Single = 4               ' Needs to be changed when the design is changed !
+Const MIN_BTTN_WIDTH                        As Single = 70              ' Default minimum reply button width
+Const LABEL_MONOSPACED_DEFAULT_FONT_NAME    As String = "Courier New"   ' Default monospaced font name
+Const LABEL_MONOSPACED_DEFAULT_FONT_SIZE    As Single = 9               ' Default monospaced font size
+Const LABEL_PROPSPACED_DEFAULT_FONT_NAME    As String = "Calibri"       ' Default proportional spaced font name
+Const LABEL_PROPSPACED_DEFAULT_FONT_SIZE    As Single = 9               ' Default proportional spaced font size
+Const TEXT_MONOSPACED_DEFAULT_FONT_NAME     As String = "Courier New"   ' Default monospaced font name
+Const TEXT_MONOSPACED_DEFAULT_FONT_SIZE     As Single = 10              ' Default monospaced font size
+Const TEXT_PROPSPACED_DEFAULT_FONT_NAME     As String = "Tahoma"        ' Default proportional spaced font name
+Const TEXT_PROPSPACED_DEFAULT_FONT_SIZE     As Single = 10              ' Default proportional spaced font size
+Const FORM_MAX_HEIGHT_POW                   As Long = 80                ' Max form height as a percentage of the screen size
+Const FORM_MAX_WIDTH_POW                    As Long = 80                ' Max form width as a percentage of the screen size
+Const FORM_MIN_WIDTH                        As Single = 400             ' Default minimum message form width
+Const TEST_WITH_FRAME_BORDERS               As Boolean = False          ' For test purpose only! Display frames with visible border
+Const TEST_WITH_FRAME_CAPTIONS              As Boolean = False          ' For test purpose only! Display frames with their test captions (erased by default)
+Const HSPACE_BUTTONS                        As Single = 4               ' Horizontal space between reply buttons
+Const HSPACE_BTTN_AREA                      As Single = 10              ' Minimum margin between buttons area and form when centered
+Const HSPACE_LEFT                           As Single = 0               ' Left margin for labels and text boxes
+Const HSPACE_RIGHT                          As Single = 15              ' Horizontal right space for labels and text boxes
+Const HSPACE_SCROLLBAR                      As Single = 18              ' Additional horizontal space required for a frame with a vertical scroll bar
+Const NEXT_ROW                              As String = vbLf            ' Reply button row break
+Const VSPACE_AREAS                          As Single = 10              ' Vertical space between message area and replies area
+Const VSPACE_BOTTOM                         As Single = 50              ' Bottom space after the last displayed reply row
+Const VSPACE_BTTN_ROWS                      As Single = 5               ' Vertical space between button rows
+Const VSPACE_LABEL                          As Single = 0               ' Vertical space between label and the following text
+Const VSPACE_SCROLLBAR                      As Single = 12              ' Additional vertical space required for a frame with a horizontal scroll barr
+Const VSPACE_SECTIONS                       As Single = 5               ' Vertical space between displayed message sections
+Const VSPACE_TEXTBOXES                      As Single = 18              ' Vertical bottom marging for all textboxes
+Const VSPACE_TOP                            As Single = 2               ' Top position for the first displayed control
 
 ' Functions to get the displays DPI
 ' Used for getting the metrics of the system devices.
 '
-Const SM_XVIRTUALSCREEN As Long = &H4C&
-Const SM_YVIRTUALSCREEN As Long = &H4D&
-Const SM_CXVIRTUALSCREEN As Long = &H4E&
-Const SM_CYVIRTUALSCREEN As Long = &H4F&
-Const LOGPIXELSX = 88
-Const LOGPIXELSY = 90
-Const TWIPSPERINCH = 1440
+Const SM_XVIRTUALSCREEN                     As Long = &H4C&
+Const SM_YVIRTUALSCREEN                     As Long = &H4D&
+Const SM_CXVIRTUALSCREEN                    As Long = &H4E&
+Const SM_CYVIRTUALSCREEN                    As Long = &H4F&
+Const LOGPIXELSX                            As Long = 88
+Const LOGPIXELSY                            As Long = 90
+Const TWIPSPERINCH                          As Long = 1440
 Private Declare PtrSafe Function GetSystemMetrics32 Lib "user32" Alias "GetSystemMetrics" (ByVal nIndex As Long) As Long
 Private Declare PtrSafe Function GetDC Lib "user32" (ByVal hWnd As Long) As Long
 Private Declare PtrSafe Function GetDeviceCaps Lib "gdi32" (ByVal hDC As Long, ByVal nIndex As Long) As Long
@@ -78,66 +82,69 @@ Private Enum enStartupPosition      ' ---------------------------
     sup_WindowsDefault = 3          ' centered on the screen
 End Enum                            ' ---------------------------
 
-Dim bDoneButtonsArea            As Boolean
-Dim bDoneHeightDecrement        As Boolean
-Dim bDoneMonoSpacedSections     As Boolean
-Dim bDoneMsgArea                As Boolean
-Dim bDonePropSpacedSections     As Boolean
-Dim bDoneSetup                  As Boolean
-Dim bDoneTitle                  As Boolean
-Dim bDsplyFrmsWthCptnTestOnly   As Boolean
-Dim bDsplyFrmsWthBrdrsTestOnly  As Boolean
-Dim bFormEvents                 As Boolean
-Dim bHscrollbarButtonsArea      As Boolean
-Dim bVscrollbarButtonsArea      As Boolean
-Dim bVscrollbarMsgArea          As Boolean
-Dim cllDsgnAreas                As Collection   ' Collection of the two primary/top frames
-Dim cllDsgnButtonRows           As Collection   ' Collection of the designed reply button row frames
-Dim cllDsgnButtons              As Collection   ' Collection of the collection of the designed reply buttons of a certain row
-Dim cllDsgnButtonsFrame         As Collection
-Dim cllDsgnRowButtons           As Collection       ' Collection of a designed reply button row's buttons
-Dim cllDsgnSections             As Collection   '
-Dim cllDsgnSectionsLabel        As Collection
-Dim cllDsgnSectionsText         As Collection   ' Collection of section frames
-Dim cllDsgnSectionsTextFrame    As Collection
-Dim dctApplButtonRows           As Dictionary   ' Dictionary of applied/used/visible button rows (key=frame, item=row)
-Dim dctApplButtons              As Dictionary   ' Dictionary of applied buttons (key=CommandButton, item=row)
-Dim dctApplButtonsRetVal        As Dictionary   ' Dictionary of the applied buttons' reply value (key=CommandButton)
-Dim dctApplied                  As Dictionary   ' Dictionary of all applied controls (versus just designed)
-Dim dctSectionsLabel            As Dictionary   ' Section specific label either provided via properties MsgLabel or Msg
-Dim dctSectionsMonoSpaced       As Dictionary   ' Section specific monospace option either provided via properties MsgMonospaced or Msg
-Dim dctSectionsText             As Dictionary   ' Section specific text either provided via properties MsgText or Msg
-Dim lMaxFormHeightPoW           As Long             ' % of the screen height
-Dim lMaxFormWidthPoW            As Long             ' % of the screen width
-Dim lMinFormWidthPoW            As Long             ' % of the screen width - calculated when min form width in pt is assigend
-Dim lReplyIndex                 As Long             ' Index of the clicked reply button (a value ranging from 1 to 49)
-Dim lSetupRowButtons            As Long ' number of buttons setup in a row
-Dim lSetupRows                  As Long ' number of setup button rows
-Dim sErrSrc                     As String
-Dim siHmarginButtons            As Single
-Dim siHmarginFrames             As Single           ' Test property, value defaults to 0
-Dim siMaxButtonHeight           As Single
-Dim siMaxButtonRowWidth         As Single
-Dim siMaxButtonWidth            As Single
-Dim siMaxFormHeight             As Single           ' above converted to excel userform height
-Dim siMaxFormWidth              As Single           ' above converted to excel userform width
-Dim siMaxSectionWidth           As Single
-Dim siMinButtonWidth            As Single
-Dim siMinFormWidth              As Single
-Dim siMonoSpacedFontSize        As Single
-Dim siVmarginButtons            As Single
-Dim siVmarginFrames             As Single           ' Test property, value defaults to 0
-Dim sMonoSpacedFontName         As String
-Dim sTitle                      As String
-Dim sTitleFontName              As String
-Dim sTitleFontSize              As String           ' Ignored when sTitleFontName is not provided
-Dim vbuttons                    As Variant
-Dim vReplyValue                 As Variant
-Dim wVirtualScreenHeight        As Single
-Dim wVirtualScreenLeft          As Single
-Dim wVirtualScreenTop           As Single
-Dim wVirtualScreenWidth         As Single
-Dim vDefaultButton              As Variant          ' Index or caption of the default button
+Dim bDoneButtonsArea                As Boolean
+Dim bDoneHeightDecrement            As Boolean
+Dim bDoneMonoSpacedSections         As Boolean
+Dim bDoneMsgArea                    As Boolean
+Dim bDonePropSpacedSections         As Boolean
+Dim bDoneSetup                      As Boolean
+Dim bDoneTitle                      As Boolean
+Dim bDsplyFrmsWthBrdrsTestOnly      As Boolean
+Dim bDsplyFrmsWthCptnTestOnly       As Boolean
+Dim bFormEvents                     As Boolean
+Dim bHscrollbarButtonsArea          As Boolean
+Dim bVscrollbarButtonsArea          As Boolean
+Dim bVscrollbarMsgArea              As Boolean
+Dim cllDsgnAreas                    As Collection   ' Collection of the two primary/top frames
+Dim cllDsgnButtonRows               As Collection   ' Collection of the designed reply button row frames
+Dim cllDsgnButtons                  As Collection   ' Collection of the collection of the designed reply buttons of a certain row
+Dim cllDsgnButtonsFrame             As Collection
+Dim cllDsgnRowButtons               As Collection       ' Collection of a designed reply button row's buttons
+Dim cllDsgnSections                 As Collection   '
+Dim cllDsgnSectionsLabel            As Collection
+Dim cllDsgnSectionsText             As Collection   ' Collection of section frames
+Dim cllDsgnSectionsTextFrame        As Collection
+Dim dctApplButtonRows               As Dictionary   ' Dictionary of applied/used/visible button rows (key=frame, item=row)
+Dim dctApplButtons                  As Dictionary   ' Dictionary of applied buttons (key=CommandButton, item=row)
+Dim dctApplButtonsRetVal            As Dictionary   ' Dictionary of the applied buttons' reply value (key=CommandButton)
+Dim dctApplied                      As Dictionary   ' Dictionary of all applied controls (versus just designed)
+Dim dctSectionsLabel                As Dictionary   ' Section specific label either provided via properties MsgLabel or Msg
+Dim dctSectionsMonoSpaced           As Dictionary   ' Section specific monospace option either provided via properties MsgMonospaced or Msg
+Dim dctSectionsText                 As Dictionary   ' Section specific text either provided via properties MsgText or Msg
+Dim lMaxFormHeightPoW               As Long             ' % of the screen height
+Dim lMaxFormWidthPoW                As Long             ' % of the screen width
+Dim lMinFormWidthPoW                As Long             ' % of the screen width - calculated when min form width in pt is assigend
+Dim lReplyIndex                     As Long             ' Index of the clicked reply button (a value ranging from 1 to 49)
+Dim lSetupRowButtons                As Long ' number of buttons setup in a row
+Dim lSetupRows                      As Long ' number of setup button rows
+Dim sErrSrc                         As String
+Dim siHmarginButtons                As Single
+Dim siHmarginFrames                 As Single           ' Test property, value defaults to 0
+Dim siMaxButtonHeight               As Single
+Dim siMaxButtonRowWidth             As Single
+Dim siMaxButtonWidth                As Single
+Dim siMaxFormHeight                 As Single           ' above converted to excel userform height
+Dim siMaxFormWidth                  As Single           ' above converted to excel userform width
+Dim siMaxSectionWidth               As Single
+Dim siMinButtonWidth                As Single
+Dim siMinFormWidth                  As Single
+Dim siVmarginButtons                As Single
+Dim siVmarginFrames                 As Single           ' Test property, value defaults to 0
+Dim sMonoSpacedLabelDefaultFontName As String
+Dim sMonoSpacedLabelDefaultFontSize As Single
+Dim sMonoSpacedTextDefaultFontName  As String
+Dim sMonoSpacedTextDefaultFontSize  As Single
+Dim sTitle                          As String
+Dim sTitleFontName                  As String
+Dim sTitleFontSize                  As String           ' Ignored when sTitleFontName is not provided
+Dim vbuttons                        As Variant
+Dim vDefaultButton                  As Variant          ' Index or caption of the default button
+Dim vReplyValue                     As Variant
+Dim wVirtualScreenHeight            As Single
+Dim wVirtualScreenLeft              As Single
+Dim wVirtualScreenTop               As Single
+Dim wVirtualScreenWidth             As Single
+
 
 Private Sub UserForm_Initialize()
     Const PROC = "UserForm_Initialize"
@@ -151,8 +158,10 @@ Private Sub UserForm_Initialize()
     Me.MinFormWidth = FORM_MIN_WIDTH                            ' Default UserForm width (als calculated as % of screen size)
     Me.MaxFormWidthPrcntgOfScreenSize = FORM_MAX_WIDTH_POW
     Me.MaxFormHeightPrcntgOfScreenSize = FORM_MAX_HEIGHT_POW
-    sMonoSpacedFontName = FONT_MONOSPACED_NAME                  ' Default monospaced font
-    siMonoSpacedFontSize = FONT_MONOSPACED_SIZE                 ' Default monospaced font
+    sMonoSpacedTextDefaultFontName = TEXT_MONOSPACED_DEFAULT_FONT_NAME                  ' Default monospaced font
+    sMonoSpacedTextDefaultFontSize = TEXT_MONOSPACED_DEFAULT_FONT_SIZE                 ' Default monospaced font
+    sMonoSpacedLabelDefaultFontName = LABEL_MONOSPACED_DEFAULT_FONT_NAME                  ' Default monospaced font
+    sMonoSpacedLabelDefaultFontSize = LABEL_MONOSPACED_DEFAULT_FONT_SIZE                 ' Default monospaced font
     Me.Width = siMinFormWidth
     bDsplyFrmsWthCptnTestOnly = False
     bDsplyFrmsWthBrdrsTestOnly = False
@@ -213,7 +222,7 @@ End Property
 
 Private Property Let AppliedControl(ByVal v As Variant)
     If dctApplied Is Nothing Then Set dctApplied = New Dictionary
-    If Not IsApplied(v) Then dctApplied.Add v, v.name
+    If Not IsApplied(v) Then dctApplied.Add v, v.Name
 End Property
 
 Private Property Get ButtonsFrameHeight() As Single
@@ -242,29 +251,29 @@ Private Property Get DsgnButton(Optional ByVal row As Long, Optional ByVal Butto
     Set DsgnButton = cllDsgnButtons(row)(Button)
 End Property
 
-Private Property Get DsgnButtonRow(Optional ByVal row As Long) As MSForms.Frame:        Set DsgnButtonRow = cllDsgnButtonRows(row):                                 End Property
+Private Property Get DsgnButtonRow(Optional ByVal row As Long) As MSForms.Frame:            Set DsgnButtonRow = cllDsgnButtonRows(row):                         End Property
 
-Private Property Get DsgnButtonRows() As Collection:                                    Set DsgnButtonRows = cllDsgnButtonRows:                                     End Property
+Private Property Get DsgnButtonRows() As Collection:                                        Set DsgnButtonRows = cllDsgnButtonRows:                             End Property
 
-Private Property Get DsgnButtonsArea() As MSForms.Frame:                                Set DsgnButtonsArea = cllDsgnAreas(2):                                      End Property
+Private Property Get DsgnButtonsArea() As MSForms.Frame:                                    Set DsgnButtonsArea = cllDsgnAreas(2):                              End Property
 
-Private Property Get DsgnButtonsFrame() As MSForms.Frame:                               Set DsgnButtonsFrame = cllDsgnButtonsFrame(1):                              End Property
+Private Property Get DsgnButtonsFrame() As MSForms.Frame:                                   Set DsgnButtonsFrame = cllDsgnButtonsFrame(1):                      End Property
 
-Private Property Get DsgnMsgArea() As MSForms.Frame:                                    Set DsgnMsgArea = cllDsgnAreas(1):                                          End Property
+Private Property Get DsgnMsgArea() As MSForms.Frame:                                        Set DsgnMsgArea = cllDsgnAreas(1):                                  End Property
 
-Private Property Get DsgnSection(Optional Section As Long) As MSForms.Frame:            Set DsgnSection = cllDsgnSections(Section):                                 End Property
+Private Property Get DsgnSection(Optional msg_section As Long) As MSForms.Frame:            Set DsgnSection = cllDsgnSections(msg_section):                     End Property
 
-Private Property Get DsgnSectionLabel(Optional Section As Long) As MSForms.Label:       Set DsgnSectionLabel = cllDsgnSectionsLabel(Section):                       End Property
+Private Property Get DsgnSectionLabel(Optional msg_section As Long) As MSForms.Label:       Set DsgnSectionLabel = cllDsgnSectionsLabel(msg_section):           End Property
 
-Private Property Get DsgnSections() As Collection:                                      Set DsgnSections = cllDsgnSections:                                         End Property
+Private Property Get DsgnSections() As Collection:                                          Set DsgnSections = cllDsgnSections:                                 End Property
 
-Private Property Get DsgnSectionText(Optional Section As Long) As MSForms.TextBox:      Set DsgnSectionText = cllDsgnSectionsText(Section):                         End Property
+Private Property Get DsgnSectionText(Optional msg_section As Long) As MSForms.TextBox:      Set DsgnSectionText = cllDsgnSectionsText(msg_section):             End Property
 
-Private Property Get DsgnSectionTextFrame(Optional ByVal Section As Long):              Set DsgnSectionTextFrame = cllDsgnSectionsTextFrame(Section):               End Property
+Private Property Get DsgnSectionTextFrame(Optional ByVal msg_section As Long):              Set DsgnSectionTextFrame = cllDsgnSectionsTextFrame(msg_section):   End Property
 
-Private Property Get DsgnTextFrame(Optional ByVal Section As Long) As MSForms.Frame:    Set DsgnTextFrame = cllDsgnSectionsTextFrame(Section):                      End Property
+Private Property Get DsgnTextFrame(Optional ByVal msg_section As Long) As MSForms.Frame:    Set DsgnTextFrame = cllDsgnSectionsTextFrame(msg_section):          End Property
 
-Private Property Get DsgnTextFrames() As Collection:                                    Set DsgnTextFrames = cllDsgnSectionsTextFrame:                              End Property
+Private Property Get DsgnTextFrames() As Collection:                                        Set DsgnTextFrames = cllDsgnSectionsTextFrame:                      End Property
 
 Public Property Let DsplyFrmsWthBrdrsTestOnly(ByVal b As Boolean)
     
@@ -281,7 +290,7 @@ Public Property Let DsplyFrmsWthBrdrsTestOnly(ByVal b As Boolean)
     
 End Property
 
-Public Property Let DsplyFrmsWthCptnTestOnly(ByVal b As Boolean):                       bDsplyFrmsWthCptnTestOnly = b:                                             End Property
+Public Property Let DsplyFrmsWthCptnTestOnly(ByVal b As Boolean):                           bDsplyFrmsWthCptnTestOnly = b:                                      End Property
 
 Private Property Let FormWidth(ByVal w As Single)
     Dim siInOutDiff As Single:  siInOutDiff = Me.Width - Me.InsideWidth
@@ -359,16 +368,6 @@ End Property
 
 Public Property Get MinFormWidthPrcntg() As Long:                                       MinFormWidthPrcntg = lMinFormWidthPoW:                                  End Property
 
-Friend Property Let msg(ByRef tMsg As tMsg)
-    Dim i As Long
-    
-    With tMsg
-        For i = 1 To NO_OF_DESIGNED_SECTIONS
-            MsgLabel(i) = .Section(i).sLabel: MsgText(i) = .Section(i).sText:   MsgMonoSpaced(i) = .Section(i).bMonspaced
-        Next i
-    End With
-End Property
-
 Public Property Let MsgButtons(ByVal v As Variant)
     Select Case TypeName(v)
         Case "Long", "String":  vbuttons = v
@@ -376,49 +375,127 @@ Public Property Let MsgButtons(ByVal v As Variant)
     End Select
 End Property
 
-Public Property Get MsgLabel(Optional ByVal Section As Long) As String
-    If dctSectionsLabel Is Nothing _
-    Then MsgLabel = vbNullString _
-    Else MsgLabel = IIf(dctSectionsLabel.Exists(Section), dctSectionsLabel(Section), vbNullString)
+Public Property Get MsgLabel( _
+              Optional ByVal msg_section As Long) As TypeMsgLabel
+' ---------------------------------------------------------------
+' Retrieves the section's (msg_section) label as array and
+' transfers it back into the UDT.
+' ---------------------------------------------------------------
+    Dim vArry() As Variant
+    
+    If dctSectionsLabel Is Nothing Then
+        MsgLabel.Text = vbNullString
+    Else
+        If dctSectionsLabel.Exists(msg_section) Then
+            vArry = dctSectionsLabel(msg_section)
+            MsgLabel.FontBold = vArry(0)
+            MsgLabel.FontColor = vArry(1)
+            MsgLabel.FontItalic = vArry(2)
+            MsgLabel.FontName = vArry(3)
+            MsgLabel.FontSize = vArry(4)
+            MsgLabel.FontUnderline = vArry(5)
+            MsgLabel.Monospaced = vArry(6)
+            MsgLabel.Text = vArry(7)
+        Else
+            MsgLabel.Text = vbNullString
+        End If
+    End If
 End Property
 
-Public Property Let MsgLabel(Optional ByVal Section As Long, ByVal s As String)
+Public Property Let MsgLabel( _
+              Optional ByVal msg_section As Long, _
+                       ByRef msg_label As TypeMsgLabel)
+' -----------------------------------------------------
+' Transfers the UDT (msg_label) into an array and
+' stores it in the Dictionary (dctSectionsLabel) with
+' the section (msg_section) as the key.
+' -----------------------------------------------------
+    Dim vArry(7)    As Variant
+    Dim v           As Variant
+    
     If dctSectionsLabel Is Nothing Then Set dctSectionsLabel = New Dictionary
-    dctSectionsLabel(Section) = s
+    If Not dctSectionsLabel.Exists(msg_section) Then
+        vArry(0) = msg_label.FontBold
+        vArry(1) = msg_label.FontColor
+        vArry(2) = msg_label.FontItalic
+        vArry(3) = msg_label.FontName
+        vArry(4) = msg_label.FontSize
+        vArry(5) = msg_label.FontUnderline
+        vArry(6) = msg_label.Monospaced
+        vArry(7) = msg_label.Text
+        dctSectionsLabel.Add msg_section, vArry
+    End If
 End Property
 
-Public Property Get MsgMonoSpaced(Optional ByVal Section As Long) As Boolean
-    If dctSectionsMonoSpaced Is Nothing Then
+Public Property Get MsgMonoSpaced(Optional ByVal msg_section As Long) As Boolean
+    Dim vArry() As Variant
+    
+    If dctSectionsText Is Nothing Then
         MsgMonoSpaced = False
     Else
-        With dctSectionsMonoSpaced
-            If .Exists(Section) _
-            Then MsgMonoSpaced = .Item(Section) _
-            Else MsgMonoSpaced = False
-        End With
-    End If
-End Property
-
-Public Property Let MsgMonoSpaced(Optional ByVal Section As Long, ByVal b As Boolean)
-    If dctSectionsMonoSpaced Is Nothing Then Set dctSectionsMonoSpaced = New Dictionary
-    dctSectionsMonoSpaced(Section) = b
-End Property
-
-Public Property Get MsgText(Optional ByVal Section As Long) As String
-    If dctSectionsText Is Nothing Then
-        MsgText = vbNullString
-    Else
         With dctSectionsText
-            If .Exists(Section) _
-            Then MsgText = .Item(Section) _
-            Else MsgText = vbNullString
+            If .Exists(msg_section) Then
+                vArry = .Item(msg_section)
+                MsgMonoSpaced = vArry(6)
+            Else
+                MsgMonoSpaced = False
+            End If
         End With
     End If
 End Property
 
-Public Property Let MsgText(Optional ByVal Section As Long, ByVal s As String)
+Public Property Get MsgText( _
+             Optional ByVal msg_section As Long) As TypeMsgText
+' -------------------------------------------------------------
+' Retrieves the section's (msg_section) as array and transferes
+' it bach into the UDT.
+' -------------------------------------------------------------
+    Dim vArry() As Variant
+    Dim Message As TypeMsgText
+    
+    If dctSectionsText Is Nothing Then
+        MsgText.Text = vbNullString
+    Else
+        If dctSectionsText.Exists(msg_section) Then
+            vArry = dctSectionsText(msg_section)
+            MsgText.FontBold = vArry(0)
+            MsgText.FontColor = vArry(1)
+            MsgText.FontItalic = vArry(2)
+            MsgText.FontName = vArry(3)
+            MsgText.FontSize = vArry(4)
+            MsgText.FontUnderline = vArry(5)
+            MsgText.Monospaced = vArry(6)
+            MsgText.Text = vArry(7)
+        Else
+            MsgText.Text = vbNullString
+        End If
+    End If
+
+End Property
+
+Public Property Let MsgText( _
+             Optional ByVal msg_section As Long, _
+                      ByRef msg_msg As TypeMsgText)
+' -------------------------------------------------
+' Transfers the UDT (msg_msg) into an array and
+' stores it in the Dictionary (dctSectionsText)
+' with the section (msg_section) as the key.
+' -------------------------------------------------
+    Dim vArry(7)    As Variant
+    Dim v           As Variant
+    
     If dctSectionsText Is Nothing Then Set dctSectionsText = New Dictionary
-    dctSectionsText(Section) = s
+    If Not dctSectionsText.Exists(msg_section) Then
+        vArry(0) = msg_msg.FontBold
+        vArry(1) = msg_msg.FontColor
+        vArry(2) = msg_msg.FontItalic
+        vArry(3) = msg_msg.FontName
+        vArry(4) = msg_msg.FontSize
+        vArry(5) = msg_msg.FontUnderline
+        vArry(6) = msg_msg.Monospaced
+        vArry(7) = msg_msg.Text
+        dctSectionsText.Add msg_section, vArry
+    End If
 End Property
 
 Public Property Let MsgTitle(ByVal s As String):                                        sTitle = s: SetupTitle:                                                     End Property
@@ -1577,7 +1654,7 @@ xt: Exit Sub
 eh: ErrMsg ErrSrc(PROC)
 End Sub
 
-Private Sub SetupMsgSection(ByVal Section As Long)
+Private Sub SetupMsgSection(ByVal msg_section As Long)
 ' -------------------------------------------------------------
 ' Setup a message section with its label when one is specified
 ' and return the message's width when greater than any other.
@@ -1587,42 +1664,44 @@ Private Sub SetupMsgSection(ByVal Section As Long)
     Const PROC = "SetupMsgSection"
     
     On Error GoTo eh
-    Dim frArea      As MSForms.Frame
-    Dim frSection   As MSForms.Frame
-    Dim la          As MSForms.Label
-    Dim tbText      As MSForms.TextBox
-    Dim frText      As MSForms.Frame
-    Dim sLabel      As String
-    Dim sText       As String
-    Dim bMonospaced As Boolean
-
-    Set frArea = DsgnMsgArea
-    Set frSection = DsgnSection(Section)
-    Set la = DsgnSectionLabel(Section)
-    Set tbText = DsgnSectionText(Section)
-    Set frText = DsgnTextFrame(Section)
-    
-    sLabel = Me.MsgLabel(Section)
-    sText = Me.MsgText(Section)
-    bMonospaced = Me.MsgMonoSpaced(Section)
-    
+    Dim SectionMessage  As TypeMsgText:     SectionMessage = Me.MsgText(msg_section)
+    Dim SectionLabel    As TypeMsgLabel:    SectionLabel = Me.MsgLabel(msg_section)
+    Dim frArea          As MSForms.Frame:   Set frArea = DsgnMsgArea
+    Dim frSection       As MSForms.Frame:   Set frSection = DsgnSection(msg_section)
+    Dim la              As MSForms.Label:   Set la = DsgnSectionLabel(msg_section)
+    Dim tbText          As MSForms.TextBox: Set tbText = DsgnSectionText(msg_section)
+    Dim frText          As MSForms.Frame:   Set frText = DsgnTextFrame(msg_section)
+        
     frSection.Width = frArea.Width
     la.Width = frSection.Width
     frText.Width = frSection.Width
     tbText.Width = frSection.Width
         
-    If sText <> vbNullString Then
+    If SectionMessage.Text <> vbNullString Then
     
         AppliedControl = frArea
         AppliedControl = frSection
         AppliedControl = frText
         AppliedControl = tbText
                 
-        If sLabel <> vbNullString Then
-            Set la = DsgnSectionLabel(Section)
+        If SectionLabel.Text <> vbNullString Then
+            Set la = DsgnSectionLabel(msg_section)
             With la
                 .Width = Me.InsideWidth - (siHmarginFrames * 2)
-                .Caption = sLabel
+                .Caption = SectionLabel.Text
+                With .Font
+                    If SectionLabel.Monospaced Then
+                        If SectionLabel.FontName <> vbNullString Then .Name = SectionLabel.FontName Else .Name = LABEL_MONOSPACED_DEFAULT_FONT_NAME
+                        If SectionLabel.FontSize <> 0 Then .Size = SectionLabel.FontSize Else .Size = LABEL_MONOSPACED_DEFAULT_FONT_SIZE
+                    Else
+                        If SectionLabel.FontName <> vbNullString Then .Name = SectionLabel.FontName Else .Name = LABEL_PROPSPACED_DEFAULT_FONT_NAME
+                        If SectionLabel.FontSize <> 0 Then .Size = SectionLabel.FontSize Else .Size = LABEL_PROPSPACED_DEFAULT_FONT_SIZE
+                    End If
+                    If SectionLabel.FontItalic Then .Italic = True
+                    If SectionLabel.FontBold Then .Bold = True
+                    If SectionLabel.FontUnderline Then .Underline = True
+                End With
+                If SectionLabel.FontColor <> 0 Then .ForeColor = SectionLabel.FontColor Else .ForeColor = rgbBlack
             End With
             frText.top = la.top + la.Height
             AppliedControl = la
@@ -1630,10 +1709,10 @@ Private Sub SetupMsgSection(ByVal Section As Long)
             frText.top = 0
         End If
         
-        If bMonospaced Then
-            SetupMsgSectionMonoSpaced Section, sText  ' returns the maximum width required for monospaced section
+        If SectionMessage.Monospaced Then
+            SetupMsgSectionMonoSpaced msg_section  ' returns the maximum width required for monospaced section
         Else ' proportional spaced
-            SetupMsgSectionPropSpaced Section, sText
+            SetupMsgSectionPropSpaced msg_section
         End If
         tbText.SelStart = 0
         
@@ -1644,8 +1723,7 @@ xt: Exit Sub
 eh: ErrMsg ErrSrc(PROC)
 End Sub
 
-Private Sub SetupMsgSectionMonoSpaced(ByVal Section As Long, _
-                                       ByVal text As String)
+Private Sub SetupMsgSectionMonoSpaced(ByVal msg_section As Long)
 ' ------------------------------------------------------------
 ' Setup the applied monospaced message section (section) with
 ' the text (text), and apply width and adjust surrounding
@@ -1656,20 +1734,27 @@ Private Sub SetupMsgSectionMonoSpaced(ByVal Section As Long, _
     Const PROC = "SetupMsgSectionMonoSpaced"
     
     On Error GoTo eh
+    Dim SectionMsg  As TypeMsgText:     SectionMsg = MsgText(msg_section)
     Dim frArea      As MSForms.Frame:   Set frArea = DsgnMsgArea
-    Dim frText      As MSForms.Frame:   Set frText = DsgnSectionTextFrame(Section)
-    Dim tbText      As MSForms.TextBox: Set tbText = DsgnSectionText(Section)
-    Dim frSection   As MSForms.Frame:   Set frSection = DsgnSection(Section)
+    Dim frText      As MSForms.Frame:   Set frText = DsgnSectionTextFrame(msg_section)
+    Dim tbText      As MSForms.TextBox: Set tbText = DsgnSectionText(msg_section)
+    Dim frSection   As MSForms.Frame:   Set frSection = DsgnSection(msg_section)
     
     '~~ Setup the textbox
     With tbText
         .Visible = True
         .MultiLine = True
         .WordWrap = False
-        .Font.name = sMonoSpacedFontName
-        .Font.Size = siMonoSpacedFontSize
+        With .Font
+            .Bold = SectionMsg.FontBold
+            .Italic = SectionMsg.FontItalic
+            .Underline = SectionMsg.FontUnderline
+            If SectionMsg.FontSize <> 0 Then .Size = SectionMsg.FontSize Else .Size = LABEL_MONOSPACED_DEFAULT_FONT_SIZE
+            If SectionMsg.FontName <> vbNullString Then .Name = SectionMsg.FontName Else .Name = LABEL_MONOSPACED_DEFAULT_FONT_NAME
+        End With
+        If SectionMsg.FontColor <> 0 Then .ForeColor = SectionMsg.FontColor Else .ForeColor = rgbBlack
         .AutoSize = True
-        .Value = text
+        .Value = SectionMsg.Text
         .AutoSize = False
         .SelStart = 0
         .Left = siHmarginFrames
@@ -1707,24 +1792,20 @@ xt: Exit Sub
 eh: ErrMsg ErrSrc(PROC)
 End Sub
 
-' Setup the proportional spaced Message Section (section) with the text (text)
-' Note 1: When proportional spaced Message Sections are setup the width of the
-'         Message Form is already final.
-' Note 2: All height adjustments except the one for the text box
-'         are done by the ResizeAndReposition
-' -----------------------------------------------------------------------------
-Private Sub SetupMsgSectionPropSpaced(ByVal Section As Long, _
-                                        ByVal text As String)
+Private Sub SetupMsgSectionPropSpaced(ByVal msg_section As Long)
+' --------------------------------------------------------------
+' Setup the proportional spaced SectionMsg Section (msg_section).
+' Note 1: When proportional spaced SectionMsg Sections are setup
+'         the width of the SectionMsg Form is already final.
+' Note 2: All height adjustments except the one for the text
+'         box are done by the ResizeAndReposition
+' --------------------------------------------------------------
     
-    Dim frArea      As MSForms.Frame
-    Dim frSection   As MSForms.Frame
-    Dim frText      As MSForms.Frame
-    Dim tbText      As MSForms.TextBox
-    
-    Set frArea = DsgnMsgArea
-    Set frSection = DsgnSection(Section)
-    Set frText = DsgnSectionTextFrame(Section)
-    Set tbText = DsgnSectionText(Section)
+    Dim SectionMsg  As TypeMsgText:     SectionMsg = MsgText(msg_section)
+    Dim frArea      As MSForms.Frame:   Set frArea = DsgnMsgArea
+    Dim frSection   As MSForms.Frame:   Set frSection = DsgnSection(msg_section)
+    Dim frText      As MSForms.Frame:   Set frText = DsgnSectionTextFrame(msg_section)
+    Dim tbText      As MSForms.TextBox: Set tbText = DsgnSectionText(msg_section)
         
     '~~ For proportional spaced message sections the width is determined by the area width
     With frSection
@@ -1743,7 +1824,15 @@ Private Sub SetupMsgSectionPropSpaced(ByVal Section As Long, _
         .AutoSize = True
         .WordWrap = True
         .Width = frText.Width - siHmarginFrames
-        .Value = text
+        .Value = SectionMsg.Text
+        With .Font
+            If SectionMsg.FontName <> vbNullString Then .Name = SectionMsg.FontName Else .Name = TEXT_PROPSPACED_DEFAULT_FONT_NAME
+            If SectionMsg.FontSize <> 0 Then .Size = SectionMsg.FontSize Else .Size = TEXT_PROPSPACED_DEFAULT_FONT_SIZE
+            If SectionMsg.FontBold Then .Bold = True
+            If SectionMsg.FontItalic Then .Italic = True
+            If SectionMsg.FontUnderline Then .Underline = True
+        End With
+        If SectionMsg.FontColor <> 0 Then .ForeColor = SectionMsg.FontColor Else .ForeColor = rgbBlack
         .SelStart = 0
         .Left = HSPACE_LEFT
         frText.Width = .Left + .Width + siHmarginFrames
@@ -1761,10 +1850,15 @@ Private Sub SetupMsgSectionsMonoSpaced()
     Const PROC = "SetupMsgSectionsMonoSpaced"
     
     On Error GoTo eh
-    Dim i As Long
+    Dim i       As Long
+    Dim Message As TypeMsgText
+    Dim Label   As TypeMsgLabel
     
     For i = 1 To NO_OF_DESIGNED_SECTIONS
-        If MsgText(i) <> vbNullString And MsgMonoSpaced(i) = True Then SetupMsgSection Section:=i
+        Message = Me.MsgText(i)
+        If Message.Monospaced And Message.Text <> vbNullString Then
+            SetupMsgSection i
+        End If
     Next i
     bDoneMonoSpacedSections = True
     
@@ -1777,10 +1871,12 @@ Private Sub SetupMsgSectionsPropSpaced()
     Const PROC = "SetupMsgSectionsPropSpaced"
     
     On Error GoTo eh
-    Dim i As Long
+    Dim i       As Long
+    Dim Message As TypeMsgText
     
     For i = 1 To NO_OF_DESIGNED_SECTIONS
-        If MsgText(i) <> vbNullString And MsgMonoSpaced(i) = False Then SetupMsgSection Section:=i
+        Message = MsgText(i)
+        If Not Message.Monospaced And Message.Text <> vbNullString Then SetupMsgSection i
     Next i
     bDonePropSpacedSections = True
     bDoneMsgArea = True
@@ -1807,12 +1903,12 @@ Private Sub SetupTitle()
         '~~ When a font name other then the standard UserForm font name is
         '~~ provided the extra hidden title label which mimics the title bar
         '~~ width is displayed. Otherwise it remains hidden.
-        If sTitleFontName <> vbNullString And sTitleFontName <> .Font.name Then
+        If sTitleFontName <> vbNullString And sTitleFontName <> .Font.Name Then
             With .laMsgTitle   ' Hidden by default
                 .Visible = True
                 .top = siTop
                 siTop = VgridPos(.top + .Height)
-                .Font.name = sTitleFontName
+                .Font.Name = sTitleFontName
                 If sTitleFontSize <> 0 Then
                     .Font.Size = sTitleFontSize
                 End If
@@ -1827,7 +1923,7 @@ Private Sub SetupTitle()
             With .laMsgTitle
                 With .Font
                     .Bold = False
-                    .name = Me.Font.name
+                    .Name = Me.Font.Name
                     .Size = 8.65   ' Value which comes to a length close to the length required
                 End With
                 .Visible = False

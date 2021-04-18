@@ -280,6 +280,8 @@ Private Function ErrDsply( _
     Dim sSource     As String
     Dim sType       As String
     Dim lNo         As Long
+    Dim SctnText     As TypeMsgText
+    Dim SctnLabel   As TypeMsgLabel
     
     ErrMsgMatter err_source:=err_source _
                , err_no:=err_number _
@@ -325,16 +327,21 @@ Private Function ErrDsply( _
     '~~ Display the error message by means of the Common UserForm fMsg
     With fMsg
         .MsgTitle = sTitle
-        .MsgLabel(1) = "Error description:": .MsgText(1) = sDscrptn
+        SctnLabel.Text = "Error description:":  SctnText.Text = sDscrptn
+        .MsgLabel(1) = SctnLabel:               .MsgText(1) = SctnText
         
         If ErrArgs = vbNullString _
-        Then .MsgLabel(2) = "Error source:": .MsgText(2) = sSource & sLine: .MsgMonoSpaced(2) = True _
-        Else .MsgLabel(2) = "Error source:": .MsgText(2) = sSource & sLine & vbLf & _
-                                                                       "(with arguments: " & ErrArgs & ")"
-        .MsgMonoSpaced(2) = True
-        .MsgLabel(3) = "Error path (call stack):":  .MsgText(3) = sErrPath
-        .MsgMonoSpaced(3) = True
-        .MsgLabel(4) = "Info:":              .MsgText(4) = sInfo: .MsgMonoSpaced(4) = True
+        Then SctnLabel.Text = "Error source:": SctnText.Text = sSource & sLine: SctnText.Monospaced = True _
+        Else SctnLabel.Text = "Error source:": SctnText.Text = sSource & sLine & vbLf & "(with arguments: " & ErrArgs & ")"
+        SctnText.Monospaced = True
+        .MsgLabel(2) = SctnLabel:   .MsgText(2) = SctnText
+        
+        SctnLabel.Text = "Error path (call stack):":    SctnText.Text = sErrPath:    SctnText.Monospaced = True
+        .MsgLabel(3) = SctnLabel:                       .MsgText(3) = SctnText
+        
+        SctnLabel.Text = "About this error:":           SctnText.Text = sInfo:       SctnText.Monospaced = False: SctnText.FontSize = 8.5
+        .MsgLabel(4) = SctnLabel:                       .MsgText(4) = SctnText
+        
         .MsgButtons = err_buttons
         .Setup
         
@@ -569,7 +576,7 @@ Private Sub ErrMsgMatter(ByVal err_source As String, _
     msg_details = IIf(err_line <> 0, msg_type & msg_no & " in " & err_source & " (at line " & err_line & ")", msg_type & msg_no & " in " & err_source)
     msg_dscrptn = IIf(InStr(err_dscrptn, CONCAT) <> 0, Split(err_dscrptn, CONCAT)(0), err_dscrptn)
     If InStr(err_dscrptn, CONCAT) <> 0 Then msg_info = Split(err_dscrptn, CONCAT)(1)
-    msg_source = Application.name & ":  " & Application.ActiveWindow.Caption & ":  " & err_source
+    msg_source = Application.Name ' & ":  " & Application.ActiveWindow.Caption & ":  " & err_source
     
 End Sub
 
