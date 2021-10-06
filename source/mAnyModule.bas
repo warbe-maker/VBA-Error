@@ -5,6 +5,17 @@ Option Explicit
 ' -------------------------------------------------------------------------------
 Const MODNAME = "mAnyModule" ' Module name for error handling and execution trace
 
+Private Function AppErr(ByVal app_err_no As Long) As Long
+' ------------------------------------------------------------------------------
+' Ensures that a programmed (i.e. an application) error numbers never conflicts
+' with the number of a VB runtime error. Thr function returns a given positive
+' number (app_err_no) with the vbObjectError added - which turns it into a
+' negative value. When the provided number is negative it returns the original
+' positive "application" error number e.g. for being used with an error message.
+' ------------------------------------------------------------------------------
+    AppErr = IIf(app_err_no < 0, app_err_no - vbObjectError, vbObjectError - app_err_no)
+End Function
+
 Private Sub AnyProc()
 ' -------------------------------------------------------------------------------
 ' Sample procedure using mErrHndlr
@@ -24,5 +35,5 @@ eh: mErH.ErrMsg err_source:=ErrSrc(PROC)
 End Sub
 
 Private Function ErrSrc(ByVal sProc As String) As String
-    ErrSrc = Split(ThisWorkbook.name, ".")(0) & "." & MODNAME & "." & sProc
+    ErrSrc = Split(ThisWorkbook.Name, ".")(0) & "." & MODNAME & "." & sProc
 End Function

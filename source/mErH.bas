@@ -1,23 +1,25 @@
 Attribute VB_Name = "mErH"
 Option Explicit
 Option Private Module
-' -----------------------------------------------------------------------------------------------
+' ------------------------------------------------------------------------------
 ' Standard  Module mErH: Global error handling for any VBA Project.
 '
-' Methods: - AppErr   Converts a positive number into a negative error number ensuring it not
-'                     conflicts with a VB Runtime Error. A negative error number is turned back into the
-'                     original positive Application  Error Number.
-'          - ErrMsg   Either passes on the error to the caller or when the 'Entry-Procedure' is
-'                     reached, displays the error with a complete path from the 'Entry-Procedure'
-'                     to the procedure with the error.
-'          - BoP      Maintains the call stack at the Begin of a Procedure (optional when using
-'                     this common error handler)
-'          - EoP      Maintains the call stack at the End of a Procedure, triggers the display of
-'                     the Execution Trace when the 'Entry-Procedure' is finished and the
-'                     Conditional Compile Argument ExecTrace = 1
-'          - ErrDsply Displays the error message in a proper formated manner
-'                     The local Conditional Compile Argument "AlternativeMsgBox = 1" enforces the use
-'                     of the Alternative VBA MsgBox which provideds an improved readability.
+' Methods:
+' - AppErr   Converts a positive number into a negative error number ensuring it
+'            not conflicts with a VB Runtime Error. A negative error number is
+'            turned back into the original positive Application  Error Number.
+' - ErrMsg   Either passes on the error to the caller or when the Entry-Procedure
+'            is reached, displays the error with a complete path from the
+'            Entry-Procedure to the procedure with the error.
+' - BoP      Maintains the call stack at the Begin of a Procedure (optional when
+'            using this common error handler)
+' - EoP      Maintains the call stack at the End of a Procedure, triggers the
+'            display of the Execution Trace when the 'Entry-Procedure' is
+'            finished and the  Conditional Compile Argument ExecTrace = 1
+' - ErrDsply Displays the error message in a proper formated manner
+'            The local Conditional Compile Argument "AlternativeMsgBox = 1"
+'            enforces the use of the Alternative VBA MsgBox which provideds an
+'            improved readability.
 '
 ' Note: When never a mErH.BoP/mErH.EoP procedure had been executed the ErrMsg
 '       is displayed with the procedure the error occoured. Else the error is
@@ -33,7 +35,7 @@ Option Private Module
 ' https://warbe-maker.github.io/vba/common/2020/10/02/Comprehensive-Common-VBA-Error-Handler.html
 '
 ' W. Rauschenberger, Berlin, Nov 2020
-' -----------------------------------------------------------------------------------------------
+' ------------------------------------------------------------------------------
 
 Public Const CONCAT         As String = "||"
 
@@ -102,21 +104,15 @@ Private Property Get StckEntryProc() As String
     Else StckEntryProc = vbNullString
 End Property
 
-Public Function AppErr(ByVal err_no As Long) As Long
-' -----------------------------------------------------------------
-' Used with Err.Raise AppErr(<l>).
-' When the error number <l> is > 0 it is considered an "Application
-' Error Number and vbObjectErrror is added to it into a negative
-' number in order not to confuse with a VB runtime error.
-' When the error number <l> is negative it is considered an
-' Application Error and vbObjectError is added to convert it back
-' into its origin positive number.
-' ------------------------------------------------------------------
-    If err_no < 0 Then
-        AppErr = err_no - vbObjectError
-    Else
-        AppErr = vbObjectError + err_no
-    End If
+Private Function AppErr(ByVal app_err_no As Long) As Long
+' ------------------------------------------------------------------------------
+' Ensures that a programmed (i.e. an application) error numbers never conflicts
+' with the number of a VB runtime error. Thr function returns a given positive
+' number (app_err_no) with the vbObjectError added - which turns it into a
+' negative value. When the provided number is negative it returns the original
+' positive "application" error number e.g. for being used with an error message.
+' ------------------------------------------------------------------------------
+    AppErr = IIf(app_err_no < 0, app_err_no - vbObjectError, vbObjectError - app_err_no)
 End Function
 
 Public Sub BoP(ByVal bop_id As String, _
@@ -331,15 +327,15 @@ Private Function ErrDsply( _
         .MsgLabel(1) = SctnLabel:               .MsgText(1) = SctnText
         
         If ErrArgs = vbNullString _
-        Then SctnLabel.Text = "Error source:": SctnText.Text = sSource & sLine: SctnText.Monospaced = True _
+        Then SctnLabel.Text = "Error source:": SctnText.Text = sSource & sLine: SctnText.MonoSpaced = True _
         Else SctnLabel.Text = "Error source:": SctnText.Text = sSource & sLine & vbLf & "(with arguments: " & ErrArgs & ")"
-        SctnText.Monospaced = True
+        SctnText.MonoSpaced = True
         .MsgLabel(2) = SctnLabel:   .MsgText(2) = SctnText
         
-        SctnLabel.Text = "Error path (call stack):":    SctnText.Text = sErrPath:    SctnText.Monospaced = True
+        SctnLabel.Text = "Error path (call stack):":    SctnText.Text = sErrPath:    SctnText.MonoSpaced = True
         .MsgLabel(3) = SctnLabel:                       .MsgText(3) = SctnText
         
-        SctnLabel.Text = "About this error:":           SctnText.Text = sInfo:       SctnText.Monospaced = False: SctnText.FontSize = 8.5
+        SctnLabel.Text = "About this error:":           SctnText.Text = sInfo:       SctnText.MonoSpaced = False: SctnText.FontSize = 8.5
         .MsgLabel(4) = SctnLabel:                       .MsgText(4) = SctnText
         
         .MsgButtons = err_buttons
