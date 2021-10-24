@@ -478,8 +478,8 @@ Public Function Dsply(ByVal dsply_title As String, _
     With fMsg
         .ReplyWithIndex = dsply_reply_with_index
         If dsply_max_height > 0 Then .MsgHeightMaxSpecAsPoSS = dsply_max_height ' percentage of screen height
-        If dsply_max_width > 0 Then .MsgWidthMaxSpecAsPoSS = dsply_max_width   ' percentage of screen width
-        If dsply_min_width > 0 Then .MsgWidthMinSpecInPt = dsply_min_width                     ' defaults to 300 pt. the absolute minimum is 200 pt
+        If dsply_max_width > 0 Then .MsgWidthMaxSpecAsPoSS = dsply_max_width    ' percentage of screen width
+        If dsply_min_width > 0 Then .MsgWidthMinSpecInPt = dsply_min_width      ' defaults to 300 pt. the absolute minimum is 200 pt
         If dsply_min_button_width > 0 Then .MinButtonWidth = dsply_min_button_width
         .MsgTitle = dsply_title
         For i = 1 To fMsg.NoOfDesignedMsgSects

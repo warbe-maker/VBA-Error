@@ -96,7 +96,6 @@ Private bDoneMonoSpacedSects            As Boolean
 Private bDoneMsgArea                    As Boolean
 Private bDonePropSpacedSects            As Boolean
 Private bDoneTitle                      As Boolean
-Private bDsplyFrmsWthBrdrsTestOnly      As Boolean
 Private bDsplyFrmsWthCptnTestOnly       As Boolean
 Private bFormEvents                     As Boolean
 Private bProgressFollowUp               As Boolean
@@ -175,7 +174,7 @@ Private Sub UserForm_Initialize()
     sMonoSpacedLabelDefaultFontName = DFLT_LBL_MONOSPACED_FONT_NAME
     sMonoSpacedLabelDefaultFontSize = DFLT_LBL_MONOSPACED_FONT_SIZE
     bDsplyFrmsWthCptnTestOnly = False
-    bDsplyFrmsWthBrdrsTestOnly = False
+    DsplyFrmsWthBrdrsTestOnly = False
     Me.Width = Me.MsgWidthMaxSpecInPt
     Me.Height = 60          ' let's start with this
     siHmarginFrames = 0     ' Ensures proper command buttons framing, may be used for test purpose
@@ -287,8 +286,10 @@ Private Property Get DsgnMsgSectTextFrame(Optional ByVal msg_section As Long):  
 
 Public Property Let DsplyFrmsWthBrdrsTestOnly(ByVal dsply_borders As Boolean)
     
-    Dim ctl As MSForms.Control
-       
+    Dim ctl         As MSForms.Control
+    Dim lBackColor  As Long
+    
+    lBackColor = Me.BackColor
     For Each ctl In Me.Controls
         If TypeName(ctl) = "Frame" Or TypeName(ctl) = "TextBox" Then
             If dsply_borders Then
