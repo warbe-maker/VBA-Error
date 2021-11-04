@@ -518,7 +518,7 @@ Public Sub Dsply()
     Next v
     sTrace = sTrace & vbLf & DsplyFtr(lLenHeader)
     With fMsg
-        .MsgWidthMaxSpecAsPoSS = 95
+        .MsgWidthMax = 95
         .MsgTitle = "Execution Trace, displayed because the Conditional Compile Argument ""ExecTrace = 1""!"
         
         SctnText.Text = sTrace:   SctnText.MonoSpaced = True
