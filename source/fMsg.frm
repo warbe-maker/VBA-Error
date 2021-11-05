@@ -691,20 +691,15 @@ Public Property Get VmarginFrames() As Single:                                  
 
 Public Property Let VmarginFrames(ByVal si As Single):                                      siVmarginFrames = VgridPos(si):                                     End Property
 
-Public Function AppErr(ByVal lNo As Long) As Long
+Private Function AppErr(ByVal app_err_no As Long) As Long
 ' ------------------------------------------------------------------------------
-' Converts a positive (i.e. an "application" error number into a negative number
-' by adding vbObjectError. Converts a negative number back into a positive i.e.
-' the original programmed application error number.
-' Usage example:
-'    Err.Raise mErH.AppErr(1), .... ' when an application error is detected
-'    If Err.Number < 0 Then    ' when the error is displayed
-'       MsgBox "Application error " & AppErr(Err.Number)
-'    Else
-'       MsgBox "VB Rutime Error " & Err.Number
-'    End If
+' Ensures that a programmed (i.e. an application) error numbers never conflicts
+' with the number of a VB runtime error. Thr function returns a given positive
+' number (app_err_no) with the vbObjectError added - which turns it into a
+' negative value. When the provided number is negative it returns the original
+' positive "application" error number e.g. for being used with an error message.
 ' ------------------------------------------------------------------------------
-    AppErr = IIf(lNo < 0, AppErr = lNo - vbObjectError, AppErr = vbObjectError + lNo)
+    If app_err_no >= 0 Then AppErr = app_err_no + vbObjectError Else AppErr = Abs(app_err_no - vbObjectError)
 End Function
 
 Private Function AppliedBttnRows() As Dictionary
@@ -1150,7 +1145,7 @@ Private Function ErrMsg(ByVal err_source As String, _
     Dim ErrNo   As Long
     Dim ErrDesc As String
     Dim ErrType As String
-    Dim errline As Long
+    Dim ErrLine As Long
     Dim AtLine  As String
     Dim Buttons As Long
     
@@ -1163,7 +1158,7 @@ Private Function ErrMsg(ByVal err_source As String, _
         ErrType = "Runtime error "
     End If
     
-    If err_line = 0 Then errline = Erl
+    If err_line = 0 Then ErrLine = Erl
     If err_line <> 0 Then AtLine = " at line " & err_line
     
     If err_dscrptn = vbNullString Then err_dscrptn = Err.Description

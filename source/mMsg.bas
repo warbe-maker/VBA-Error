@@ -89,7 +89,7 @@ Private Property Get ScreenWidth() As Single
     ConvertPixelsToPoints x_dpi:=GetSystemMetrics32(SM_CXVIRTUALSCREEN), x_pts:=ScreenWidth
 End Property
 
-Public Function AppErr(ByVal app_err_no As Long) As Long
+Private Function AppErr(ByVal app_err_no As Long) As Long
 ' ------------------------------------------------------------------------------
 ' Ensures that a programmed (i.e. an application) error numbers never conflicts
 ' with the number of a VB runtime error. Thr function returns a given positive
@@ -97,7 +97,7 @@ Public Function AppErr(ByVal app_err_no As Long) As Long
 ' negative value. When the provided number is negative it returns the original
 ' positive "application" error number e.g. for being used with an error message.
 ' ------------------------------------------------------------------------------
-    If app_err_no > 0 Then AppErr = app_err_no + vbObjectError Else AppErr = app_err_no - vbObjectError
+    If app_err_no >= 0 Then AppErr = app_err_no + vbObjectError Else AppErr = Abs(app_err_no - vbObjectError)
 End Function
 
 Public Sub AssertWidthAndHeight(ByRef width_min As Long, _
@@ -509,59 +509,83 @@ Public Function ErrMsg(ByVal err_source As String, _
 ' Displays a proper designe error message providing the option to resume the
 ' error line when the Conditional Compile Argument Debugging = 1.
 ' ------------------------------------------------------------------------------
-    Dim ErrNo   As Long
-    Dim ErrDesc As String
-    Dim ErrType As String
-    Dim errline As Long
-    Dim AtLine  As String
-    Dim Buttons As Long
-    Dim msg     As TypeMsg
+    Dim ErrNo       As Long
+    Dim ErrDesc     As String
+    Dim ErrType     As String
+    Dim ErrLine     As Long
+    Dim ErrAtLine   As String
+    Dim ErrBttns    As Long
+    Dim ErrMsgText  As TypeMsg
     
+    '~~ Obtain error information from the Err object for any argument not provided
     If err_no = 0 Then err_no = Err.Number
-    If err_no < 0 Then
-        ErrNo = AppErr(err_no)
-        ErrType = "Application error "
-    Else
-        ErrNo = err_no
-        ErrType = "Runtime error "
-    End If
-    
-    If err_line = 0 Then errline = Erl
-    If err_line <> 0 Then AtLine = " at line " & err_line
-    
+    If err_line = 0 Then err_line = Erl
+    If err_source = vbNullString Then err_source = Err.Source
     If err_dscrptn = vbNullString Then err_dscrptn = Err.Description
+    If err_dscrptn = vbNullString Then err_dscrptn = "--- No error description available ---"
+    
+    '~~ Determine the type of error
+    Select Case err_no
+        Case Is < 0
+            ErrNo = AppErr(err_no)
+            ErrType = "Application Error "
+        Case Else
+            ErrNo = err_no
+            If (InStr(1, err_dscrptn, "DAO") <> 0 _
+            Or InStr(1, err_dscrptn, "ODBC Teradata Driver") <> 0 _
+            Or InStr(1, err_dscrptn, "ODBC") <> 0 _
+            Or InStr(1, err_dscrptn, "Oracle") <> 0) _
+            Then ErrType = "Database Error " _
+            Else ErrType = "VB Runtime Error "
+    End Select
+    
+    If err_line <> 0 Then ErrAtLine = " at line " & err_line
+    
     If err_dscrptn = vbNullString Then err_dscrptn = "--- No error message available ---"
-    With msg.Section(1)
+    With ErrMsgText.Section(1)
         .Label.Text = "Error:"
         .Label.FontColor = rgbBlue
         .Text.Text = err_dscrptn
     End With
-    With msg.Section(2)
+    With ErrMsgText.Section(2)
         .Label.Text = "Source:"
         .Label.FontColor = rgbBlue
-        .Text.Text = err_source & AtLine
+        .Text.Text = err_source & ErrAtLine
     End With
 
 #If Debugging Then
-    Buttons = vbYesNo
-    With msg.Section(3)
+    ErrBttns = vbYesNoCancel
+    With ErrMsgText.Section(3)
         .Label.Text = "Debugging: (Conditional Compile Argument 'Debugging = 1')"
         .Label.FontColor = rgbBlue
-        .Text.Text = "Yes = Resume error line, No = Continue"
+        .Text.MonoSpaced = True
+        .Text.Text = "Yes    = Resume error line" & vbLf & _
+                     "No     = Resume Next" & vbLf & _
+                     "Cancel = Terminate"
     End With
-    With msg.Section(4)
-        .Label.Text = "About debugging:"
+    With ErrMsgText.Section(4)
+        .Label.Text = "Use the debugging options as follows:"
         .Label.FontColor = rgbBlue
-        .Text.Text = "To make use of the debugging option have an error handling line" & vbLf & _
-                     "eh: If mMsg.ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume"
+        .Text.MonoSpaced = True
+        .Text.Text = "    Private Sub Any()                   " & vbLf & _
+                     "        Const PROC = ""Any""            " & vbLf & _
+                     "        On Error Goto eh                " & vbLf & _
+                     "        ' any code                      " & vbLf & _
+                     "    xt: Exit Sub                        " & vbLf & vbLf & _
+                     "    eh: Select Case ErrMsg(ErrSrc(PROC))" & vbLf & _
+                     "            Case vbYes: Stop: Resume    " & vbLf & _
+                     "            Case vbNo:  Resume Next     " & vbLf & _
+                     "            Case Else:  Goto xt         " & vbLf & _
+                     "         End Select                     " & vbLf & _
+                     "    End Sub                             "
     End With
 #Else
-    Buttons = vbCritical
+    ErrBttns = vbCritical
 #End If
     
-    ErrMsg = Dsply(dsply_title:=ErrType & ErrNo & " in " & err_source & AtLine _
-                 , dsply_msg:=msg _
-                 , dsply_buttons:=Buttons)
+    ErrMsg = Dsply(dsply_title:=ErrType & ErrNo & " in " & err_source & ErrAtLine _
+                 , dsply_msg:=ErrMsgText _
+                 , dsply_buttons:=ErrBttns)
 End Function
 
 Private Function ErrSrc(ByVal sProc As String) As String
