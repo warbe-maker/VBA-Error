@@ -201,11 +201,11 @@ Private Sub UserForm_Terminate()
     Set dctSectsText = Nothing
 End Sub
 
-Private Property Get AppliedButtonRetVal(Optional ByVal Button As MSForms.CommandButton) As Variant
+Private Property Get AppliedButtonRetVal(Optional ByVal Button As Msforms.CommandButton) As Variant
     AppliedButtonRetVal = AppliedBttnsRetVal(Button)
 End Property
 
-Private Property Let AppliedButtonRetVal(Optional ByVal Button As MSForms.CommandButton, ByVal v As Variant)
+Private Property Let AppliedButtonRetVal(Optional ByVal Button As Msforms.CommandButton, ByVal v As Variant)
     AppliedBttnsRetVal.Add Button, v
 End Property
 
@@ -226,7 +226,7 @@ If dctAppliedControls Is Nothing Then Set dctAppliedControls = New Dictionary
     End If
 End Property
 
-Private Property Get ClickedButtonIndex(Optional ByVal cmb As MSForms.CommandButton) As Long
+Private Property Get ClickedButtonIndex(Optional ByVal cmb As Msforms.CommandButton) As Long
     
     Dim i   As Long
     Dim v   As Variant
@@ -241,35 +241,35 @@ Private Property Get ClickedButtonIndex(Optional ByVal cmb As MSForms.CommandBut
 
 End Property
 
-Private Property Get DsgnBttn(Optional ByVal bttn_row As Long, Optional ByVal bttn_no As Long) As MSForms.CommandButton
+Private Property Get DsgnBttn(Optional ByVal bttn_row As Long, Optional ByVal bttn_no As Long) As Msforms.CommandButton
     Set DsgnBttn = cllDsgnBttns(bttn_row)(bttn_no)
 End Property
 
-Private Property Get DsgnBttnRow(Optional ByVal row As Long) As MSForms.Frame:              Set DsgnBttnRow = cllDsgnBttnRows(row):                             End Property
+Private Property Get DsgnBttnRow(Optional ByVal row As Long) As Msforms.Frame:              Set DsgnBttnRow = cllDsgnBttnRows(row):                             End Property
 
 Private Property Get DsgnBttnRows() As Collection:                                          Set DsgnBttnRows = cllDsgnBttnRows:                                 End Property
 
-Private Property Get DsgnBttnsArea() As MSForms.Frame:                                      Set DsgnBttnsArea = cllDsgnAreas(2):                                End Property
+Private Property Get DsgnBttnsArea() As Msforms.Frame:                                      Set DsgnBttnsArea = cllDsgnAreas(2):                                End Property
 
-Private Property Get DsgnBttnsFrame() As MSForms.Frame:                                     Set DsgnBttnsFrame = cllDsgnBttnsFrame(1):                          End Property
+Private Property Get DsgnBttnsFrame() As Msforms.Frame:                                     Set DsgnBttnsFrame = cllDsgnBttnsFrame(1):                          End Property
 
-Private Property Get DsgnMsgArea() As MSForms.Frame:                                        Set DsgnMsgArea = cllDsgnAreas(1):                                  End Property
+Private Property Get DsgnMsgArea() As Msforms.Frame:                                        Set DsgnMsgArea = cllDsgnAreas(1):                                  End Property
 
-Private Property Get DsgnMsgSect(Optional msg_section As Long) As MSForms.Frame:            Set DsgnMsgSect = cllDsgnMsgSects(msg_section):                     End Property
+Private Property Get DsgnMsgSect(Optional msg_section As Long) As Msforms.Frame:            Set DsgnMsgSect = cllDsgnMsgSects(msg_section):                     End Property
 
-Private Property Get DsgnMsgSectLabel(Optional msg_section As Long) As MSForms.Label:       Set DsgnMsgSectLabel = cllDsgnMsgSectsLabel(msg_section):           End Property
+Private Property Get DsgnMsgSectLabel(Optional msg_section As Long) As Msforms.Label:       Set DsgnMsgSectLabel = cllDsgnMsgSectsLabel(msg_section):           End Property
 
 Private Property Get DsgnMsgSects() As Collection:                                          Set DsgnMsgSects = cllDsgnMsgSects:                                 End Property
 
 Private Property Get DsgnMsgSectsTextFrame() As Collection:                                 Set DsgnMsgSectsTextFrame = cllDsgnMsgSectsTextFrame:               End Property
 
-Private Property Get DsgnMsgSectTextBox(Optional msg_section As Long) As MSForms.TextBox:   Set DsgnMsgSectTextBox = cllDsgnMsgSectsTextBox(msg_section):       End Property
+Private Property Get DsgnMsgSectTextBox(Optional msg_section As Long) As Msforms.TextBox:   Set DsgnMsgSectTextBox = cllDsgnMsgSectsTextBox(msg_section):       End Property
 
 Private Property Get DsgnMsgSectTextFrame(Optional ByVal msg_section As Long):              Set DsgnMsgSectTextFrame = cllDsgnMsgSectsTextFrame(msg_section):   End Property
 
 Public Property Let DsplyFrmsWthBrdrsTestOnly(ByVal dsply_borders As Boolean)
     
-    Dim ctl         As MSForms.Control
+    Dim ctl         As Msforms.Control
     Dim lBackColor  As Long
     
     lBackColor = Me.BackColor
@@ -295,9 +295,9 @@ Public Property Get FormContentWidth(Optional ByRef with_vertical_scrollbars As 
 ' applied/visible controls.
 ' ------------------------------------------------------------------------------
     
-    Dim ctl As MSForms.Control
-    Dim frm As MSForms.Frame
-    Dim frm_ctl As MSForms.Control
+    Dim ctl As Msforms.Control
+    Dim frm As Msforms.Frame
+    Dim frm_ctl As Msforms.Control
     
     For Each ctl In Me.Controls
         With ctl
@@ -333,12 +333,12 @@ Private Property Get FormWidthMaxUsable()
     FormWidthMaxUsable = siMsgWidthMax - 15
 End Property
 
-Public Property Get FrameContentHeight(ByRef frm As MSForms.Frame) As Single
+Public Property Get FrameContentHeight(ByRef frm As Msforms.Frame) As Single
 ' ------------------------------------------------------------------------------
 ' Returns the height of the Frames (frm) content by considering only
 ' applied/visible controls.
 ' ------------------------------------------------------------------------------
-    Dim ctl As MSForms.Control
+    Dim ctl As Msforms.Control
     
     For Each ctl In frm.Controls
         If ctl.Parent Is frm Then
@@ -357,9 +357,9 @@ Public Property Get FrameContentWidth( _
 ' applied/visible controls.
 ' ------------------------------------------------------------------------------
     
-    Dim ctl As MSForms.Control
-    Dim frm As MSForms.Frame
-    Dim frm_ctl As MSForms.Control
+    Dim ctl As Msforms.Control
+    Dim frm As Msforms.Frame
+    Dim frm_ctl As Msforms.Control
     
     If TypeName(v) = "Frame" Then Set frm_ctl = v Else Stop
     For Each ctl In frm_ctl.Controls
@@ -375,7 +375,7 @@ Public Property Get FrameContentWidth( _
 End Property
 
 Public Property Let FrameHeight( _
-                 Optional ByRef frm As MSForms.Frame, _
+                 Optional ByRef frm As Msforms.Frame, _
                  Optional ByVal y_action As fmScrollAction = fmScrollActionBegin, _
                           ByVal frm_height As Single)
 ' ------------------------------------------------------------------------------
@@ -418,7 +418,7 @@ eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
 End Property
 
 Public Property Let FrameWidth( _
-                 Optional ByRef frm As MSForms.Frame, _
+                 Optional ByRef frm As Msforms.Frame, _
                           ByVal frm_width As Single)
 ' ------------------------------------------------------------------------------
 ' Mimics a frame's width change event. When the width of the frame (frm) is
@@ -489,12 +489,12 @@ Private Property Let MonoSpaced( _
     End If
 End Property
 
-Private Property Get MonoSpacedTbx(Optional ByVal tbx As MSForms.TextBox) As Boolean
+Private Property Get MonoSpacedTbx(Optional ByVal tbx As Msforms.TextBox) As Boolean
     MonoSpacedTbx = dctMonoSpacedTbx.Exists(tbx)
 End Property
 
 Private Property Let MonoSpacedTbx( _
-                 Optional ByVal tbx As MSForms.TextBox, _
+                 Optional ByVal tbx As Msforms.TextBox, _
                           ByVal b As Boolean)
     If b Then
         If Not dctMonoSpacedTbx.Exists(tbx) Then dctMonoSpacedTbx.Add tbx, tbx.Name
@@ -675,11 +675,11 @@ Public Property Get ReplyValue() As Variant:                                    
 
 Public Property Let ReplyWithIndex(ByVal b As Boolean):                                     bReplyWithIndex = b:                                                End Property
 
-Private Property Get ScrollBarHeight(Optional ByVal frm As MSForms.Frame) As Single
+Private Property Get ScrollBarHeight(Optional ByVal frm As Msforms.Frame) As Single
     If frm.ScrollBars = fmScrollBarsBoth Or frm.ScrollBars = fmScrollBarsHorizontal Then ScrollBarHeight = 14
 End Property
 
-Private Property Get ScrollBarWidth(Optional ByVal frm As MSForms.Frame) As Single
+Private Property Get ScrollBarWidth(Optional ByVal frm As Msforms.Frame) As Single
     If frm.ScrollBars = fmScrollBarsBoth Or frm.ScrollBars = fmScrollBarsVertical Then ScrollBarWidth = 12
 End Property
 
@@ -710,7 +710,7 @@ Private Function AppliedBttnRows() As Dictionary
     
     Dim dct             As New Dictionary
     Dim ButtonRows      As Long
-    Dim ButtonRowsRow   As MSForms.Frame
+    Dim ButtonRowsRow   As Msforms.Frame
     Dim v               As Variant
     Dim ButtonsInRow    As Long
     
@@ -729,7 +729,7 @@ Private Function AppliedBttnRows() As Dictionary
 End Function
 
 Public Sub AutoSizeTextBox( _
-                     ByRef as_tbx As MSForms.TextBox, _
+                     ByRef as_tbx As Msforms.TextBox, _
                      ByVal as_text As String, _
             Optional ByVal as_width_limit As Single = 0, _
             Optional ByVal as_width_min As Single = 0, _
@@ -819,7 +819,7 @@ xt: Exit Sub
 
 End Sub
 
-Private Sub ButtonClicked(ByVal cmb As MSForms.CommandButton)
+Private Sub ButtonClicked(ByVal cmb As Msforms.CommandButton)
 ' ------------------------------------------------------------------------------
 ' Return the value of the clicked reply button (button). When there is only one
 ' applied reply button the form is unloaded with the click of it. Otherwise the
@@ -956,7 +956,7 @@ Private Sub Collect(ByRef cllct_into As Variant, _
     Const PROC = "Collect"
     
     On Error GoTo eh
-    Dim ctl         As MSForms.Control
+    Dim ctl         As Msforms.Control
     Dim v           As Variant
     
     lBackColor = Me.BackColor
@@ -1107,7 +1107,7 @@ Private Sub DisplayFramesWithCaptions( _
 ' frames Else they remain visible for testing purpose
 ' ---------------------------------------------------------
             
-    Dim ctl As MSForms.Control
+    Dim ctl As Msforms.Control
        
     If Not b Then
         For Each ctl In Me.Controls
@@ -1166,7 +1166,7 @@ Private Function ErrMsg(ByVal err_source As String, _
     ErrDesc = "Error: " & vbLf & err_dscrptn & vbLf & vbLf & "Source: " & vbLf & err_source & AtLine
 
     
-#If Debugging Then
+#If Debugging = 1 Then
     Buttons = vbYesNo
     ErrDesc = ErrDesc & vbLf & vbLf & "Debugging: Yes=Resume error line, No=Continue"
 #Else
@@ -1182,8 +1182,8 @@ Private Function ErrSrc(ByVal sProc As String) As String
     ErrSrc = "fMsg." & sProc
 End Function
 
-Private Sub FrameCenterHorizontal(ByVal center_frame As MSForms.Frame, _
-                         Optional ByVal within_frame As MSForms.Frame = Nothing, _
+Private Sub FrameCenterHorizontal(ByVal center_frame As Msforms.Frame, _
+                         Optional ByVal within_frame As Msforms.Frame = Nothing, _
                          Optional ByVal left_margin As Single = 0)
 ' ------------------------------------------------------------------------------
 ' Center the frame (center_frame) horizontally within the frame (within_frame)
@@ -1228,7 +1228,7 @@ Private Function Max(ParamArray va() As Variant) As Variant
     
 End Function
 
-Private Function MaxWidthMsgSect(ByVal frm_area As MSForms.Frame) As Single
+Private Function MaxWidthMsgSect(ByVal frm_area As Msforms.Frame) As Single
 ' ------------------------------------------------------------------------------
 ' The maximum usable message section width depends on the maximum message area
 ' width whether or not the area frame (frm_artea) has a vertical scrollbar. A
@@ -1240,7 +1240,7 @@ Private Function MaxWidthMsgSect(ByVal frm_area As MSForms.Frame) As Single
     Else MaxWidthMsgSect = MaxWidthMsgArea
 End Function
 
-Private Function MaxWidthMsgTextBox(ByVal frm_text As MSForms.Frame) As Single
+Private Function MaxWidthMsgTextBox(ByVal frm_text As Msforms.Frame) As Single
 ' ------------------------------------------------------------------------------
 ' The maximum with of a sections text-box depends on whether or not the frame of
 ' the TextBox (frm_text) has a vertical scrollbar which reduces the available
@@ -1252,8 +1252,8 @@ Private Function MaxWidthMsgTextBox(ByVal frm_text As MSForms.Frame) As Single
 End Function
 
 Private Function MaxWidthMsgTextFrame( _
-                           ByVal frm_area As MSForms.Frame, _
-                           ByVal frm_section As MSForms.Frame) As Single
+                           ByVal frm_area As Msforms.Frame, _
+                           ByVal frm_section As Msforms.Frame) As Single
 ' ------------------------------------------------------------------------------
 ' The maximum usable message text width depends on the maximum message section
 ' width and whether or not the section (frm_section) has a vertical scrollbar
@@ -1358,7 +1358,7 @@ Private Sub ProvideDictionary(ByRef dct As Dictionary)
     If Not dct Is Nothing Then dct.RemoveAll Else Set dct = New Dictionary
 End Sub
 
-Private Function ScrollHorizontalApplied(ByRef frm As MSForms.Frame) As Boolean
+Private Function ScrollHorizontalApplied(ByRef frm As Msforms.Frame) As Boolean
 ' ------------------------------------------------------------------------------
 ' Returns True when the frame (frm) has already a horizontal scrollbar applied.
 ' ------------------------------------------------------------------------------
@@ -1368,7 +1368,7 @@ Private Function ScrollHorizontalApplied(ByRef frm As MSForms.Frame) As Boolean
 End Function
 
 Private Sub ScrollHorizontalApply( _
-                            ByRef scroll_frame As MSForms.Frame, _
+                            ByRef scroll_frame As Msforms.Frame, _
                             ByVal scrolled_width As Single, _
                    Optional ByVal x_action As fmScrollAction = fmScrollActionBegin)
 ' ------------------------------------------------------------------------------
@@ -1415,11 +1415,11 @@ xt: Exit Sub
 eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
 End Sub
 
-Private Function ScrollHorizontalHeight(ByVal frm As MSForms.Frame) As Single
+Private Function ScrollHorizontalHeight(ByVal frm As Msforms.Frame) As Single
     If ScrollHorizontalApplied(frm) Then ScrollHorizontalHeight = 12
 End Function
 
-Private Function ScrollVerticalApplied(ByRef frm As MSForms.Frame) As Boolean
+Private Function ScrollVerticalApplied(ByRef frm As Msforms.Frame) As Boolean
 ' ------------------------------------------------------------------------------
 ' Returns True when the frame (frm) has already a vertical scrollbar applied.
 ' ------------------------------------------------------------------------------
@@ -1429,7 +1429,7 @@ Private Function ScrollVerticalApplied(ByRef frm As MSForms.Frame) As Boolean
 End Function
 
 Private Sub ScrollVerticalApply( _
-                          ByRef scroll_frame As MSForms.Frame, _
+                          ByRef scroll_frame As Msforms.Frame, _
                           ByVal scrolled_height As Single, _
                  Optional ByVal y_action As fmScrollAction = fmScrollActionBegin)
 ' ------------------------------------------------------------------------------
@@ -1487,10 +1487,10 @@ Private Sub ScrollVerticalMsgSectionOrArea(ByVal exceeding_height As Single)
     Const PROC = "ScrollVerticalMsgSectionOrArea"
     
     On Error GoTo eh
-    Dim MsgArea             As MSForms.Frame:   Set MsgArea = DsgnMsgArea
-    Dim MsgSect             As MSForms.Frame
-    Dim MsgSectTextFrame    As MSForms.Frame
-    Dim MsgSectTextBox      As MSForms.TextBox
+    Dim MsgArea             As Msforms.Frame:   Set MsgArea = DsgnMsgArea
+    Dim MsgSect             As Msforms.Frame
+    Dim MsgSectTextFrame    As Msforms.Frame
+    Dim MsgSectTextBox      As Msforms.TextBox
     Dim i                   As Long
     
     '~~ Find a/the message section text which occupies 65% or more of the message area's height,
@@ -1539,9 +1539,9 @@ Private Sub ScrollVerticalWhereApplicable()
     Const PROC = "ScrollVerticalWhereApplicable"
     
     On Error GoTo eh
-    Dim BttnsArea               As MSForms.Frame:   Set BttnsArea = DsgnBttnsArea
-    Dim BttnsFrame              As MSForms.Frame:   Set BttnsFrame = DsgnBttnsFrame
-    Dim MsgArea                 As MSForms.Frame:   Set MsgArea = DsgnMsgArea
+    Dim BttnsArea               As Msforms.Frame:   Set BttnsArea = DsgnBttnsArea
+    Dim BttnsFrame              As Msforms.Frame:   Set BttnsFrame = DsgnBttnsFrame
+    Dim MsgArea                 As Msforms.Frame:   Set MsgArea = DsgnMsgArea
     Dim TotalExceedingHeight    As Single
     
     '~~ When the message form's height exceeds the specified maximum height
@@ -1571,7 +1571,7 @@ xt: Exit Sub
 eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
 End Sub
 
-Private Function ScrollVerticalWidth(ByVal frm As MSForms.Frame) As Single
+Private Function ScrollVerticalWidth(ByVal frm As Msforms.Frame) As Single
     If ScrollVerticalApplied(frm) Then ScrollVerticalWidth = 15
 End Function
 
@@ -1579,7 +1579,7 @@ Public Sub Setup()
     Const PROC = "Setup"
     
     On Error GoTo eh
-    Dim BttnsArea       As MSForms.Frame
+    Dim BttnsArea       As Msforms.Frame
     Dim ContentWidth    As Single
     
     CollectDesignControls
@@ -1733,7 +1733,7 @@ Private Sub Setup3_Bttns(ByVal vbuttons As Variant)
     Const PROC = "Setup3_Bttns"
     
     On Error GoTo eh
-    Dim BttnsArea As MSForms.Frame:   Set BttnsArea = DsgnBttnsArea
+    Dim BttnsArea As Msforms.Frame:   Set BttnsArea = DsgnBttnsArea
     
     AppliedControls = BttnsArea
     AppliedControls = DsgnBttnsFrame
@@ -1786,10 +1786,10 @@ Private Sub SetupBttnsFromCollection(ByVal cllButtons As Collection)
     
     On Error GoTo eh
     Dim v           As Variant
-    Dim BttnsArea   As MSForms.Frame
-    Dim BttnsFrame  As MSForms.Frame
-    Dim BttnRow     As MSForms.Frame
-    Dim Bttn        As MSForms.CommandButton
+    Dim BttnsArea   As Msforms.Frame
+    Dim BttnsFrame  As Msforms.Frame
+    Dim BttnRow     As Msforms.Frame
+    Dim Bttn        As Msforms.CommandButton
 
     lSetupRows = 1
     lSetupRowButtons = 0
@@ -1922,7 +1922,7 @@ Private Sub SetupButton(ByVal ButtonRow As Long, _
     Const PROC = "SetupButton"
     
     On Error GoTo eh
-    Dim cmb As MSForms.CommandButton:   Set cmb = DsgnBttn(ButtonRow, buttonindex)
+    Dim cmb As Msforms.CommandButton:   Set cmb = DsgnBttn(ButtonRow, buttonindex)
     
     With cmb
         .AutoSize = True
@@ -1955,11 +1955,11 @@ Private Sub SetupMsgSect(ByVal msg_section As Long)
     On Error GoTo eh
     Dim SectMessage      As TypeMsgText:     SectMessage = Me.MsgText(msg_section)
     Dim SectLabel        As TypeMsgLabel:    SectLabel = Me.MsgLabel(msg_section)
-    Dim AreaFrame           As MSForms.Frame:   Set AreaFrame = DsgnMsgArea
-    Dim MsgSect     As MSForms.Frame:   Set MsgSect = DsgnMsgSect(msg_section)
-    Dim la                  As MSForms.Label:   Set la = DsgnMsgSectLabel(msg_section)
-    Dim MsgSectTextBox   As MSForms.TextBox: Set MsgSectTextBox = DsgnMsgSectTextBox(msg_section)
-    Dim MsgSectTextFrame As MSForms.Frame:   Set MsgSectTextFrame = DsgnMsgSectTextFrame(msg_section)
+    Dim AreaFrame           As Msforms.Frame:   Set AreaFrame = DsgnMsgArea
+    Dim MsgSect     As Msforms.Frame:   Set MsgSect = DsgnMsgSect(msg_section)
+    Dim la                  As Msforms.Label:   Set la = DsgnMsgSectLabel(msg_section)
+    Dim MsgSectTextBox   As Msforms.TextBox: Set MsgSectTextBox = DsgnMsgSectTextBox(msg_section)
+    Dim MsgSectTextFrame As Msforms.Frame:   Set MsgSectTextFrame = DsgnMsgSectTextFrame(msg_section)
         
     MsgSect.Width = AreaFrame.Width
     la.Width = MsgSect.Width
@@ -2033,10 +2033,10 @@ Const PROC = "SetupMsgSectMonoSpaced"
     
     On Error GoTo eh
     Dim MsgSectText         As TypeMsgText
-    Dim AreaFrame           As MSForms.Frame:   Set AreaFrame = DsgnMsgArea
-    Dim MsgSectTextFrame    As MSForms.Frame:   Set MsgSectTextFrame = DsgnMsgSectTextFrame(msg_section)
-    Dim MsgSectTextBox      As MSForms.TextBox: Set MsgSectTextBox = DsgnMsgSectTextBox(msg_section)
-    Dim MsgSect        As MSForms.Frame:   Set MsgSect = DsgnMsgSect(msg_section)
+    Dim AreaFrame           As Msforms.Frame:   Set AreaFrame = DsgnMsgArea
+    Dim MsgSectTextFrame    As Msforms.Frame:   Set MsgSectTextFrame = DsgnMsgSectTextFrame(msg_section)
+    Dim MsgSectTextBox      As Msforms.TextBox: Set MsgSectTextBox = DsgnMsgSectTextBox(msg_section)
+    Dim MsgSect        As Msforms.Frame:   Set MsgSect = DsgnMsgSect(msg_section)
     Dim MaxWidthAreaFrame   As Single:          MaxWidthAreaFrame = FormWidthMaxUsable - 4
     Dim MaxWidthSectFrame   As Single:          MaxWidthSectFrame = MaxWidthAreaFrame
     Dim MaxWidthTextFrame   As Single:          MaxWidthTextFrame = MaxWidthSectFrame
@@ -2106,10 +2106,10 @@ Private Sub SetupMsgSectPropSpaced( _
 ' ------------------------------------------------------------------------------
     
     Dim MsgSectText         As TypeMsgText
-    Dim MsgArea             As MSForms.Frame:   Set MsgArea = DsgnMsgArea
-    Dim MsgSect             As MSForms.Frame:   Set MsgSect = DsgnMsgSect(msg_section)
-    Dim MsgSectTextFrame    As MSForms.Frame:   Set MsgSectTextFrame = DsgnMsgSectTextFrame(msg_section)
-    Dim MsgSectTextBox      As MSForms.TextBox: Set MsgSectTextBox = DsgnMsgSectTextBox(msg_section)
+    Dim MsgArea             As Msforms.Frame:   Set MsgArea = DsgnMsgArea
+    Dim MsgSect             As Msforms.Frame:   Set MsgSect = DsgnMsgSect(msg_section)
+    Dim MsgSectTextFrame    As Msforms.Frame:   Set MsgSectTextFrame = DsgnMsgSectTextFrame(msg_section)
+    Dim MsgSectTextBox      As Msforms.TextBox: Set MsgSectTextBox = DsgnMsgSectTextBox(msg_section)
     
     '~~ For the setup of proportional spaced message sections the message from width is regarded final
     Dim MaxWidthSectFrame   As Single:          MaxWidthSectFrame = Me.InsideWidth - 2
@@ -2166,11 +2166,11 @@ Private Sub SizeAndPosition1MsgSects()
     
     On Error GoTo eh
     Dim i                   As Long
-    Dim MsgArea             As MSForms.Frame:   Set MsgArea = DsgnMsgArea
-    Dim MsgSect             As MSForms.Frame
-    Dim MsgSectLabel        As MSForms.Label
-    Dim MsgSectTextBox      As MSForms.TextBox
-    Dim MsgSectTextFrame    As MSForms.Frame
+    Dim MsgArea             As Msforms.Frame:   Set MsgArea = DsgnMsgArea
+    Dim MsgSect             As Msforms.Frame
+    Dim MsgSectLabel        As Msforms.Label
+    Dim MsgSectTextBox      As Msforms.TextBox
+    Dim MsgSectTextFrame    As Msforms.Frame
     Dim TopForNextControl   As Single
     Dim TopNextSect         As Single
     Dim ContentHeight       As Single
@@ -2256,7 +2256,7 @@ Private Sub SizeAndPosition2Bttns1()
     On Error GoTo eh
     Dim cllButtonRows   As Collection:      Set cllButtonRows = DsgnBttnRows
     Dim siLeft          As Single
-    Dim frRow           As MSForms.Frame    ' Frame for the buttons in a row
+    Dim frRow           As Msforms.Frame    ' Frame for the buttons in a row
     Dim vButton         As Variant
     Dim lRow            As Long
     Dim lButton         As Long
@@ -2301,9 +2301,9 @@ Private Sub SizeAndPosition2Bttns2Rows()
     Const PROC = "SizeAndPosition2Bttns2Rows"
     
     On Error GoTo eh
-    Dim BttnsFrame      As MSForms.Frame:   Set BttnsFrame = DsgnBttnsFrame
+    Dim BttnsFrame      As Msforms.Frame:   Set BttnsFrame = DsgnBttnsFrame
     Dim BttnRows        As Collection:      Set BttnRows = DsgnBttnRows
-    Dim BttnRowFrame    As MSForms.Frame
+    Dim BttnRowFrame    As Msforms.Frame
     Dim siTop           As Single
     Dim v               As Variant
     Dim lButtons        As Long
@@ -2347,8 +2347,8 @@ Private Sub SizeAndPosition2Bttns3Frame()
     Const PROC = "SizeAndPosition2Bttns3Frame"
     
     On Error GoTo eh
-    Dim AreaFrame       As MSForms.Frame: Set AreaFrame = DsgnBttnsArea
-    Dim BttnsFrame      As MSForms.Frame: Set BttnsFrame = DsgnBttnsFrame
+    Dim AreaFrame       As Msforms.Frame: Set AreaFrame = DsgnBttnsArea
+    Dim BttnsFrame      As Msforms.Frame: Set BttnsFrame = DsgnBttnsFrame
     Dim v               As Variant
     Dim ContentWidth    As Single
     Dim ContentHeight   As Single
@@ -2382,8 +2382,8 @@ Private Sub SizeAndPosition2Bttns4Area()
     Const PROC = "SizeAndPosition2Bttns4Area"
     
     On Error GoTo eh
-    Dim BttnsArea       As MSForms.Frame:   Set BttnsArea = DsgnBttnsArea
-    Dim BttnsFrame      As MSForms.Frame:   Set BttnsFrame = DsgnBttnsFrame
+    Dim BttnsArea       As Msforms.Frame:   Set BttnsArea = DsgnBttnsArea
+    Dim BttnsFrame      As Msforms.Frame:   Set BttnsFrame = DsgnBttnsFrame
     Dim ContentHeight   As Single
     Dim ContentWidth    As Single
     
@@ -2424,9 +2424,9 @@ Private Sub SizeAndPosition3Areas()
     
     On Error GoTo eh
     Dim TopNextArea As Single
-    Dim AreaFrame   As MSForms.Frame
-    Dim MsgArea     As MSForms.Frame: Set MsgArea = DsgnMsgArea
-    Dim BttnsArea   As MSForms.Frame: Set BttnsArea = DsgnBttnsArea
+    Dim AreaFrame   As Msforms.Frame
+    Dim MsgArea     As Msforms.Frame: Set MsgArea = DsgnMsgArea
+    Dim BttnsArea   As Msforms.Frame: Set BttnsArea = DsgnBttnsArea
     
     TopNextArea = siVmarginFrames
     If IsApplied(MsgArea) Then

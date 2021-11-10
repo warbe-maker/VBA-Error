@@ -269,7 +269,7 @@ Public Sub BoC(ByVal boc_id As String, _
 ' ----------------------------------------------
 ' Begin of code sequence trace.
 ' ----------------------------------------------
-#If ExecTrace Then
+#If ExecTrace = 1 Then
     Dim cll             As Collection
     Dim vArguments()    As Variant
     
@@ -285,7 +285,7 @@ Public Sub BoP(ByVal bop_id As String, _
 ' ----------------------------------------------
 ' Begin of procedure trace.
 ' ----------------------------------------------
-#If ExecTrace Then
+#If ExecTrace = 1 Then
     Dim cll           As Collection
     Dim vArguments()  As Variant
     
@@ -312,7 +312,7 @@ Public Sub BoP_ErH(ByVal bopeh_id As String, _
 ' Begin of procedure trace, specifically for
 ' being used by the mErH module.
 ' ---------------------------------------------
-#If ExecTrace Then
+#If ExecTrace = 1 Then
     Dim cll           As Collection
     
     cyTcksOvrhdTrcStrt = SysCrrntTcks
@@ -351,15 +351,11 @@ Private Sub ComputeSecsGrssOvrhdNet()
             NtryScsNt(cll) = CDec(NtryTcksNt(cll)) / CDec(SysFrequency)
         End If
     Next v
-    Set cll = Nothing
 
-xt: Exit Sub
+xt: Set cll = Nothing
+    Exit Sub
 
-eh:
-#If Debugging Then
-    Stop: Resume
-#End If
-    ErrMsg err_source:=ErrSrc(PROC)
+eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
     Set cllTrc = Nothing
 End Sub
 
@@ -383,11 +379,7 @@ Private Function ComputeSecsOvrhdTtlEntry() As Double
 
 xt: Exit Function
 
-eh:
-#If Debugging Then
-    Stop: Resume
-#End If
-    ErrMsg err_source:=ErrSrc(PROC)
+eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
     Set cllTrc = Nothing
 End Function
 
@@ -409,15 +401,11 @@ Private Sub ComputeTcksElpsd()
         cyTcksElapsed = ItmTcksSys(cll) - cyTcksBegin
         NtryTcksElpsd(cll) = cyTcksElapsed
     Next v
-    Set cll = Nothing
 
-xt: Exit Sub
+xt: Set cll = Nothing
+    Exit Sub
 
-eh:
-#If Debugging Then
-    Stop: Resume
-#End If
-    ErrMsg err_source:=ErrSrc(PROC)
+eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
     Set cllTrc = Nothing
 End Sub
 
@@ -437,15 +425,11 @@ Private Sub ComputeTcksNet()
         Set cll = v
         NtryTcksNt(cll) = NtryTcksGrss(cll) - NtryTcksOvrhdNtry(cll)
     Next v
-    Set cll = Nothing
 
-xt: Exit Sub
+xt: Set cll = Nothing
+    Exit Sub
 
-eh:
-#If Debugging Then
-    Stop: Resume
-#End If
-    ErrMsg err_source:=ErrSrc(PROC)
+eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
     Set cllTrc = Nothing
 End Sub
 
@@ -469,11 +453,7 @@ Private Function ComputeTcksOvrhdItem() As Currency
 
 xt: Exit Function
 
-eh:
-#If Debugging Then
-    Stop: Resume
-#End If
-    ErrMsg err_source:=ErrSrc(PROC)
+eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
     Set cllTrc = Nothing
 End Function
 
@@ -719,11 +699,7 @@ Private Function DsplyHdr(ByRef lLenHeaderData As Long) As String
 
 xt: Exit Function
 
-eh:
-#If Debugging Then
-    Stop: Resume
-#End If
-    ErrMsg err_source:=ErrSrc(PROC)
+eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
     Set cllTrc = Nothing
 End Function
 
@@ -806,11 +782,7 @@ Private Function DsplyLn(ByVal trc_entry As Collection) As String
 
 xt: Exit Function
 
-eh:
-#If Debugging Then
-    Stop: Resume
-#End If
-    ErrMsg err_source:=ErrSrc(PROC)
+eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
     Set cllTrc = Nothing
 End Function
 
@@ -894,7 +866,7 @@ next_begin_entry:
             .MsgText(1) = SctnText
             
             .Setup
-            .show
+            .Show
         End With
     Else
         DsplyNtryAllCnsstnt = True
@@ -902,11 +874,7 @@ next_begin_entry:
 
 xt: Exit Function
 
-eh:
-#If Debugging Then
-    Stop: Resume
-#End If
-    ErrMsg err_source:=ErrSrc(PROC)
+eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
 End Function
 
 Private Function DsplyTcksDffToScs(ByVal beginticks As Currency, _
@@ -963,7 +931,7 @@ Public Sub EoC(ByVal eoc_id As String, _
 ' ----------------------------------------------------
 ' End of the trace of a code sequence.
 ' ----------------------------------------------------
-#If ExecTrace Then
+#If ExecTrace = 1 Then
     Dim cll As Collection
     
     cyTcksOvrhdTrcStrt = SysCrrntTcks
@@ -980,7 +948,7 @@ Public Sub EoP(ByVal eop_id As String, _
 ' ----------------------------------------------------
 ' End of the trace of a procedure.
 ' ----------------------------------------------------
-#If ExecTrace Then
+#If ExecTrace = 1 Then
     Dim cll As Collection
     
     cyTcksOvrhdTrcStrt = SysCrrntTcks
@@ -1033,6 +1001,122 @@ End Sub
 '    If InStr(err_dscrptn, CONCAT) <> 0 Then msg_info = Split(err_dscrptn, CONCAT)(1)
 '
 'End Sub
+
+Private Function ErrMsg(ByVal err_source As String, _
+              Optional ByVal err_no As Long = 0, _
+              Optional ByVal err_dscrptn As String = vbNullString, _
+              Optional ByVal err_line As Long = 0) As Variant
+' ------------------------------------------------------------------------------
+' This is a kind of universal error message which includes a debugging option.
+' It may be copied into any module - turned into a Private function. When the/my
+' Common VBA Error Handling Component (ErH) is installed and the Conditional
+' Compile Argument 'CommErHComp = 1' the error message will be displayed by
+' means of the Common VBA Message Component (fMsg, mMsg).
+'
+' Usage: When this procedure is copied as a Private Function into any desired
+'        module an error handling which consideres the possible Conditional
+'        Compile Argument 'Debugging = 1' will look as follows
+'
+'            Const PROC = "procedure-name"
+'            On Error Goto eh
+'        ....
+'        xt: Exit Sub/Function/Property
+'
+'        eh: Select Case ErrMsg(ErrSrc(PROC)
+'               Case vbYes: Stop: Resume
+'               Case vbNo:  Resume Next
+'               Case Else:  Goto xt
+'            End Select
+'        End Sub/Function/Property
+'
+'        The above may appear a lot of code lines but will be a godsend in case
+'        of an error!
+'
+' Used:  - For programmed application errors (Err.Raise AppErr(n), ....) the
+'          function AppErr will be used which turns the positive number into a
+'          negative one. The error message will regard a negative error number
+'          as an 'Application Error' and will use AppErr to turn it back for
+'          the message into its original positive number. Together with the
+'          ErrSrc there will be no need to maintain numerous different error
+'          numbers for a VB-Project.
+'        - The caller provides the source of the error through the module
+'          specific function ErrSrc(PROC) which adds the module name to the
+'          procedure name.
+' ------------------------------------------------------------------------------
+    Dim ErrBttns    As Variant
+    Dim ErrAtLine   As String
+    Dim ErrDesc     As String
+    Dim ErrLine     As Long
+    Dim ErrNo       As Long
+    Dim ErrSrc      As String
+    Dim ErrText     As String
+    Dim ErrTitle    As String
+    Dim ErrType     As String
+    
+    '~~ Obtain error information from the Err object for any argument not provided
+    If err_no = 0 Then err_no = Err.Number
+    If err_line = 0 Then ErrLine = Erl
+    If err_source = vbNullString Then err_source = Err.Source
+    If err_dscrptn = vbNullString Then err_dscrptn = Err.Description
+    If err_dscrptn = vbNullString Then err_dscrptn = "--- No error description available ---"
+    
+    '~~ Determine the type of error
+    Select Case err_no
+        Case Is < 0
+            ErrNo = AppErr(err_no)
+            ErrType = "Application Error "
+        Case Else
+            ErrNo = err_no
+            If (InStr(1, err_dscrptn, "DAO") <> 0 _
+            Or InStr(1, err_dscrptn, "ODBC Teradata Driver") <> 0 _
+            Or InStr(1, err_dscrptn, "ODBC") <> 0 _
+            Or InStr(1, err_dscrptn, "Oracle") <> 0) _
+            Then ErrType = "Database Error " _
+            Else ErrType = "VB Runtime Error "
+    End Select
+    
+    If err_source <> vbNullString Then ErrSrc = " in: """ & err_source & """"   ' assemble ErrSrc from available information"
+    If err_line <> 0 Then ErrAtLine = " at line " & err_line                    ' assemble ErrAtLine from available information
+    ErrTitle = Replace(ErrType & ErrNo & ErrSrc & ErrAtLine, "  ", " ")         ' assemble ErrTitle from available information
+       
+    ErrText = "Error: " & vbLf & _
+              err_dscrptn & vbLf & vbLf & _
+              "Source: " & vbLf & _
+              err_source & ErrAtLine
+    
+#If Debugging = 1 Then
+    ErrBttns = vbYesNoCancel
+    ErrText = ErrText & vbLf & vbLf & _
+              "Debugging:" & vbLf & _
+              "Yes    = Resume error line" & vbLf & _
+              "No     = Resume Next (skip error line)" & vbLf & _
+              "Cancel = Terminate"
+#Else
+    ErrBttns = vbCritical
+#End If
+    
+#If CommErHComp = 1 Then
+    '~~ When the Common VBA Error Handling Component (ErH) is installed/used by in the VB-Project
+    ErrMsg = mErH.ErrMsg(err_source:=err_source, err_number:=err_no, err_dscrptn:=err_dscrptn, err_line:=err_line)
+    '~~ Translate back the elaborated reply buttons of mErrH.ErrMsg displays into Yes/No/Cancel
+    '~~ replies with the VBA MsgBox.
+    Select Case ErrMsg
+        Case mErH.DebugOptResumeErrorLine:  ErrMsg = vbYes
+        Case mErH.DebugOptResumeNext:       ErrMsg = vbNo
+        Case Else:                          ErrMsg = vbCancel
+    End Select
+#Else
+#If CommMsgComp = 1 Then
+    '~~ When the Common VBA Message Component (mMsg/fMsg) is not used/installed there might still be the
+    ErrMsg = mMsg.ErrMsg(err_source:=err_source)
+#Else
+    '~~ None of the Common Components is installed/used
+    ErrMsg = MsgBox(Title:=ErrTitle _
+                  , Prompt:=ErrText _
+                  , Buttons:=ErrBttns)
+#End If
+#End If
+End Function
 
 Private Function ErrSrc(ByVal sProc As String) As String
     ErrSrc = "mTrc." & sProc
@@ -1129,11 +1213,7 @@ Private Function Ntry(ByVal ntry_tcks As Currency, _
     
 xt: Exit Function
     
-eh:
-#If Debugging Then
-    Stop: Resume
-#End If
-    ErrMsg err_source:=ErrSrc(PROC)
+eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
 End Function
 
 Private Function NtryIsBegin(ByVal v As Collection, _
@@ -1265,11 +1345,7 @@ Private Function StckEd(ByVal stck_id As String, _
     Next i
 xt: Exit Function
 
-eh:
-#If Debugging Then
-    Stop: Resume
-#End If
-    ErrMsg err_source:=ErrSrc(PROC)
+eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
 End Function
 
 Private Function StckIsEmpty() As Boolean
@@ -1376,11 +1452,7 @@ Private Sub TrcAdd( _
 
 xt: Exit Sub
 
-eh:
-#If Debugging Then
-    Stop: Resume
-#End If
-    ErrMsg err_source:=ErrSrc(PROC)
+eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
 End Sub
 
 Private Sub TrcBgn(ByVal trc_id As String, _
@@ -1410,11 +1482,7 @@ Private Sub TrcBgn(ByVal trc_id As String, _
 
 xt: Exit Sub
     
-eh:
-#If Debugging Then
-    Stop: Resume
-#End If
-    ErrMsg err_source:=ErrSrc(PROC)
+eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
 End Sub
 
 Private Sub TrcEnd(ByVal trc_id As String, _
@@ -1460,11 +1528,7 @@ Private Sub TrcEnd(ByVal trc_id As String, _
 
 xt: Exit Sub
     
-eh:
-#If Debugging Then
-    Stop: Resume
-#End If
-    ErrMsg err_source:=ErrSrc(PROC)
+eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
 End Sub
 
 Private Function TrcIsEmpty() As Boolean
@@ -1476,122 +1540,4 @@ Private Function TrcLast() As Collection
     If cllTrc.Count <> 0 _
     Then Set TrcLast = cllTrc(cllTrc.Count)
 End Function
-
-Public Function ErrMsg(ByVal err_source As String, _
-              Optional ByVal err_no As Long = 0, _
-              Optional ByVal err_dscrptn As String = vbNullString, _
-              Optional ByVal err_line As Long = 0) As Variant
-' ------------------------------------------------------------------------------
-' This is a kind of universal error message which includes a debugging option.
-' It may be copied into any module - turned into a Private function. When the/my
-' Common VBA Error Handling Component (ErH) is installed and the Conditional
-' Compile Argument 'CommErHComp = 1' the error message will be displayed by
-' means of the Common VBA Message Component (fMsg, mMsg).
-'
-' Usage: When this procedure is copied as a Private Function into any desired
-'        module an error handling which consideres the possible Conditional
-'        Compile Argument 'Debugging = 1' will look as follows
-'
-'            Const PROC = "procedure-name"
-'            On Error Goto eh
-'        ....
-'        xt: Exit Sub/Function/Property
-'
-'        eh: Select Case ErrMsg(ErrSrc(PROC)
-'               Case vbYes: Stop: Resume
-'               Case vbNo:  Resume Next
-'               Case Else:  Goto xt
-'            End Select
-'        End Sub/Function/Property
-'
-'        The above may appear a lot of code lines but will be a godsend in case
-'        of an error!
-'
-' Used:  - For programmed application errors (Err.Raise AppErr(n), ....) the
-'          function AppErr will be used which turns the positive number into a
-'          negative one. The error message will regard a negative error number
-'          as an 'Application Error' and will use AppErr to turn it back for
-'          the message into its original positive number. Together with the
-'          ErrSrc there will be no need to maintain numerous different error
-'          numbers for a VB-Project.
-'        - The caller provides the source of the error through the module
-'          specific function ErrSrc(PROC) which adds the module name to the
-'          procedure name.
-' ------------------------------------------------------------------------------
-    Dim ErrBttns    As Variant
-    Dim ErrAtLine   As String
-    Dim ErrDesc     As String
-    Dim ErrLine     As Long
-    Dim ErrNo       As Long
-    Dim ErrSrc      As String
-    Dim ErrText     As String
-    Dim ErrTitle    As String
-    Dim ErrType     As String
-    
-    '~~ Obtain error information from the Err object for any argument not provided
-    If err_no = 0 Then err_no = Err.Number
-    If err_line = 0 Then ErrLine = Erl
-    If err_source = vbNullString Then err_source = Err.Source
-    If err_dscrptn = vbNullString Then err_dscrptn = Err.Description
-    If err_dscrptn = vbNullString Then err_dscrptn = "--- No error description available ---"
-    
-    '~~ Determine the type of error
-    Select Case err_no
-        Case Is < 0
-            ErrNo = AppErr(err_no)
-            ErrType = "Application Error "
-        Case Else
-            ErrNo = err_no
-            If (InStr(1, err_dscrptn, "DAO") <> 0 _
-            Or InStr(1, err_dscrptn, "ODBC Teradata Driver") <> 0 _
-            Or InStr(1, err_dscrptn, "ODBC") <> 0 _
-            Or InStr(1, err_dscrptn, "Oracle") <> 0) _
-            Then ErrType = "Database Error " _
-            Else ErrType = "VB Runtime Error "
-    End Select
-    
-    If err_source <> vbNullString Then ErrSrc = " in: """ & err_source & """"   ' assemble ErrSrc from available information"
-    If err_line <> 0 Then ErrAtLine = " at line " & err_line                    ' assemble ErrAtLine from available information
-    ErrTitle = Replace(ErrType & ErrNo & ErrSrc & ErrAtLine, "  ", " ")         ' assemble ErrTitle from available information
-       
-    ErrText = "Error: " & vbLf & _
-              err_dscrptn & vbLf & vbLf & _
-              "Source: " & vbLf & _
-              err_source & ErrAtLine
-    
-#If Debugging Then
-    ErrBttns = vbYesNoCancel
-    ErrText = ErrText & vbLf & vbLf & _
-              "Debugging:" & vbLf & _
-              "Yes    = Resume error line" & vbLf & _
-              "No     = Resume Next (skip error line)" & vbLf & _
-              "Cancel = Terminate"
-#Else
-    ErrBttns = vbCritical
-#End If
-    
-#If CommErHComp Then
-    '~~ When the Common VBA Error Handling Component (ErH) is installed/used by in the VB-Project
-    ErrMsg = mErH.ErrMsg(err_source:=err_source, err_number:=err_no, err_dscrptn:=err_dscrptn, err_line:=err_line)
-    '~~ Translate back the elaborated reply buttons mErrH.ErrMsg displays and returns to the simple yes/No/Cancel
-    '~~ replies with the VBA MsgBox.
-    Select Case ErrMsg
-        Case mErH.DebugOptResumeErrorLine:  ErrMsg = vbYes
-        Case mErH.DebugOptResumeNext:       ErrMsg = vbNo
-        Case Else:                          ErrMsg = vbCancel
-    End Select
-#Else
-    '~~ When the Common VBA Error Handling Component (ErH) is not used/installed there might still be the
-    '~~ Common VBA Message Component (Msg) be installed/used
-#If CommMsgComp Then
-    ErrMsg = mMsg.ErrMsg(err_source:=err_source)
-#Else
-    '~~ None of the Common Components is installed/used
-    ErrMsg = MsgBox(Title:=ErrTitle _
-                  , Prompt:=ErrText _
-                  , Buttons:=ErrBttns)
-#End If
-#End If
-End Function
-
 

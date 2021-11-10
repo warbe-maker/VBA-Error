@@ -133,7 +133,7 @@ Public Sub BoP(ByVal bop_id As String, _
     End If
     
     StckPush bop_id
-#If ExecTrace Then
+#If ExecTrace = 1 Then
     vArguments = bop_arguments
     mTrc.BoP_ErH bop_id, vArguments    ' start of the procedure's execution trace
 #End If
@@ -167,7 +167,7 @@ Public Sub EoP(ByVal eop_id As String)
 ' ------------------------------------
 ' Trace and stack End of Procedure
 ' ------------------------------------
-#If ExecTrace Then
+#If ExecTrace = 1 Then
     mTrc.EoP eop_id
 #End If
     mErH.StckPop eop_id
@@ -292,7 +292,7 @@ Private Function ErrDsply( _
                , msg_info:=sInfo _
                , msg_type:=sType _
                , msg_no:=lNo
-#If Debugging Then
+#If Debugging = 1 Then
     sErrPath = ErrPathErrMsg(msg_details:=sType & lNo & " " & sLine _
                            , err_source:=err_source)
 #Else
@@ -304,7 +304,7 @@ Private Function ErrDsply( _
         '~~ In case no error line is provided with the error message (commonly the case)
         '~~ a hint regarding the Conditional Compile Argument which may be used to get
         '~~ an option which supports 'resuming' it will be displayed.
-#If Debugging Then
+#If Debugging = 1 Then
         If Not bPassOnToEntryProc Then
             If sInfo <> vbNullString Then sInfo = sInfo & vbLf & vbLf
             sInfo = sInfo & "*) Missing the full path to the error?" & vbLf & _
@@ -493,7 +493,7 @@ Public Function ErrMsg( _
         And StckEntryProc <> err_source) _
     Then
         ErrPathAdd err_source
-#If ExecTrace Then
+#If ExecTrace = 1 Then
         mTrc.EoP err_source, sType & lNo & " " & sLine
 #End If
         mErH.StckPop Itm:=err_source
@@ -515,11 +515,11 @@ Public Function ErrMsg( _
             err_buttons = vbOKOnly ' reset to default button because the 'Entry-Procedure' has been reached by an explicit debugging-pass-on
         End If
         '~~ Display the error message
-#If ExecTrace Then
+#If ExecTrace = 1 Then
     mTrc.Pause
 #End If
 
-#If Test Then
+#If Test = 1 Then
         '~~ When the Conditional Compile Argument Test = 1 and the error number is an asserted one
         '~~ the display of the error message is suspended thereby avoiding a user interaction
         If Not ErrIsAsserted(lInitErrNo) _
@@ -529,7 +529,7 @@ Public Function ErrMsg( _
 #End If
         ErrMsg = vErrReply
         err_reply = vErrReply
-#If ExecTrace Then
+#If ExecTrace = 1 Then
     mTrc.Continue
 #End If
         Select Case vErrReply
@@ -543,7 +543,7 @@ Public Function ErrMsg( _
                  Err.Clear
             Case Else: ErrPathErase
         End Select
-#If ExecTrace Then
+#If ExecTrace = 1 Then
         mTrc.EoP err_source, sType & lNo & " " & sLine
 #End If
         mErH.StckPop Itm:=err_source
@@ -714,10 +714,10 @@ Private Sub MsgManageButtons(ByRef err_buttons As Variant)
     Else MsgAddButtons ErrMsgDefaultButton, err_buttons ' add the default button before the errbuttons specified
     
 '~~ Special features are only available with the Alternative VBA MsgBox
-#If Debugging Or Test Then
+#If Debugging = 1 Or Test = 1 Then
     MsgAddButtons err_buttons, vbLf ' errbuttons in new row
 #End If
-#If Debugging Then
+#If Debugging = 1 Then
     MsgAddButtons err_buttons, DebugOptResumeErrorLine
     MsgAddButtons err_buttons, DebugOptResumeNext
     MsgAddButtons err_buttons, DebugOptCleanExit
@@ -768,7 +768,7 @@ Private Sub StckPush(ByVal s As String)
     If dctStck Is Nothing Then Set dctStck = New Dictionary
     If dctStck.Count = 0 Then
         sErrHndlrEntryProc = s ' First pushed = bottom item = 'Entry-Procedure'
-#If ExecTrace Then
+#If ExecTrace = 1 Then
         mTrc.Terminate ' ensures any previous trace is erased
 #End If
     End If
