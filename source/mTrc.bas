@@ -355,8 +355,11 @@ Private Sub ComputeSecsGrssOvrhdNet()
 xt: Set cll = Nothing
     Exit Sub
 
-eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
-    Set cllTrc = Nothing
+eh: Select Case ErrMsg(ErrSrc(PROC))
+        Case vbYes: Stop: Resume
+        Case vbNo:  Stop: Resume Next
+        Case Else:  GoTo xt
+    End Select
 End Sub
 
 Private Function ComputeSecsOvrhdTtlEntry() As Double
@@ -379,7 +382,11 @@ Private Function ComputeSecsOvrhdTtlEntry() As Double
 
 xt: Exit Function
 
-eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
+eh: Select Case ErrMsg(ErrSrc(PROC))
+        Case vbYes: Stop: Resume
+        Case vbNo:  Stop: Resume Next
+        Case Else:  GoTo xt
+    End Select
     Set cllTrc = Nothing
 End Function
 
@@ -405,8 +412,11 @@ Private Sub ComputeTcksElpsd()
 xt: Set cll = Nothing
     Exit Sub
 
-eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
-    Set cllTrc = Nothing
+eh: Select Case ErrMsg(ErrSrc(PROC))
+        Case vbYes: Stop: Resume
+        Case vbNo:  Stop: Resume Next
+        Case Else:  GoTo xt
+    End Select
 End Sub
 
 Private Sub ComputeTcksNet()
@@ -429,8 +439,11 @@ Private Sub ComputeTcksNet()
 xt: Set cll = Nothing
     Exit Sub
 
-eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
-    Set cllTrc = Nothing
+eh: Select Case ErrMsg(ErrSrc(PROC))
+        Case vbYes: Stop: Resume
+        Case vbNo:  Stop: Resume Next
+        Case Else:  GoTo xt
+    End Select
 End Sub
 
 Private Function ComputeTcksOvrhdItem() As Currency
@@ -453,7 +466,11 @@ Private Function ComputeTcksOvrhdItem() As Currency
 
 xt: Exit Function
 
-eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
+eh: Select Case ErrMsg(ErrSrc(PROC))
+        Case vbYes: Stop: Resume
+        Case vbNo:  Stop: Resume Next
+        Case Else:  GoTo xt
+    End Select
     Set cllTrc = Nothing
 End Function
 
@@ -699,7 +716,11 @@ Private Function DsplyHdr(ByRef lLenHeaderData As Long) As String
 
 xt: Exit Function
 
-eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
+eh: Select Case ErrMsg(ErrSrc(PROC))
+        Case vbYes: Stop: Resume
+        Case vbNo:  Stop: Resume Next
+        Case Else:  GoTo xt
+    End Select
     Set cllTrc = Nothing
 End Function
 
@@ -782,7 +803,11 @@ Private Function DsplyLn(ByVal trc_entry As Collection) As String
 
 xt: Exit Function
 
-eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
+eh: Select Case ErrMsg(ErrSrc(PROC))
+        Case vbYes: Stop: Resume
+        Case vbNo:  Stop: Resume Next
+        Case Else:  GoTo xt
+    End Select
     Set cllTrc = Nothing
 End Function
 
@@ -874,7 +899,11 @@ next_begin_entry:
 
 xt: Exit Function
 
-eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
+eh: Select Case ErrMsg(ErrSrc(PROC))
+        Case vbYes: Stop: Resume
+        Case vbNo:  Stop: Resume Next
+        Case Else:  GoTo xt
+    End Select
 End Function
 
 Private Function DsplyTcksDffToScs(ByVal beginticks As Currency, _
@@ -1003,9 +1032,9 @@ End Sub
 'End Sub
 
 Private Function ErrMsg(ByVal err_source As String, _
-              Optional ByVal err_no As Long = 0, _
-              Optional ByVal err_dscrptn As String = vbNullString, _
-              Optional ByVal err_line As Long = 0) As Variant
+               Optional ByVal err_no As Long = 0, _
+               Optional ByVal err_dscrptn As String = vbNullString, _
+               Optional ByVal err_line As Long = 0) As Variant
 ' ------------------------------------------------------------------------------
 ' This is a kind of universal error message which includes a debugging option.
 ' It may be copied into any module - turned into a Private function. When the/my
@@ -1052,6 +1081,7 @@ Private Function ErrMsg(ByVal err_source As String, _
     Dim ErrText     As String
     Dim ErrTitle    As String
     Dim ErrType     As String
+    Dim ErrAbout    As String
     
     '~~ Obtain error information from the Err object for any argument not provided
     If err_no = 0 Then err_no = Err.Number
@@ -1059,6 +1089,13 @@ Private Function ErrMsg(ByVal err_source As String, _
     If err_source = vbNullString Then err_source = Err.Source
     If err_dscrptn = vbNullString Then err_dscrptn = Err.Description
     If err_dscrptn = vbNullString Then err_dscrptn = "--- No error description available ---"
+    
+    If InStr(err_dscrptn, "||") <> 0 Then
+        ErrDesc = Split(err_dscrptn, "||")(0)
+        ErrAbout = Split(err_dscrptn, "||")(1)
+    Else
+        ErrDesc = err_dscrptn
+    End If
     
     '~~ Determine the type of error
     Select Case err_no
@@ -1080,11 +1117,15 @@ Private Function ErrMsg(ByVal err_source As String, _
     ErrTitle = Replace(ErrType & ErrNo & ErrSrc & ErrAtLine, "  ", " ")         ' assemble ErrTitle from available information
        
     ErrText = "Error: " & vbLf & _
-              err_dscrptn & vbLf & vbLf & _
+              ErrDesc & vbLf & vbLf & _
               "Source: " & vbLf & _
               err_source & ErrAtLine
+    If ErrAbout <> vbNullString _
+    Then ErrText = ErrText & vbLf & vbLf & _
+                  "About: " & vbLf & _
+                  ErrAbout
     
-#If Debugging = 1 Then
+#If Debugging Then
     ErrBttns = vbYesNoCancel
     ErrText = ErrText & vbLf & vbLf & _
               "Debugging:" & vbLf & _
@@ -1095,10 +1136,10 @@ Private Function ErrMsg(ByVal err_source As String, _
     ErrBttns = vbCritical
 #End If
     
-#If CommErHComp = 1 Then
+#If ErHComp Then
     '~~ When the Common VBA Error Handling Component (ErH) is installed/used by in the VB-Project
     ErrMsg = mErH.ErrMsg(err_source:=err_source, err_number:=err_no, err_dscrptn:=err_dscrptn, err_line:=err_line)
-    '~~ Translate back the elaborated reply buttons of mErrH.ErrMsg displays into Yes/No/Cancel
+    '~~ Translate back the elaborated reply buttons mErrH.ErrMsg displays and returns to the simple yes/No/Cancel
     '~~ replies with the VBA MsgBox.
     Select Case ErrMsg
         Case mErH.DebugOptResumeErrorLine:  ErrMsg = vbYes
@@ -1106,8 +1147,9 @@ Private Function ErrMsg(ByVal err_source As String, _
         Case Else:                          ErrMsg = vbCancel
     End Select
 #Else
-#If CommMsgComp = 1 Then
-    '~~ When the Common VBA Message Component (mMsg/fMsg) is not used/installed there might still be the
+    '~~ When the Common VBA Error Handling Component (ErH) is not used/installed there might still be the
+    '~~ Common VBA Message Component (Msg) be installed/used
+#If MsgComp Then
     ErrMsg = mMsg.ErrMsg(err_source:=err_source)
 #Else
     '~~ None of the Common Components is installed/used
@@ -1213,7 +1255,11 @@ Private Function Ntry(ByVal ntry_tcks As Currency, _
     
 xt: Exit Function
     
-eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
+eh: Select Case ErrMsg(ErrSrc(PROC))
+        Case vbYes: Stop: Resume
+        Case vbNo:  Stop: Resume Next
+        Case Else:  GoTo xt
+    End Select
 End Function
 
 Private Function NtryIsBegin(ByVal v As Collection, _
@@ -1345,7 +1391,11 @@ Private Function StckEd(ByVal stck_id As String, _
     Next i
 xt: Exit Function
 
-eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
+eh: Select Case ErrMsg(ErrSrc(PROC))
+        Case vbYes: Stop: Resume
+        Case vbNo:  Stop: Resume Next
+        Case Else:  GoTo xt
+    End Select
 End Function
 
 Private Function StckIsEmpty() As Boolean
@@ -1452,7 +1502,11 @@ Private Sub TrcAdd( _
 
 xt: Exit Sub
 
-eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
+eh: Select Case ErrMsg(ErrSrc(PROC))
+        Case vbYes: Stop: Resume
+        Case vbNo:  Stop: Resume Next
+        Case Else:  GoTo xt
+    End Select
 End Sub
 
 Private Sub TrcBgn(ByVal trc_id As String, _
@@ -1482,7 +1536,11 @@ Private Sub TrcBgn(ByVal trc_id As String, _
 
 xt: Exit Sub
     
-eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
+eh: Select Case ErrMsg(ErrSrc(PROC))
+        Case vbYes: Stop: Resume
+        Case vbNo:  Stop: Resume Next
+        Case Else:  GoTo xt
+    End Select
 End Sub
 
 Private Sub TrcEnd(ByVal trc_id As String, _
@@ -1528,7 +1586,11 @@ Private Sub TrcEnd(ByVal trc_id As String, _
 
 xt: Exit Sub
     
-eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
+eh: Select Case ErrMsg(ErrSrc(PROC))
+        Case vbYes: Stop: Resume
+        Case vbNo:  Stop: Resume Next
+        Case Else:  GoTo xt
+    End Select
 End Sub
 
 Private Function TrcIsEmpty() As Boolean

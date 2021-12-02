@@ -60,7 +60,7 @@ Const VSPACE_LABEL                  As Single = 0               ' Vertical space
 Const VSPACE_SECTIONS               As Single = 7               ' Vertical space between displayed message sections
 Const VSPACE_TEXTBOXES              As Single = 18              ' Vertical bottom marging for all textboxes
 Const VSPACE_TOP                    As Single = 2               ' Top position for the first displayed control
-' ------------------------------------------------------------
+
 ' Means to get and calculate the display devices DPI in points
 Const SM_XVIRTUALSCREEN                 As Long = &H4C&
 Const SM_YVIRTUALSCREEN                 As Long = &H4D&
@@ -73,7 +73,22 @@ Private Declare PtrSafe Function GetSystemMetrics32 Lib "user32" Alias "GetSyste
 Private Declare PtrSafe Function GetDC Lib "user32" (ByVal hWnd As Long) As Long
 Private Declare PtrSafe Function GetDeviceCaps Lib "gdi32" (ByVal hDC As Long, ByVal nIndex As Long) As Long
 Private Declare PtrSafe Function ReleaseDC Lib "user32" (ByVal hWnd As Long, ByVal hDC As Long) As Long
-' ------------------------------------------------------------
+' -------------------------------------------------------------------------------
+
+' For a much faster DoEvents alternative
+Private Declare PtrSafe Function GetQueueStatus Lib "user32" (ByVal qsFlags As Long) As Long
+Private Const QS_HOTKEY As Long = &H80
+Private Const QS_KEY As Long = &H1
+Private Const QS_MOUSEBUTTON As Long = &H4
+Private Const QS_PAINT As Long = &H20
+' -------------------------------------------------------------------------------
+
+' Timer means
+Private Declare PtrSafe Function getFrequency Lib "kernel32" _
+Alias "QueryPerformanceFrequency" (TimerSystemFrequency As Currency) As Long
+Private Declare PtrSafe Function getTickCount Lib "kernel32" _
+Alias "QueryPerformanceCounter" (cyTickCount As Currency) As Long
+' -------------------------------------------------------------------------------
 
 Private Enum enStartupPosition      ' ---------------------------
     sup_Manual = 0                  ' Used to position the
@@ -142,8 +157,11 @@ Private VirtualScreenHeightPts          As Single
 Private VirtualScreenLeftPts            As Single
 Private VirtualScreenTopPts             As Single
 Private VirtualScreenWidthPts           As Single
-Private vMsgButtonDefault                    As Variant      ' Index or caption of the default button
+Private vMsgButtonDefault               As Variant      ' Index or caption of the default button
 Private vReplyValue                     As Variant
+Private cyTimerTicksBegin               As Currency
+Private cyTimerTicksEnd                 As Currency
+Private TimerSystemFrequency            As Currency
 
 Private Sub UserForm_Initialize()
     Const PROC = "UserForm_Initialize"
@@ -245,7 +263,7 @@ Private Property Get DsgnBttn(Optional ByVal bttn_row As Long, Optional ByVal bt
     Set DsgnBttn = cllDsgnBttns(bttn_row)(bttn_no)
 End Property
 
-Private Property Get DsgnBttnRow(Optional ByVal row As Long) As Msforms.Frame:              Set DsgnBttnRow = cllDsgnBttnRows(row):                             End Property
+Private Property Get DsgnBttnRow(Optional ByVal lRow As Long) As Msforms.Frame:              Set DsgnBttnRow = cllDsgnBttnRows(lRow):                             End Property
 
 Private Property Get DsgnBttnRows() As Collection:                                          Set DsgnBttnRows = cllDsgnBttnRows:                                 End Property
 
@@ -1131,51 +1149,128 @@ Private Function ErrMsg(ByVal err_source As String, _
                Optional ByVal err_dscrptn As String = vbNullString, _
                Optional ByVal err_line As Long = 0) As Variant
 ' ------------------------------------------------------------------------------
-' Common, minimum VBA error handling providing the means to resume the error
-' line when the Conditional Compile Argument Debugging=1.
-' Usage: When this procedure is copied into any desired module the statement
-'        If ErrMsg(ErrSrc(PROC) = vbYes Then: Stop: Resume
-'        is appropriate
-'        The caller provides the source of the error through ErrSrc(PROC) where
-'        ErrSrc is a procedure available in the module using this ErrMsg and
-'        PROC is the constant identifying the procedure
-' Uses: AppErr to translate a negative programmed application error into its
-'              original positive number
+' This is a kind of universal error message which includes a debugging option.
+' It may be copied into any module - turned into a Private function. When the/my
+' Common VBA Error Handling Component (ErH) is installed and the Conditional
+' Compile Argument 'CommErHComp = 1' the error message will be displayed by
+' means of the Common VBA Message Component (fMsg, mMsg).
+'
+' Usage: When this procedure is copied as a Private Function into any desired
+'        module an error handling which consideres the possible Conditional
+'        Compile Argument 'Debugging = 1' will look as follows
+'
+'            Const PROC = "procedure-name"
+'            On Error Goto eh
+'        ....
+'        xt: Exit Sub/Function/Property
+'
+'        eh: Select Case ErrMsg(ErrSrc(PROC)
+'               Case vbYes: Stop: Resume
+'               Case vbNo:  Resume Next
+'               Case Else:  Goto xt
+'            End Select
+'        End Sub/Function/Property
+'
+'        The above may appear a lot of code lines but will be a godsend in case
+'        of an error!
+'
+' Used:  - For programmed application errors (Err.Raise AppErr(n), ....) the
+'          function AppErr will be used which turns the positive number into a
+'          negative one. The error message will regard a negative error number
+'          as an 'Application Error' and will use AppErr to turn it back for
+'          the message into its original positive number. Together with the
+'          ErrSrc there will be no need to maintain numerous different error
+'          numbers for a VB-Project.
+'        - The caller provides the source of the error through the module
+'          specific function ErrSrc(PROC) which adds the module name to the
+'          procedure name.
 ' ------------------------------------------------------------------------------
-    Dim ErrNo   As Long
-    Dim ErrDesc As String
-    Dim ErrType As String
-    Dim ErrLine As Long
-    Dim AtLine  As String
-    Dim Buttons As Long
+    Dim ErrBttns    As Variant
+    Dim ErrAtLine   As String
+    Dim ErrDesc     As String
+    Dim ErrLine     As Long
+    Dim ErrNo       As Long
+    Dim ErrSrc      As String
+    Dim ErrText     As String
+    Dim ErrTitle    As String
+    Dim ErrType     As String
+    Dim ErrAbout    As String
     
+    '~~ Obtain error information from the Err object for any argument not provided
     If err_no = 0 Then err_no = Err.Number
-    If err_no < 0 Then
-        ErrNo = AppErr(err_no)
-        ErrType = "Applicatin error "
+    If err_line = 0 Then ErrLine = Erl
+    If err_source = vbNullString Then err_source = Err.Source
+    If err_dscrptn = vbNullString Then err_dscrptn = Err.Description
+    If err_dscrptn = vbNullString Then err_dscrptn = "--- No error description available ---"
+    
+    If InStr(err_dscrptn, "||") <> 0 Then
+        ErrDesc = Split(err_dscrptn, "||")(0)
+        ErrAbout = Split(err_dscrptn, "||")(1)
     Else
-        ErrNo = err_no
-        ErrType = "Runtime error "
+        ErrDesc = err_dscrptn
     End If
     
-    If err_line = 0 Then ErrLine = Erl
-    If err_line <> 0 Then AtLine = " at line " & err_line
+    '~~ Determine the type of error
+    Select Case err_no
+        Case Is < 0
+            ErrNo = AppErr(err_no)
+            ErrType = "Application Error "
+        Case Else
+            ErrNo = err_no
+            If (InStr(1, err_dscrptn, "DAO") <> 0 _
+            Or InStr(1, err_dscrptn, "ODBC Teradata Driver") <> 0 _
+            Or InStr(1, err_dscrptn, "ODBC") <> 0 _
+            Or InStr(1, err_dscrptn, "Oracle") <> 0) _
+            Then ErrType = "Database Error " _
+            Else ErrType = "VB Runtime Error "
+    End Select
     
-    If err_dscrptn = vbNullString Then err_dscrptn = Err.Description
-    If err_dscrptn = vbNullString Then err_dscrptn = "--- No error message available ---"
-    ErrDesc = "Error: " & vbLf & err_dscrptn & vbLf & vbLf & "Source: " & vbLf & err_source & AtLine
-
+    If err_source <> vbNullString Then ErrSrc = " in: """ & err_source & """"   ' assemble ErrSrc from available information"
+    If err_line <> 0 Then ErrAtLine = " at line " & err_line                    ' assemble ErrAtLine from available information
+    ErrTitle = Replace(ErrType & ErrNo & ErrSrc & ErrAtLine, "  ", " ")         ' assemble ErrTitle from available information
+       
+    ErrText = "Error: " & vbLf & _
+              ErrDesc & vbLf & vbLf & _
+              "Source: " & vbLf & _
+              err_source & ErrAtLine
+    If ErrAbout <> vbNullString _
+    Then ErrText = ErrText & vbLf & vbLf & _
+                  "About: " & vbLf & _
+                  ErrAbout
     
-#If Debugging = 1 Then
-    Buttons = vbYesNo
-    ErrDesc = ErrDesc & vbLf & vbLf & "Debugging: Yes=Resume error line, No=Continue"
+#If Debugging Then
+    ErrBttns = vbYesNoCancel
+    ErrText = ErrText & vbLf & vbLf & _
+              "Debugging:" & vbLf & _
+              "Yes    = Resume error line" & vbLf & _
+              "No     = Resume Next (skip error line)" & vbLf & _
+              "Cancel = Terminate"
 #Else
-    Buttons = vbCritical
+    ErrBttns = vbCritical
 #End If
     
-    ErrMsg = MsgBox(Title:=ErrType & ErrNo & " in " & err_source _
-                  , Prompt:=ErrDesc _
-                  , Buttons:=Buttons)
+#If ErHComp Then
+    '~~ When the Common VBA Error Handling Component (ErH) is installed/used by in the VB-Project
+    ErrMsg = mErH.ErrMsg(err_source:=err_source, err_number:=err_no, err_dscrptn:=err_dscrptn, err_line:=err_line)
+    '~~ Translate back the elaborated reply buttons mErrH.ErrMsg displays and returns to the simple yes/No/Cancel
+    '~~ replies with the VBA MsgBox.
+    Select Case ErrMsg
+        Case mErH.DebugOptResumeErrorLine:  ErrMsg = vbYes
+        Case mErH.DebugOptResumeNext:       ErrMsg = vbNo
+        Case Else:                          ErrMsg = vbCancel
+    End Select
+#Else
+    '~~ When the Common VBA Error Handling Component (ErH) is not used/installed there might still be the
+    '~~ Common VBA Message Component (Msg) be installed/used
+#If MsgComp Then
+    ErrMsg = mMsg.ErrMsg(err_source:=err_source)
+#Else
+    '~~ None of the Common Components is installed/used
+    ErrMsg = MsgBox(Title:=ErrTitle _
+                  , Prompt:=ErrText _
+                  , Buttons:=ErrBttns)
+#End If
+#End If
 End Function
 
 Private Function ErrSrc(ByVal sProc As String) As String
@@ -2104,7 +2199,9 @@ Private Sub SetupMsgSectPropSpaced( _
 ' Note 2: The optional arguments (msg_append) and (msg_text) are used with the
 '         Monitor service which ma replace or add the provided text
 ' ------------------------------------------------------------------------------
+    Const PROC = "SetupMsgSectPropSpaced"
     
+    On Error GoTo eh
     Dim MsgSectText         As TypeMsgText
     Dim MsgArea             As Msforms.Frame:   Set MsgArea = DsgnMsgArea
     Dim MsgSect             As Msforms.Frame:   Set MsgSect = DsgnMsgSect(msg_section)
@@ -2145,13 +2242,16 @@ Private Sub SetupMsgSectPropSpaced( _
     With MsgSectTextBox
         .SelStart = 0
         .Left = HSPACE_LEFT
-        DoEvents    ' to properly h-align the text
+        TimedDoEvents ErrSrc(PROC)    ' to properly h-align the text
     End With
     
     MsgSectTextFrame.Height = MsgSectTextBox.top + MsgSectTextBox.Height
     MsgSect.Height = MsgSectTextFrame.top + MsgSectTextFrame.Height
     MsgArea.Height = FrameContentHeight(MsgArea)
 
+xt: Exit Sub
+    
+eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
 End Sub
 
 Private Sub SizeAndPosition1MsgSects()
@@ -2220,13 +2320,13 @@ Private Sub SizeAndPosition1MsgSects()
                     MsgSect.Height = MsgSectTextFrame.top + MsgSectTextFrame.Height + ScrollHorizontalHeight(MsgSect)
                 End If
                
-                DoEvents
+                TimedDoEvents ErrSrc(PROC)    ' to properly h-align the text
             End If
                         
             '~~ Adjust the section-frame's top position
             With MsgSect
                 .top = TopNextSect
-                DoEvents
+                TimedDoEvents ErrSrc(PROC)    ' to properly h-align the text
                 TopNextSect = VgridPos(.top + .Height + siVmarginFrames + VSPACE_SECTIONS) ' the next section if any
             End With
 
@@ -2485,4 +2585,39 @@ Public Function VgridPos(ByVal si As Single) As Single
     Next i
 
 End Function
+
+Public Sub TimedDoEvents(ByVal tde_source As String)
+
+#If Debugging = 1 Then
+    Debug.Print "> DoEvents in '" & tde_source & "'"
+#End If
+    TimerBegin
+    ' The way faster DoEvents method does not suffice for waht it is used in this module
+'    If GetQueueStatus(QS_HOTKEY Or QS_KEY Or QS_MOUSEBUTTON Or QS_PAINT) Then DoEvents
+    DoEvents ' this is way slower
+#If Debugging = 1 Then
+    Debug.Print "< DoEvents in '" & tde_source & "' (" & TimerEnd & " msec elapsed)"
+#End If
+
+End Sub
+
+Public Sub TimerBegin()
+    cyTimerTicksBegin = TimerSysCurrentTicks
+End Sub
+
+Public Function TimerEnd() As Currency
+    cyTimerTicksEnd = TimerSysCurrentTicks
+    TimerEnd = TimerSecsElapsed * 1000
+End Function
+
+Private Property Get TimerSecsElapsed() As Currency:        TimerSecsElapsed = TimerTicksElapsed / SysFrequency:        End Property
+
+Private Property Get TimerSysCurrentTicks() As Currency:    getTickCount TimerSysCurrentTicks:  End Property
+
+Private Property Get TimerTicksElapsed() As Currency:       TimerTicksElapsed = cyTimerTicksEnd - cyTimerTicksBegin:    End Property
+
+Private Property Get SysFrequency() As Currency
+    If TimerSystemFrequency = 0 Then getFrequency TimerSystemFrequency
+    SysFrequency = TimerSystemFrequency
+End Property
 
