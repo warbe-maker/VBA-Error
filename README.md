@@ -14,19 +14,31 @@ displays a well structured error message with
 
 The _ErrMsg_ service has the following syntax (error description and error line are obtained from the err object)
 ```VB
+    Const PROC = "<procedure-name>"
+    
     On Error Goto eh
     ' .....
-eh: mErH.ErrMsg error-source[, buttons]
+eh: ErrMsg ErrSource(PROC)
 ```
-The _ErrMsg_ service has these named arguments:
 
-|  Argument   |   Description   |
-| ----------- | --------------- |
-| err_source  | Obligatory, string expression providing \<module>.\<procedure> |
-| err_buttons | Optional. Variant. Defaults to "Terminate execution" button when omitted.<br>May be a VBA MsgBox like value or any descriptive button caption string (including line breaks for a multi-line caption). The buttons may be provided as a comma delimited string, a collection or a dictionary. vbLf items display the following buttons in a new row (up to 7 rows are available). |
+With the debugging option, activated by the Conditional Copile Argument 'Debugging = 1' debugging becomes as quick and easy as possible:
+
+```VB
+    Const PROC = "<procedure-name>"
+    
+    On Error Goto eh
+    ' .....
+xt: Exit Sub/Function 
+
+eh: Select Case ErrMsg(ErrSource(PROC))
+      Case vbResume:  Stop: Resume:
+      Case vbResumeNext:  Stop: Resume Next
+      Case Else:          Goto xt ' clean exit
+    End Select
+```
 
 ### The _AppErr_ service
-In order to not confuse errors raised with `err.Raise ...` the service adds the [_vbObjectError_][7] constant to a given positive number to turn it into a negative. An advantage by the way: Each procedure can have it's own positive error numbers ranging from 1 to n with `err.Raise mErH.AppErr(n)`. The _ErrMsg_ service, when detecting a negative error number uses the _AppErr_ service to turn it back into it's original positive error number.
+In order to not confuse errors raised with `Err.Raise ...` the service adds the [_vbObjectError_][7] constant to a given positive number to turn it into a negative number. I.e. each procedure can have it's own positive error numbers ranging from 1 to n. The _ErrMsg_ service considers a negative error number an Application Error (in contrast to a Runtime Error) and uses the _AppErr_ service to turn it back into its original positive error number.
 
 ### The _BoP/EoP_ path to the error service
 The _ErrMsg_ service only displays a path to the error when an _Entry Procedure_ had been indicated. The path to the error is assembled when the error is passed on from the error source up to the _Entry Procedure_ where the error is displayed when reached.
