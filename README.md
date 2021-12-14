@@ -84,7 +84,7 @@ With `mErH.Regression = True` the _ErrMsg_ service runs in regression test mode 
 See blog-post [A common VBA Error Handler][6] for the details
 
 ## Contribution, development, test, maintenance
-The dedicated _Common VBA Component Workbook_ **[ErH.xlsm][8]** is used for development, test, and maintenance. I keep this Workbook in a dedicated folder which is the local equivalent (in github terminology the clone of this public GitHub repo. The module **_mTest_** contains all obligatory test procedures executed when the code is modified. Code modifications are preferrably made in a Github branch which is merged to the master once a code change has finished and successfully tested.
+The dedicated _Common VBA Component Workbook_ **[ErH.xlsm][8]** is used for development, test, and maintenance. I keep this Workbook in a dedicated folder which is the local equivalent (in github terminology the clone of this public GitHub repo. The module **_mTest_** contains all obligatory test procedures executed when the code is modified. Code modifications are preferably made in a Github branch which is merged to the master once a code change has finished and successfully tested.
 
 Those interested not only in using the _Common VBA Error Services_ but also feel prepared to ask question, make suggestions, open raising issues may fork or clone the [public repo][8] to their own computer. A process which is very well supported by the [GitHub Desktop for Windows][9] which is the environment I do uses for the version control and a a continuous improvement process.
 
