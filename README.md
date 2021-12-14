@@ -60,7 +60,7 @@ Note: When the user not only has one reply button but several reply choices (see
 With the _Conditional Compile Argument_ `Debuggig = 1` the error message is displayed with two additional buttons which allow a `Stop: Resume` reaction which leads to the code line the error occurred.
 
 ### The _BoTP_ service
-An - preferably automated - regression test will execute a series of test procedures. Any interruption other than one caused by a failed assertion n assertion should thus be avoided. The _BoTP_ allows the specification of **asserted error numbers** for procedures testing error conditions. For an error number indicated 'asserted' the _ErrMsg_ service bypassed the display of the error message.
+An - preferably automated - regression test will execute a series of test procedures. Any interruption other than one caused by a failed assertion should thus be avoided. The _BoTP_ allows the specification of **asserted error numbers** for procedures which do test error conditions. For any asserted error number the _ErrMsg_ display service is bypassed.
 
 The BoTP service has the following Syntax:<br>
 `BoTP procedure-id, err-number[, err-number] ...`
