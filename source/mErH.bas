@@ -4,29 +4,30 @@ Option Private Module
 ' ------------------------------------------------------------------------------
 ' Standard  Module mErH: Global error handling for any VBA Project.
 '
-' Methods:
-' - AppErr   Converts a positive number into a negative error number ensuring it
+' Public services:
+' AppErr     Converts a positive number into a negative error number ensuring it
 '            not conflicts with a VB Runtime Error. A negative error number is
 '            turned back into the original positive Application  Error Number.
-' - ErrMsg   Either passes on the error to the caller or when the Entry-Procedure
-'            is reached, displays the error with a complete path from the
-'            Entry-Procedure to the procedure with the error.
-' - BoP      Maintains the call stack at the Begin of a Procedure (optional when
-'            using this common error handler)
-' - EoP      Maintains the call stack at the End of a Procedure, triggers the
-'            display of the Execution Trace when the 'Entry-Procedure' is
-'            finished and the  Conditional Compile Argument ExecTrace = 1
-' - ErrDsply Displays the error message in a proper formated manner
-'            The local Conditional Compile Argument "AlternativeMsgBox = 1"
-'            enforces the use of the Alternative VBA MsgBox which provideds an
-'            improved readability.
+' ErrMsg     Displays an error message either
+'            - with the procedure the error had been raised when no BoP
+'              statement had ever been executed
+'            - passed on to the 'Entry Procedure' (which is the first procedure
+'              a BoP statement has been executed) thereby assembling the 'path
+'              to the error' displayed then
+' Regression When TRUE the ErrMsg service considers a testing mode which means
+'            that the error is only displayed when not regarded an asserted
+'            error provided as argument with the BoTP (Begin of Test Procedure
+'            statement.
+' BoP        Indicates the Begin of a Procedure and maintains the call stack.
+' BoTP       Only used in test procedure which are for the test of a certain
+'            error condition. Error numbers provided as argument are regarded
+'            asserted and the error message is not displayed.
+' EoP        Indicates the End of a Procedure and maintains the call stack.
+'            Triggers the display of the Execution Trace when it indicates the
+'            end of the 'Entry-Procedure' and the Conditional Compile Argument
+'            'ExecTrace = 1'.
 '
-' Note: When never a mErH.BoP/mErH.EoP procedure had been executed the ErrMsg
-'       is displayed with the procedure the error occoured. Else the error is
-'       passed on back up to the first procedure with a mErH.BoP/mErH.EoP code
-'       line executed and displayed when it had been reached.
-'
-' Uses: fMsg
+' Uses: fMsg, mMsg (the Dsply service)
 '       mTrc (optionally, when the Conditional Compile Argument ExecTrace = 1)
 '
 ' Requires: Reference to "Microsoft Scripting Runtime"
@@ -34,48 +35,22 @@ Option Private Module
 ' For further details see the Github blog post: "Comprehensive Common VBA Error Handler"
 ' https://warbe-maker.github.io/vba/common/2020/10/02/Comprehensive-Common-VBA-Error-Handler.html
 '
-' W. Rauschenberger, Berlin, Nov 2020
+' W. Rauschenberger, Berlin, Dec 2021
 ' ------------------------------------------------------------------------------
 
 Public Const CONCAT         As String = "||"
 
-Private cllErrPath          As Collection
-Private cllErrorPath        As Collection   ' managed by ErrPath... procedures exclusively
-Private dctStck             As Dictionary
+Private cllErrPath          As Collection   ' managed by ErrPath... procedures exclusively
+Private ProcStack           As Collection   ' stack maintained by BoP (push) and EoP (pop)
 Private sErrHndlrEntryProc  As String
 Private lSubsequErrNo       As Long         ' possibly different from the initial error number if it changes when passed on
 Private vErrsAsserted       As Variant      ' possibly provided with BoTP
 Private vErrReply           As Variant
 Private vArguments()        As Variant      ' The last procedures (with BoP) provided arguments
 Private cllRecentErrors     As Collection
-Private bPassOnToEntryProc  As Boolean      ' Used with the debugging option (Conditional Compile Argument Debugging=1)
+Private bRegression         As Boolean
 
-' Debuggin option buttons (Compile Argument Debugging = 1) -----------------------------------------------
-Public Property Get DebugOptResumeErrorLine() As String
-    DebugOptResumeErrorLine = "Debugging Option:" & vbLf & vbLf & _
-                              "Stop and" & vbLf & _
-                              "resume error line"
-End Property
-
-Public Property Get DebugOptResumeNext() As String
-    DebugOptResumeNext = "Debugging Option:" & vbLf & vbLf & vbLf & _
-                         "Resume Next"
-End Property
-
-Public Property Get DebugOptPassOnToEntryProc() As String
-    DebugOptPassOnToEntryProc = "Debugging Option:" & vbLf & vbLf & _
-                                "Pass on error to" & vbLf & _
-                                "'Entry-Procedure' *)"
-End Property
-
-Public Property Get DebugOptCleanExit() As String
-    DebugOptCleanExit = "Debugging Option:" & vbLf & vbLf & _
-                        "Clean exit" & vbLf & _
-                        "and continue"
-End Property
-' Debuggin option buttons (Compile Argument Debugging = 1) -----------------------------------------------
-
-Public Property Get ErrMsgDefaultButton() As String:    ErrMsgDefaultButton = "Terminate execution":                                                  End Property
+Public Property Get ErrMsgDefaultButton() As String:            ErrMsgDefaultButton = "Terminate execution":    End Property
 
 Public Property Get ErrReply() As Variant
     ErrReply = vErrReply
@@ -98,11 +73,9 @@ Public Property Get RecentErrors() As Collection
     Set RecentErrors = cllRecentErrors
 End Property
 
-Private Property Get StckEntryProc() As String
-    If Not StckIsEmpty _
-    Then StckEntryProc = dctStck.Items()(0) _
-    Else StckEntryProc = vbNullString
-End Property
+Public Property Get Regression() As Boolean:                    Regression = bRegression:                       End Property
+
+Public Property Let Regression(ByVal et_status As Boolean):     bRegression = et_status:                        End Property
 
 Private Function AppErr(ByVal app_err_no As Long) As Long
 ' ------------------------------------------------------------------------------
@@ -127,12 +100,12 @@ Public Sub BoP(ByVal bop_id As String, _
     
     On Error GoTo eh
     
-    If StckIsEmpty Then
+    If StackIsEmpty(ProcStack) Then
         Set vErrsAsserted = Nothing
         Set cllRecentErrors = Nothing: Set cllRecentErrors = New Collection
     End If
     
-    StckPush bop_id
+    StackPush ProcStack, bop_id
 #If ExecTrace = 1 Then
     vArguments = bop_arguments
     mTrc.BoP_ErH bop_id, vArguments    ' start of the procedure's execution trace
@@ -146,14 +119,17 @@ End Sub
 
 Public Sub BoTP(ByVal botp_id As String, _
            ParamArray botp_errs_asserted() As Variant)
-' ----------------------------------------------------
-' Trace and stack Begin of Procedure and keep a record
-' of any asserted errors (error numbers).
-' ----------------------------------------------------
+' ------------------------------------------------------------------------------
+' Indicates the Begin of a Test Procedure named (bot5p_id) with the provided
+' error numbers (botp_errs_asserted) regarded asserted - which suppresses the
+' display of the error message. This special variant ofr the BoP (Begin of
+' Procedure) statement is specifically for test procedures dedeicated to the
+' test of specific error conditions. The described effect of the statement is
+' only active when the property Regression had been set to TRUE.
+' ------------------------------------------------------------------------------
     Const PROC = "BoTP"
     
     On Error GoTo eh
-    
     mErH.BoP botp_id
     vErrsAsserted = botp_errs_asserted
 
@@ -163,14 +139,34 @@ eh: MsgBox Err.Description, vbOKOnly, "Error in " & ErrSrc(PROC)
     Stop: Resume
 End Sub
 
+Private Function EntryProcIsKnown() As Boolean
+    EntryProcIsKnown = Not StackIsEmpty(ProcStack)
+End Function
+
+Private Function EntryProcIsReached(ByVal err_source As String) As Boolean
+    EntryProcIsReached = StackBottom(ProcStack) = err_source
+End Function
+
 Public Sub EoP(ByVal eop_id As String)
 ' ------------------------------------
 ' Trace and stack End of Procedure
 ' ------------------------------------
+    Const PROC = "EoP"
+    
+    On Error GoTo eh
 #If ExecTrace = 1 Then
     mTrc.EoP eop_id
 #End If
-    mErH.StckPop eop_id
+    If StackTop(ProcStack) = eop_id Then
+        StackPop ProcStack
+'    Else
+'        Err.Raise AppErr(1), ErrSrc(PROC), "The procedure '" & eop_id & "' has an EoP (End of Procedure) statement " & _
+'                                           "without a corresponfding BoP (Begin of Procedure) statement!"
+    End If
+    
+xt: Exit Sub
+
+eh: ErrMsg ErrSrc(PROC)
 End Sub
 
 Private Function ErrArgName(ByVal s As String) As Boolean
@@ -227,27 +223,30 @@ Private Function ErrArgs() As String
 
 End Function
 
-Private Function ErrBttns( _
-           ByVal bttns As Variant) As Long
-' ----------------------------------------
-' Returns the number of specified bttns.
-' -----------------------------------------
+Private Function ErrBttns(ByVal bttns As Variant) As Long
+' ------------------------------------------------------------------------------
+' Returns the number of specified buttons in (bttns).
+' ------------------------------------------------------------------------------
     Dim v As Variant
     
-    For Each v In Split(bttns, ",")
-        If IsNumeric(v) Then
-            Select Case v
-                Case vbOKOnly:                              ErrBttns = ErrBttns + 1
-                Case vbOKCancel, vbYesNo, vbRetryCancel:    ErrBttns = ErrBttns + 2
-                Case vbAbortRetryIgnore, vbYesNoCancel:     ErrBttns = ErrBttns + 3
-            End Select
-        Else
-            Select Case v
-                Case vbNullString, vbLf, vbCr, vbCrLf
-                Case Else:  ErrBttns = ErrBttns + 1
-            End Select
-        End If
-    Next v
+    Select Case TypeName(bttns)
+        Case "Collection": ErrBttns = bttns.Count
+        Case "String"
+            For Each v In Split(bttns, ",")
+                If IsNumeric(v) Then
+                    Select Case v
+                        Case vbOKOnly:                              ErrBttns = ErrBttns + 1
+                        Case vbOKCancel, vbYesNo, vbRetryCancel:    ErrBttns = ErrBttns + 2
+                        Case vbAbortRetryIgnore, vbYesNoCancel:     ErrBttns = ErrBttns + 3
+                    End Select
+                Else
+                    Select Case v
+                        Case vbNullString, vbLf, vbCr, vbCrLf
+                        Case Else:  ErrBttns = ErrBttns + 1
+                    End Select
+                End If
+            Next v
+    End Select
 
 End Function
 
@@ -258,11 +257,11 @@ Private Function ErrDsply( _
                     ByVal err_line As Long, _
            Optional ByVal err_buttons As Variant = vbOKOnly) As Variant
 ' ------------------------------------------------------------------------------
-' Displays the error message. The displayed path to the error may be
-' provided as the error is passed on to the 'Entry-Procedure' or based on
-' all passed BoP/EoP services. In the first case the path to the error
-' may be pretty complete, in the second case the extent of detail
-' depends on which (how many) procedures do call the BoP/EoP service.
+' Displays the error message. The displayed path to the error may be provided as
+' the error is passed on to the 'Entry-Procedure' or based on all passed BoP/EoP
+' services. In the first case the path to the error may be pretty complete, in
+' the second case the extent of detail depends on which (how many) procedures do
+' call the BoP/EoP service.
 '
 ' W. Rauschenberger, Berlin, Nov 2020
 ' ------------------------------------------------------------------------------
@@ -292,34 +291,18 @@ Private Function ErrDsply( _
                , msg_info:=sInfo _
                , msg_type:=sType _
                , msg_no:=lNo
-#If Debugging = 1 Then
     sErrPath = ErrPathErrMsg(msg_details:=sType & lNo & " " & sLine _
                            , err_source:=err_source)
-#Else
-    If sLine = vbNullString Then sLine = "at line ? *)"
-    sErrPath = ErrPathErrMsg(msg_details:=sType & lNo & " " & sLine _
-                           , err_source:=err_source)
+#If Debugging = 0 Then
+    If sLine = vbNullString Then sLine = "at line ?  *)"
+    '~~ In case no error line is provided with the error message (commonly the case)
+    '~~ a hint regarding the Conditional Compile Argument which may be used to get
+    '~~ an option which supports 'resuming' it will be displayed.
+    If sInfo <> vbNullString Then sInfo = sInfo & vbLf & vbLf
+    sInfo = sInfo & "*) When the code line which raised the error is missing set the Conditional Compile Argument 'Debugging = 1'." & _
+                    "The addtionally displayed button <Resume error Line> replies with vbResume and the the error handling: " & _
+                    "    If mErH.ErrMsg(ErrSrc(PROC) = vbResume Then Stop: Resume   makes debugging extremely quick and easy."
 #End If
-    If err_line = 0 Then
-        '~~ In case no error line is provided with the error message (commonly the case)
-        '~~ a hint regarding the Conditional Compile Argument which may be used to get
-        '~~ an option which supports 'resuming' it will be displayed.
-#If Debugging = 1 Then
-        If Not bPassOnToEntryProc Then
-            If sInfo <> vbNullString Then sInfo = sInfo & vbLf & vbLf
-            sInfo = sInfo & "*) Missing the full path to the error?" & vbLf & _
-                            "   Use 'passon on' button pass the error on to the 'Entry-Procedure'!" & vbLf & _
-                            "   All passed procedures with an 'mErH.ErrMsg ErrSrc(PROC) ...' will" & vbLf & _
-                            "   support gathering the path-to-the-error."
-        End If
-#Else
-        If sInfo <> vbNullString Then sInfo = sInfo & vbLf & vbLf
-        sInfo = sInfo & "*) Missing the code line which raised the error? Set the Conditional Compile Argument 'Debugging = 1'." & vbLf & vbLf & _
-                        "   The addtionally displayed button <Debugging Option: Stop and resume error line>" & vbLf & _
-                        "   and the the error handling:      'If mErH.ErrMsg(ErrSrc(PROC) = mErH.DebugOptResumeErrorLine Then Stop: Resume'" & vbLf & vbLf & _
-                        "   will make debugging extremely quick and easy."
-#End If
-    End If
                        
     '~~ Display the error message via the Common Component procedure mMsg.Dsply
     With ErrMsgText.Section(1)
@@ -341,18 +324,27 @@ Private Function ErrDsply( _
     End With
     With ErrMsgText.Section(3)
         With .Label
-            .Text = "Error path (call stack):"
+            .Text = "Error path:"
             .FontColor = rgbBlue
         End With
-        .Text.Text = sErrPath
-        .Text.MonoSpaced = True
+        If sErrPath <> vbNullString Then
+            .Text.Text = sErrPath
+            .Text.MonoSpaced = True
+        Else
+            .Text.Text = "Please note: The 'path to the error is either taken from the 'call stack' which is maintained by BoP/EoP statements or " & _
+                         "assembled when the error is passed on to the known! 'Entry Procedure'. Neither of the two was possible though." & vbLf & _
+                         "Either the/an 'Entry Procedure' is un-known because not at least one BoP statement had been executed (a BoP statement in the 'Entry Procedure' would solve that)" & vbLf & vbLf & _
+                         "Or the error message had been displayed directly with the procedure in which the error had been raised " & _
+                         "because there are more than one reply button choices which is the case for example when the Debugging option is active."
+            .Text.MonoSpaced = False
+        End If
     End With
     With ErrMsgText.Section(4)
         If sInfo = vbNullString Then
             .Label.Text = vbNullString
             .Text.Text = vbNullString
         Else
-            .Label.Text = "About this error:"
+            .Label.Text = "About the error:"
             .Text.Text = sInfo
             .Text.FontSize = 8.5
         End If
@@ -403,20 +395,24 @@ Private Function ErrHndlrFailed( _
 End Function
 
 Private Function ErrIsAsserted(ByVal err_no As Long) As Boolean
-' -------------------------------------------------------------
-' Returns TRUE when err_no is an asserted error number, which
-' had been provided with BoTP.
-' -------------------------------------------------------------
-    Dim i As Long
+' ------------------------------------------------------------------------------
+' Returns TRUE when the error (err_no) is one of the error numbers regarded
+' asserted (vErrsAsserted) because thes error numbers had already been
+' anticipated with the BoTP (Begin of Test-Procedure) statement - which is a
+' variant of the BoP (Begin of Procedure) statement.
+' ------------------------------------------------------------------------------
+    Dim v As Variant
     
     On Error GoTo xt ' no asserted errors provided
-    For i = LBound(vErrsAsserted) To UBound(vErrsAsserted)
-        If vErrsAsserted(i) = err_no Then
+    For Each v In vErrsAsserted
+        If v = err_no Then
             ErrIsAsserted = True
-            Exit Function
+            GoTo xt
         End If
-    Next i
-xt:
+    Next v
+
+xt: Exit Function
+
 End Function
 
 Public Function ErrMsg( _
@@ -449,7 +445,6 @@ Public Function ErrMsg( _
     If err_line = 0 Then err_line = Erl
     
     If ErrHndlrFailed(err_number, err_source, err_buttons) Then GoTo xt
-    If cllErrPath Is Nothing Then Set cllErrPath = New Collection
     ErrMsgMatter err_source:=err_source, err_no:=err_number, err_line:=err_line, err_dscrptn:=err_dscrptn, msg_details:=sDetails
     
     If sInitErrSource = vbNullString Then
@@ -460,7 +455,6 @@ Public Function ErrMsg( _
         sInitErrSource = err_source
         sInitErrDscrptn = err_dscrptn
         MostRecentError = err_number
-        bPassOnToEntryProc = False
     ElseIf err_number <> lInitErrNo _
         And err_number <> lSubsequErrNo _
         And err_source <> sInitErrSource Then
@@ -479,74 +473,66 @@ Public Function ErrMsg( _
                  msg_no:=lNo
     
     '~~ ---------------------------------------------------------------------------
-    '~~ Pass on the error to the 'Entry-Procedure' when
-    '~~ - the user has no choice because only a single reply button is displayed
-    '~~   and the 'Entry-Procedure' is know but yet not reached
-    '~~   or
-    '~~ - the debugging option button 'Pass-On-To-Entry-Procedure' had been pressed
+    '~~ The error is passed on to the 'Entry-Procedure' when
+    '~~ 1. The 'Entry-Procedure' is know (EntryProcIsKnown) but yet not reached
+    '~~    (Not EntryProcIsReached(err_source)) and
+    '~~ 2. the user has no choice to press another but the Ok button.
     '~~ ---------------------------------------------------------------------------
-    If (ErrBttns(err_buttons) = 1 _
-        And sErrHndlrEntryProc <> vbNullString _
-        And StckEntryProc <> err_source) _
-    Or (bPassOnToEntryProc = True _
-        And sErrHndlrEntryProc <> vbNullString _
-        And StckEntryProc <> err_source) _
+    Debug.Print "EntryProcIsKnown:                   " & EntryProcIsKnown
+    Debug.Print "Not EntryProcIsReached(err_source): " & Not EntryProcIsReached(err_source)
+    Debug.Print "ErrBttns(err_buttons) = 1:          " & ErrBttns(err_buttons)
+    If EntryProcIsKnown _
+    And Not EntryProcIsReached(err_source) _
+    And ErrBttns(err_buttons) = 1 _
     Then
-        ErrPathAdd err_source
+        Debug.Print "Add to ErrPath: " & err_source
+        ErrPathAdd err_source ' on the way up to the 'Entry Procedure' gather the 'path to the error'
 #If ExecTrace = 1 Then
         mTrc.EoP err_source, sType & lNo & " " & sLine
 #End If
-        mErH.StckPop Itm:=err_source
+        Debug.Print StackPop(ProcStack, err_source)
         sInitErrInfo = vbNullString
         Err.Raise err_number, err_source, err_dscrptn
     End If
        
-    '~~ Either when the user has the choice between several replies because of the debugging option
-    '~~ or the 'Entry-Procedure' is unknown or has been reached the error is nor displayed
-    If (ErrBttns(err_buttons) > 1 _
-        Or StckEntryProc = err_source _
-        Or StckEntryProc = vbNullString) _
-    Or (ErrBttns(err_buttons) > 1 _
-        And bPassOnToEntryProc = True _
-        And StckEntryProc = err_source) _
+    '~~ ---------------------------------------------------------------------------
+    '~~ The error is displayed when
+    '~~ 1. The user has no choice to press another but the Ok button.
+    '~~ 1. The 'Entry-Procedure' is know (Not StackIsEmpty(ProcStack)) but yet not
+    '~~    reached (StackBottom(ProcStack) <> err_source) and
+    '~~ ---------------------------------------------------------------------------
+    If (ErrBttns(err_buttons) = 1 And EntryProcIsKnown And EntryProcIsReached(err_source)) _
+    Or Not EntryProcIsKnown _
     Then
-        If Not ErrPathIsEmpty Then ErrPathAdd err_source
-        If bPassOnToEntryProc = True Then
-            err_buttons = vbOKOnly ' reset to default button because the 'Entry-Procedure' has been reached by an explicit debugging-pass-on
-        End If
-        '~~ Display the error message
 #If ExecTrace = 1 Then
-    mTrc.Pause
+        mTrc.Pause ' prevent useless timing values by exempting the display and wait time for the reply
 #End If
 
-#If Test = 1 Then
-        '~~ When the Conditional Compile Argument Test = 1 and the error number is an asserted one
-        '~~ the display of the error message is suspended thereby avoiding a user interaction
-        If Not ErrIsAsserted(lInitErrNo) _
-        Then vErrReply = ErrDsply(err_source:=sInitErrSource, err_number:=lInitErrNo, err_dscrptn:=sInitErrDscrptn, err_line:=lInitErrLine, err_buttons:=err_buttons)
-#Else
-        vErrReply = ErrDsply(err_source:=sInitErrSource, err_number:=lInitErrNo, err_dscrptn:=sInitErrDscrptn, err_line:=lInitErrLine, err_buttons:=err_buttons)
-#End If
+        If (ErrBttns(err_buttons) = 1 And EntryProcIsKnown And EntryProcIsReached(err_source)) _
+        Then ErrPathAdd err_source ' add the 'Entry Procedure' as the last one now to the error path
+        
+        If bRegression Then
+            '~~ When the Regression property had been set to TRUE the error is only displayed when it
+            If Not ErrIsAsserted(lInitErrNo) _
+            Then vErrReply = ErrDsply(err_source:=sInitErrSource, err_number:=lInitErrNo, err_dscrptn:=sInitErrDscrptn, err_line:=lInitErrLine, err_buttons:=err_buttons)
+        Else
+            vErrReply = ErrDsply(err_source:=sInitErrSource, err_number:=lInitErrNo, err_dscrptn:=sInitErrDscrptn, err_line:=lInitErrLine, err_buttons:=err_buttons)
+        End If
         ErrMsg = vErrReply
         err_reply = vErrReply
+
 #If ExecTrace = 1 Then
-    mTrc.Continue
+        mTrc.Continue
 #End If
+        
         Select Case vErrReply
-            Case DebugOptResumeErrorLine, DebugOptResumeNext
-            Case DebugOptPassOnToEntryProc
-                 bPassOnToEntryProc = True
-                 ErrPathAdd err_source
-                 Err.Raise lInitErrNo, sInitErrSource, sInitErrDscrptn
-            Case DebugOptCleanExit                                      'Goto proc_exit' is with the caller
-                 On Error GoTo -1
-                 Err.Clear
+            Case vbResume
             Case Else: ErrPathErase
         End Select
 #If ExecTrace = 1 Then
         mTrc.EoP err_source, sType & lNo & " " & sLine
 #End If
-        mErH.StckPop Itm:=err_source
+        StackPop ProcStack
         sInitErrInfo = vbNullString
         sInitErrSource = vbNullString
         sInitErrDscrptn = vbNullString
@@ -593,15 +579,15 @@ End Sub
 
 Private Sub ErrPathAdd(ByVal s As String)
     
-    If cllErrorPath Is Nothing Then Set cllErrorPath = New Collection _
-
+    If cllErrPath Is Nothing Then Set cllErrPath = New Collection
     If Not ErrPathItemExists(s) Then
-        cllErrorPath.Add s ' avoid duplicate recording of the same procedure/item
+        Debug.Print "Add to ErrPath: " & s
+        cllErrPath.Add s ' avoid duplicate recording of the same procedure/item
     End If
 End Sub
 
 Private Sub ErrPathErase()
-    Set cllErrorPath = Nothing
+    Set cllErrPath = Nothing
 End Sub
 
 Private Function ErrPathErrMsg(ByVal msg_details As String, _
@@ -617,38 +603,41 @@ Private Function ErrPathErrMsg(ByVal msg_details As String, _
     ErrPathErrMsg = vbNullString
     If Not ErrPathIsEmpty Then
         '~~ When the error path is not empty and not only contains the error source procedure
-        For i = cllErrorPath.Count To 1 Step -1
-            s = cllErrorPath(i)
-            If i = cllErrorPath.Count _
+        For i = cllErrPath.Count To 1 Step -1
+            s = cllErrPath(i)
+            If i = cllErrPath.Count _
             Then ErrPathErrMsg = s _
             Else ErrPathErrMsg = ErrPathErrMsg & vbLf & Space$(j * 2) & "|_" & s
             j = j + 1
         Next i
     Else
         '~~ When the error path is empty the stack may provide an alternative information
-        If Not StckIsEmpty Then
-            For i = 0 To dctStck.Count - 1
+        If Not StackIsEmpty(ProcStack) Then
+            For i = 1 To ProcStack.Count
                 If ErrPathErrMsg <> vbNullString Then
-                   ErrPathErrMsg = ErrPathErrMsg & vbLf & Space$((i - 1) * 2) & "|_" & dctStck.Items()(i)
+                   ErrPathErrMsg = ErrPathErrMsg & vbLf & Space$((i - 1) * 2) & "|_" & ProcStack(i)
                 Else
-                   ErrPathErrMsg = dctStck.Items()(i)
+                   ErrPathErrMsg = ProcStack(i)
                 End If
             Next i
         End If
     End If
-    ErrPathErrMsg = ErrPathErrMsg & ": " & msg_details
+    If ErrPathErrMsg <> vbNullString Then
+        ErrPathErrMsg = ErrPathErrMsg & ": " & msg_details
+    End If
+
 End Function
 
 Private Function ErrPathIsEmpty() As Boolean
-    ErrPathIsEmpty = cllErrorPath Is Nothing
-    If Not ErrPathIsEmpty Then ErrPathIsEmpty = cllErrorPath.Count = 0
+    ErrPathIsEmpty = cllErrPath Is Nothing
+    If Not ErrPathIsEmpty Then ErrPathIsEmpty = cllErrPath.Count = 0
 End Function
 
 Private Function ErrPathItemExists(ByVal s As String) As Boolean
 
     Dim v As Variant
     
-    For Each v In cllErrorPath
+    For Each v In cllErrPath
         If InStr(v & " ", s & " ") <> 0 Then
             ErrPathItemExists = True
             Exit Function
@@ -709,74 +698,87 @@ End Sub
 
 Private Sub MsgManageButtons(ByRef err_buttons As Variant)
 
-    If err_buttons = vbNullString _
-    Then err_buttons = ErrMsgDefaultButton _
-    Else MsgAddButtons ErrMsgDefaultButton, err_buttons ' add the default button before the errbuttons specified
-    
-'~~ Special features are only available with the Alternative VBA MsgBox
-#If Debugging = 1 Or Test = 1 Then
-    MsgAddButtons err_buttons, vbLf ' errbuttons in new row
-#End If
+    Dim cll As Collection
+
 #If Debugging = 1 Then
-    MsgAddButtons err_buttons, DebugOptResumeErrorLine
-    MsgAddButtons err_buttons, DebugOptResumeNext
-    MsgAddButtons err_buttons, DebugOptCleanExit
-    MsgAddButtons err_buttons, DebugOptPassOnToEntryProc
+    mMsg.Buttons cll, vbResumeOk
 #End If
-
+    If err_buttons = vbNullString _
+    Then Set cll = mMsg.Buttons(cll, ErrMsgDefaultButton) _
+    Else Set cll = mMsg.Buttons(cll, ErrMsgDefaultButton, err_buttons) ' add the default button before the errbuttons specified
+    
+    Set err_buttons = cll
 End Sub
 
-Private Function StckBottom() As String
-    If Not StckIsEmpty Then StckBottom = dctStck.Items()(0)
+Private Function StackBottom(ByVal stck As Collection) As String
+    If Not StackIsEmpty(stck) Then StackBottom = ProcStack(1)
 End Function
 
-Private Sub StckErase()
-    If Not dctStck Is Nothing Then dctStck.RemoveAll
+Private Sub StackErase(ByRef stck As Collection)
+    If Not stck Is Nothing Then Set stck = Nothing
+    Set stck = New Collection
 End Sub
 
-Public Function StckIsEmpty() As Boolean
-    StckIsEmpty = dctStck Is Nothing
-    If Not StckIsEmpty Then StckIsEmpty = dctStck.Count = 0
+Public Function StackIsEmpty(ByVal stck As Collection) As Boolean
+' ----------------------------------------------------------------------------
+' Common Stack Empty check service. Returns True when either there is no stack
+' (stck Is Nothing) or when the stack is empty (items count is 0).
+' ----------------------------------------------------------------------------
+    StackIsEmpty = stck Is Nothing
+    If Not StackIsEmpty Then StackIsEmpty = stck.Count = 0
 End Function
 
-Private Function StckPop( _
-          Optional ByVal Itm As String = vbNullString) As String
-' -----------------------------------------------------------
-' Returns the popped of the stack. When itm is provided and
-' is not on the top of the stack pop is suspended.
-' -----------------------------------------------------------
+Public Function StackPop(ByVal stck As Collection, _
+                Optional ByVal id As Variant = vbNullString) As Variant
+' ----------------------------------------------------------------------------
+' Common Stack Pop service. Returns the last item pushed on the stack (stck)
+' and removes the item from the stack. When the stack (stck) is empty a
+' vbNullString is returned.
+' ----------------------------------------------------------------------------
     Const PROC = "StckPop"
     
     On Error GoTo eh
-
-    If Not StckIsEmpty Then
-        If Itm <> vbNullString And StckTop = Itm Then
-            StckPop = dctStck.Items()(dctStck.Count - 1) ' Return the poped item
-            dctStck.Remove dctStck.Count                  ' Remove item itm from stack
-        ElseIf Itm = vbNullString Then
-            dctStck.Remove dctStck.Count                  ' Unwind! Remove item itm from stack
+    If StackIsEmpty(stck) Then GoTo xt
+    
+    If IsObject(id) Then
+        If Not StackTop(ProcStack) Is id Then GoTo xt
+    Else
+        If Not id = vbNullString Then
+            If StackTop(ProcStack) <> id Then GoTo xt
         End If
     End If
     
+    On Error Resume Next
+    Set StackPop = stck(stck.Count) ' last pushed item is an object
+    If Err.Number <> 0 _
+    Then StackPop = stck(stck.Count)
+    stck.Remove stck.Count
+
 xt: Exit Function
 
-eh: MsgBox Err.Description, vbOKOnly, "Error in " & ErrSrc(PROC)
+eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
 End Function
 
-Private Sub StckPush(ByVal s As String)
+Public Sub StackPush(ByRef stck As Collection, _
+                     ByVal stck_item As Variant)
+' ----------------------------------------------------------------------------
+' Common Stack Push service. Pushes (adds) an item (stck_item) to the stack
+' (stck). When the provided stack (stck) is Nothing the stack is created.
+' ----------------------------------------------------------------------------
+    Const PROC = "StckPush"
+    
+    On Error GoTo eh
+    If stck Is Nothing Then Set stck = New Collection
+    stck.Add stck_item
 
-    If dctStck Is Nothing Then Set dctStck = New Dictionary
-    If dctStck.Count = 0 Then
-        sErrHndlrEntryProc = s ' First pushed = bottom item = 'Entry-Procedure'
-#If ExecTrace = 1 Then
-        mTrc.Terminate ' ensures any previous trace is erased
-#End If
-    End If
-    dctStck.Add dctStck.Count + 1, s
+xt: Exit Sub
 
+eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
 End Sub
 
-Private Function StckTop() As String
-    If Not StckIsEmpty Then StckTop = dctStck.Items()(dctStck.Count - 1)
+Private Function StackTop(ByVal stck As Collection) As Variant
+    If Not StackIsEmpty(stck) Then
+        If IsObject(stck.Count) Then Set StackTop = stck(stck.Count) Else StackTop = stck(stck.Count)
+    End If
 End Function
 

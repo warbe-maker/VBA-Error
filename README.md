@@ -21,7 +21,7 @@ The _ErrMsg_ service has the following syntax (error description and error line 
 eh: ErrMsg ErrSource(PROC)
 ```
 
-With the debugging option, activated by the Conditional Copile Argument 'Debugging = 1' debugging becomes as quick and easy as possible:
+With the debugging option, activated by the Conditional Compile Argument 'Debugging = 1' debugging becomes as quick and easy as possible:
 
 ```VB
     Const PROC = "<procedure-name>"
@@ -59,7 +59,7 @@ Note: When the user not only has one reply button but several reply choices (see
 ### The debugging service for identifying an error line
 With the _Conditional Compile Argument_ `Debuggig = 1` the error message is displayed with two additional buttons which allow a `Stop: Resume` reaction which leads to the code line the error occurred.
 
-### The _BoTP_ (begin of Test Procedure) service for automating regression tests
+### The _BoTP_ service
 An - preferably automated - regression test will execute a series of test procedures. Any interruption other than one caused by a failed assertion n assertion should thus be avoided. The _BoTP_ allows the specification of **asserted error numbers** for procedures testing error conditions. For an error number indicated 'asserted' the _ErrMsg_ service bypassed the display of the error message.
 
 The BoTP service has the following Syntax:<br>
@@ -71,11 +71,14 @@ with the following named arguments:
 | botp_id           | Obligatory, Expression providing a unique name of the procedure |
 | botp_errs_asserted| Obligatory, ParamArray with positive numbers                    |
 
+### The _Regression_ service
+With `mErH.Regression = True` the _ErrMsg_ service runs in regression test mode - and thus is used only in a regression test procedure. As a result any error specifically tested will not be displayed in order to keep the regression test uninterrupted. Which error numbers are regarded asserted (tested, anticipated respectively) is specified with the _[BoTP](#the-botp-service)_ service.
+
 ## Installation
-- Download and import the module  [_mErH_][1]
-- Download the UserForm [fMsg.frm][2] and [fMsg.frx][3] and import _fMsg.frm_
-- Download and import [mMsg.bas][4]
-- Since the extra effort is very little, by the way installing the _Common VBA Execution Trace Service_ is worth being considered:<br>Download [mTrc.bas][5] and import it.
+- Download and import the standard module  [_mErH.bas_][1]
+- Download the UserForm [fMsg.frm][2] and the standard module [fMsg.frx][3] and import _fMsg.frm_
+- Download and import the standard module [mMsg.bas][4]
+- Optionally download the standard module [mTrc.bas][5] and import it. With very little extra effort the _Common VBA Execution Trace Service_ becomes available for the VBA-Project by the way.
 
 ## Usage
 See blog-post [A common VBA Error Handler][6] for the details
@@ -86,10 +89,10 @@ The dedicated _Common VBA Component Workbook_ **[ErH.xlsm][8]** is used for deve
 Those interested not only in using the _Common VBA Error Services_ but also feel prepared to ask question, make suggestions, open raising issues may fork or clone the [public repo][8] to their own computer. A process which is very well supported by the [GitHub Desktop for Windows][9] which is the environment I do uses for the version control and a a continuous improvement process.
 
 [1]:https://gitcdn.link/repo/warbe-maker/Common-VBA-Error-Services/master/source/mErH.bas
-[2]:https://gitcdn.link/repo/warbe-maker/Common-VBA-Message-Service/master/source/fMsg.frm
-[3]:https://gitcdn.link/repo/warbe-maker/Common-VBA-Message-Service/master/source/fMsg.frx
-[4]:https://gitcdn.link/repo/warbe-maker/Common-VBA-Message-Service/master/source/mMsg.bas
-[5]:https://gitcdn.link/repo/warbe-maker/Common-VBA-Message-Service/master/source/mTrc.bas
+[2]:https://gitcdn.link/repo/warbe-maker/Common-VBA-Error-Services/master/source/fMsg.frm
+[3]:https://gitcdn.link/repo/warbe-maker/Common-VBA-Error-Services/master/source/fMsg.frx
+[4]:https://gitcdn.link/repo/warbe-maker/Common-VBA-Error-Services/master/source/mMsg.bas
+[5]:https://gitcdn.link/repo/warbe-maker/Common-VBA-Error-Services/master/source/mTrc.bas
 [6]:https://warbe-maker.github.io/warbe-maker.github.io/vba/common/error/handling/2021/01/16/Common-VBA-Error-Services.html
 [7]:https://docs.microsoft.com/en-us/dotnet/api/microsoft.visualbasic.constants.vbobjecterror?view=netcore-3.1
 [8]:https://gitcdn.link/repo/warbe-maker/Common-VBA-Error-Services/master/source/ErH.xlsm

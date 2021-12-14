@@ -182,6 +182,152 @@ xt: mErH.EoP ErrSrc(PROC)    ' Pull procedure from call stack
 eh: mErH.ErrMsg err_source:=ErrSrc(PROC)
 End Function
 
+Private Function ErrMsg(ByVal err_source As String, _
+               Optional ByVal err_no As Long = 0, _
+               Optional ByVal err_dscrptn As String = vbNullString, _
+               Optional ByVal err_line As Long = 0) As Variant
+' ------------------------------------------------------------------------------
+' This is the 'Universal Error Message Display' function used by (i.e. copied
+' into) all (my) modules when procedures do have an error handling - which is
+' the case for the most of them. This universal function already includes:
+' - a 'Debugging Option' activated by the Conditional Compile Argument
+'   'Debugging = 1'
+' - an optional additional 'About the error' section displayed when the error
+'   description has an extra information concatenated by two vertical bars (||).
+'
+' The function passes on the display:
+' - to the ErrMsg function of the mErH module provided this module is installed
+'   and this is indicated by the Conditional Compile Argument 'ErHComp = 1'
+' - to the ErrMsg function of the mMsg module provided this module is installed
+'   and this is indicated by the Conditional Compile Argument 'MsgComp = 1').
+' Only when none of the two Common Components is installed the error is
+' displayed by means of the VBA.MsgBox. The latter is just a fall-back option
+' because the display of the error message misses some valuable features.
+'
+' Usage: Example with the Conditional Compile Argument 'Debugging = 1'
+'
+'        Private/Public <procedure-name>
+'            Const PROC = "<procedure-name>"
+'
+'            On Error Goto eh
+'            ....
+'        xt: Exit Sub/Function/Property
+'
+'        eh: Select Case ErrMsg(ErrSrc(PROC))
+'               Case vbResume:  Stop: Resume
+'               Case Else:      GoTo xt
+'            End Select
+'        End Sub/Function/Property
+'
+'        The above may appear a lot of code lines but will be a godsend in case
+'        of an error!
+'
+' Uses:  - For programmed application errors (Err.Raise AppErr(n), ....) the
+'          function AppErr will be used which turns the positive number into a
+'          negative one. The error message will regard a negative error number
+'          as an 'Application Error' and will use AppErr to turn it back for
+'          the message into its original positive number. Together with the
+'          ErrSrc there will be no need to maintain numerous different error
+'          numbers for a VB-Project.
+'        - The caller provides the source of the error through the module
+'          specific function ErrSrc(PROC) which adds the module name to the
+'          procedure name.
+'
+' W. Rauschenberger Berlin, Nov 2021
+' ------------------------------------------------------------------------------
+#If ErHComp = 1 Then
+    '~~ When the Common VBA Error Handling Component (ErH) is installed/used by in the VB-Project
+    '~~ which also includes the installation of the mMsg component for the display of the error message.
+    ErrMsg = mErH.ErrMsg(err_source:=err_source, err_number:=err_no, err_dscrptn:=err_dscrptn, err_line:=err_line)
+    '~~ Translate back the elaborated reply buttons mErrH.ErrMsg displays and returns to the simple yes/No/Cancel
+    '~~ replies with the VBA MsgBox.
+    Select Case ErrMsg
+        Case vbResume:  ErrMsg = vbYes
+        Case Else:      ErrMsg = vbNo
+    End Select
+    GoTo xt
+#Else
+#If MsgComp = 1 Then
+    ErrMsg = mMsg.ErrMsg(err_source:=err_source)
+    GoTo xt
+#End If
+#End If
+
+    '~~ -------------------------------------------------------------------
+    '~~ Neither the Common mMsg not the Commen mErH Component is installed.
+    '~~ The error message is prepared for the VBA.MsgBox
+    '~~ -------------------------------------------------------------------
+    Dim ErrBttns    As Variant
+    Dim ErrAtLine   As String
+    Dim ErrDesc     As String
+    Dim ErrLine     As Long
+    Dim ErrNo       As Long
+    Dim ErrSrc      As String
+    Dim ErrText     As String
+    Dim ErrTitle    As String
+    Dim ErrType     As String
+    Dim ErrAbout    As String
+        
+    '~~ Obtain error information from the Err object for any argument not provided
+    If err_no = 0 Then err_no = Err.Number
+    If err_line = 0 Then ErrLine = Erl
+    If err_source = vbNullString Then err_source = Err.Source
+    If err_dscrptn = vbNullString Then err_dscrptn = Err.Description
+    If err_dscrptn = vbNullString Then err_dscrptn = "--- No error description available ---"
+    
+    If InStr(err_dscrptn, "||") <> 0 Then
+        ErrDesc = Split(err_dscrptn, "||")(0)
+        ErrAbout = Split(err_dscrptn, "||")(1)
+    Else
+        ErrDesc = err_dscrptn
+    End If
+    
+    '~~ Determine the type of error
+    Select Case err_no
+        Case Is < 0
+            ErrNo = AppErr(err_no)
+            ErrType = "Application Error "
+        Case Else
+            ErrNo = err_no
+            If (InStr(1, err_dscrptn, "DAO") <> 0 _
+            Or InStr(1, err_dscrptn, "ODBC Teradata Driver") <> 0 _
+            Or InStr(1, err_dscrptn, "ODBC") <> 0 _
+            Or InStr(1, err_dscrptn, "Oracle") <> 0) _
+            Then ErrType = "Database Error " _
+            Else ErrType = "VB Runtime Error "
+    End Select
+    
+    If err_source <> vbNullString Then ErrSrc = " in: """ & err_source & """"   ' assemble ErrSrc from available information"
+    If err_line <> 0 Then ErrAtLine = " at line " & err_line                    ' assemble ErrAtLine from available information
+    ErrTitle = Replace(ErrType & ErrNo & ErrSrc & ErrAtLine, "  ", " ")         ' assemble ErrTitle from available information
+       
+    ErrText = "Error: " & vbLf & _
+              ErrDesc & vbLf & vbLf & _
+              "Source: " & vbLf & _
+              err_source & ErrAtLine
+    If ErrAbout <> vbNullString _
+    Then ErrText = ErrText & vbLf & vbLf & _
+                  "About: " & vbLf & _
+                  ErrAbout
+    
+#If Debugging Then
+    ErrBttns = vbYesNoCancel
+    ErrText = ErrText & vbLf & vbLf & _
+              "Debugging:" & vbLf & _
+              "Yes    = Resume error line" & vbLf & _
+              "No     = Resume Next (skip error line)" & vbLf & _
+              "Cancel = Terminate"
+#Else
+    ErrBttns = vbCritical
+#End If
+    
+    ErrMsg = MsgBox(Title:=ErrTitle _
+                  , Prompt:=ErrText _
+                  , Buttons:=ErrBttns)
+xt: Exit Function
+
+End Function
+
 Public Sub Demo_2_Application_Error()
 ' -----------------------------------------------------------
 ' This test procedure obligatory after any code modification.
@@ -202,7 +348,8 @@ xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
 eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
-        Case DebugOptResumeErrorLine: Stop: Resume
+        Case vbResume:  Stop: Resume
+        Case Else:      GoTo xt
     End Select
 End Sub
 
@@ -213,11 +360,14 @@ Private Sub Demo_2_Application_Error_DemoProc_2a()
     
     mErH.BoP ErrSrc(PROC)
     Demo_2_Application_Error_DemoProc_2b
-    mErH.EoP ErrSrc(PROC)
+    
+xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
-eh:
-    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOptResumeErrorLine Then Stop: Resume
+eh: Select Case ErrMsg(ErrSrc(PROC))
+        Case vbResume:  Stop: Resume
+        Case Else:      GoTo xt
+    End Select
 End Sub
 
 Private Sub Demo_2_Application_Error_DemoProc_2b()
@@ -227,11 +377,14 @@ Private Sub Demo_2_Application_Error_DemoProc_2b()
     
     mErH.BoP ErrSrc(PROC)
     Demo_2_Application_Error_DemoProc_2c
-    mErH.EoP ErrSrc(PROC)
+    
+xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
-eh:
-    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOptResumeErrorLine Then Stop: Resume
+eh: Select Case ErrMsg(ErrSrc(PROC))
+        Case vbResume:  Stop: Resume
+        Case Else:      GoTo xt
+    End Select
 End Sub
 
 Private Sub Demo_2_Application_Error_DemoProc_2c()
@@ -254,10 +407,9 @@ Private Sub Demo_2_Application_Error_DemoProc_2c()
 xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
-eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
-        Case DebugOptResumeErrorLine:       Stop: Resume
-        Case DebugOptResumeNext:        Resume Next
-        Case DebugOptCleanExit:   GoTo xt
+eh: Select Case ErrMsg(ErrSrc(PROC))
+        Case vbResume:  Stop: Resume
+        Case Else:      GoTo xt
     End Select
 End Sub
 
@@ -282,10 +434,9 @@ Public Sub Demo_3_VB_Runtime_Error()
 xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
-eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
-        Case DebugOptResumeErrorLine: Stop: Resume
-        Case DebugOptResumeNext: Resume Next
-        Case DebugOptCleanExit: GoTo xt
+eh: Select Case ErrMsg(ErrSrc(PROC))
+        Case vbResume:  Stop: Resume
+        Case Else:      GoTo xt
     End Select
 End Sub
 
@@ -296,11 +447,14 @@ Private Sub Demo_3_VB_Runtime_Error_DemoProc_3a()
 
     mErH.BoP ErrSrc(PROC)
     Demo_3_VB_Runtime_Error_DemoProc_3b
-    mErH.EoP ErrSrc(PROC)
+    
+xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
-eh:
-    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOptResumeErrorLine Then Stop: Resume
+eh: Select Case ErrMsg(ErrSrc(PROC))
+        Case vbResume:  Stop: Resume
+        Case Else:      GoTo xt
+    End Select
 End Sub
 
 Private Sub Demo_3_VB_Runtime_Error_DemoProc_3b()
@@ -310,11 +464,14 @@ Private Sub Demo_3_VB_Runtime_Error_DemoProc_3b()
 
     mErH.BoP ErrSrc(PROC)
     Demo_3_VB_Runtime_Error_DemoProc_3c
-    mErH.EoP ErrSrc(PROC)
+    
+xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
-eh:
-    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOptResumeErrorLine Then Stop: Resume
+eh: Select Case ErrMsg(ErrSrc(PROC))
+        Case vbResume:  Stop: Resume
+        Case Else:      GoTo xt
+    End Select
 End Sub
 
 Private Sub Demo_3_VB_Runtime_Error_DemoProc_3c()
@@ -324,11 +481,14 @@ Private Sub Demo_3_VB_Runtime_Error_DemoProc_3c()
     
     mErH.BoP ErrSrc(PROC)
     Demo_3_VB_Runtime_Error_DemoProc_3d
-    mErH.EoP ErrSrc(PROC)
+    
+xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
-eh:
-    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOptResumeErrorLine Then Stop: Resume
+eh: Select Case ErrMsg(ErrSrc(PROC))
+        Case vbResume:  Stop: Resume
+        Case Else:      GoTo xt
+    End Select
 End Sub
 
 Private Sub Demo_3_VB_Runtime_Error_DemoProc_3d()
@@ -348,10 +508,9 @@ Private Sub Demo_3_VB_Runtime_Error_DemoProc_3d()
 xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
-eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
-        Case DebugOptResumeErrorLine:       Stop: Resume
-        Case DebugOptResumeNext:        Resume Next
-        Case DebugOptCleanExit:   GoTo xt
+eh: Select Case ErrMsg(ErrSrc(PROC))
+        Case vbResume:  Stop: Resume
+        Case Else:      GoTo xt
     End Select
 End Sub
 
@@ -366,11 +525,14 @@ Public Sub Demo_4_With_Debugging_Support()
       
     mErH.BoP ErrSrc(PROC)
     Demo_4_With_Debugging_Support_DemoProc_5a
-    mErH.EoP ErrSrc(PROC)
+    
+xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
-eh:
-    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOptResumeErrorLine Then Stop: Resume
+eh: Select Case ErrMsg(ErrSrc(PROC))
+        Case vbResume:  Stop: Resume
+        Case Else:      GoTo xt
+    End Select
 End Sub
 
 Private Sub Demo_4_With_Debugging_Support_DemoProc_5a()
@@ -380,12 +542,13 @@ Private Sub Demo_4_With_Debugging_Support_DemoProc_5a()
        
     mErH.BoP ErrSrc(PROC)
 376 Debug.Print ThisWorkbook.Named
-    mErH.EoP ErrSrc(PROC)
+    
+xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
     
-eh:
-    Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
-        Case DebugOptResumeErrorLine: Stop: Resume ' Continue with F8 to end up at the code line which caused the error
+eh: Select Case ErrMsg(ErrSrc(PROC))
+        Case vbResume:  Stop: Resume
+        Case Else:      GoTo xt
     End Select
 End Sub
 
@@ -397,8 +560,9 @@ Public Sub Demo_5_No_Exit_Statement()
     
     On Error GoTo eh
     
-eh:
-    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOptResumeErrorLine Then Stop: Resume
+eh: Select Case ErrMsg(ErrSrc(PROC))
+        Case vbResume:  Stop: Resume
+    End Select
 End Sub
 
 Public Sub Demo_6_Execution_Trace()
@@ -414,11 +578,14 @@ Public Sub Demo_6_Execution_Trace()
     
     mErH.BoP ErrSrc(PROC)
     Demo_6_Execution_Trace_DemoProc_6a
-    mErH.EoP ErrSrc(PROC)
+    
+xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
-eh:
-    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOptResumeErrorLine Then Stop: Resume
+eh: Select Case ErrMsg(ErrSrc(PROC))
+        Case vbResume:  Stop: Resume
+        Case Else:      GoTo xt
+    End Select
 End Sub
 
 Private Sub Demo_6_Execution_Trace_DemoProc_6a()
@@ -428,11 +595,14 @@ Private Sub Demo_6_Execution_Trace_DemoProc_6a()
     
     mErH.BoP ErrSrc(PROC)
     Demo_6_Execution_Trace_DemoProc_6b
-    mErH.EoP ErrSrc(PROC)
+    
+xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
-eh:
-    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOptResumeErrorLine Then Stop: Resume
+eh: Select Case ErrMsg(ErrSrc(PROC))
+        Case vbResume:  Stop: Resume
+        Case Else:      GoTo xt
+    End Select
 End Sub
 
 Private Sub Demo_6_Execution_Trace_DemoProc_6b()
@@ -450,11 +620,13 @@ Private Sub Demo_6_Execution_Trace_DemoProc_6b()
     Next i
     mTrc.EoC PROC & " empty loop 1 to " & j ' !!! the string must match with the BoC statement !!!
     
-    mErH.EoP ErrSrc(PROC)
+xt: mErH.EoP ErrSrc(PROC)
     Exit Sub
 
-eh:
-    If mErH.ErrMsg(err_source:=ErrSrc(PROC)) = DebugOptResumeErrorLine Then Stop: Resume
+eh: Select Case ErrMsg(ErrSrc(PROC))
+        Case vbResume:  Stop: Resume
+        Case Else:      GoTo xt
+    End Select
 End Sub
 
 Private Sub Demo_6_Execution_Trace_DemoProc_6c()

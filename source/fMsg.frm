@@ -152,7 +152,7 @@ Private sTitleFontName                  As String
 Private sTitleFontSize                  As String       ' Ignored when sTitleFontName is not provided
 Private TitleWidth                      As Single
 Private UsageType                       As enMsgFormUsage
-Private vbuttons                        As Variant
+Private vButtons                        As Variant
 Private VirtualScreenHeightPts          As Single
 Private VirtualScreenLeftPts            As Single
 Private VirtualScreenTopPts             As Single
@@ -528,13 +528,13 @@ End Property
 Public Property Let MsgButtons(ByVal v As Variant)
         
     Select Case VarType(v)
-        Case vbLong, vbString:  vbuttons = v
-        Case vbEmpty:           vbuttons = vbOKOnly
+        Case vbLong, vbString:  vButtons = v
+        Case vbEmpty:           vButtons = vbOKOnly
         Case Else
             If IsArray(v) Then
-                vbuttons = v
+                vButtons = v
             ElseIf TypeName(v) = "Collection" Or TypeName(v) = "Dictionary" Then
-                Set vbuttons = v
+                Set vButtons = v
             End If
     End Select
 End Property
@@ -1149,41 +1149,11 @@ Private Function ErrMsg(ByVal err_source As String, _
                Optional ByVal err_dscrptn As String = vbNullString, _
                Optional ByVal err_line As Long = 0) As Variant
 ' ------------------------------------------------------------------------------
-' This is a kind of universal error message which includes a debugging option.
-' It may be copied into any module - turned into a Private function. When the/my
-' Common VBA Error Handling Component (ErH) is installed and the Conditional
-' Compile Argument 'CommErHComp = 1' the error message will be displayed by
-' means of the Common VBA Message Component (fMsg, mMsg).
+' Minimum error message display where neither mErH.ErrMsg nor mMsg.ErrMsg is
+' appropriate. This is the case here because this component is used by the other
+' two components which implies the danger of a loop.
 '
-' Usage: When this procedure is copied as a Private Function into any desired
-'        module an error handling which consideres the possible Conditional
-'        Compile Argument 'Debugging = 1' will look as follows
-'
-'            Const PROC = "procedure-name"
-'            On Error Goto eh
-'        ....
-'        xt: Exit Sub/Function/Property
-'
-'        eh: Select Case ErrMsg(ErrSrc(PROC)
-'               Case vbYes: Stop: Resume
-'               Case vbNo:  Resume Next
-'               Case Else:  Goto xt
-'            End Select
-'        End Sub/Function/Property
-'
-'        The above may appear a lot of code lines but will be a godsend in case
-'        of an error!
-'
-' Used:  - For programmed application errors (Err.Raise AppErr(n), ....) the
-'          function AppErr will be used which turns the positive number into a
-'          negative one. The error message will regard a negative error number
-'          as an 'Application Error' and will use AppErr to turn it back for
-'          the message into its original positive number. Together with the
-'          ErrSrc there will be no need to maintain numerous different error
-'          numbers for a VB-Project.
-'        - The caller provides the source of the error through the module
-'          specific function ErrSrc(PROC) which adds the module name to the
-'          procedure name.
+' W. Rauschenberger Berlin, Nov 2021
 ' ------------------------------------------------------------------------------
     Dim ErrBttns    As Variant
     Dim ErrAtLine   As String
@@ -1195,7 +1165,7 @@ Private Function ErrMsg(ByVal err_source As String, _
     Dim ErrTitle    As String
     Dim ErrType     As String
     Dim ErrAbout    As String
-    
+        
     '~~ Obtain error information from the Err object for any argument not provided
     If err_no = 0 Then err_no = Err.Number
     If err_line = 0 Then ErrLine = Erl
@@ -1249,28 +1219,11 @@ Private Function ErrMsg(ByVal err_source As String, _
     ErrBttns = vbCritical
 #End If
     
-#If ErHComp Then
-    '~~ When the Common VBA Error Handling Component (ErH) is installed/used by in the VB-Project
-    ErrMsg = mErH.ErrMsg(err_source:=err_source, err_number:=err_no, err_dscrptn:=err_dscrptn, err_line:=err_line)
-    '~~ Translate back the elaborated reply buttons mErrH.ErrMsg displays and returns to the simple yes/No/Cancel
-    '~~ replies with the VBA MsgBox.
-    Select Case ErrMsg
-        Case mErH.DebugOptResumeErrorLine:  ErrMsg = vbYes
-        Case mErH.DebugOptResumeNext:       ErrMsg = vbNo
-        Case Else:                          ErrMsg = vbCancel
-    End Select
-#Else
-    '~~ When the Common VBA Error Handling Component (ErH) is not used/installed there might still be the
-    '~~ Common VBA Message Component (Msg) be installed/used
-#If MsgComp Then
-    ErrMsg = mMsg.ErrMsg(err_source:=err_source)
-#Else
-    '~~ None of the Common Components is installed/used
     ErrMsg = MsgBox(Title:=ErrTitle _
                   , Prompt:=ErrText _
                   , Buttons:=ErrBttns)
-#End If
-#End If
+xt: Exit Function
+
 End Function
 
 Private Function ErrSrc(ByVal sProc As String) As String
@@ -1709,7 +1662,7 @@ Public Sub Setup()
     
     '~~ Setup the reply buttons, the third element which potentially effects the final message width.
     '~~ In case the widest buttons row exceeds the maximum width specified a horizontal scrollbar is applied.
-    Setup3_Bttns vbuttons
+    Setup3_Bttns vButtons
     
     SizeAndPosition2Bttns1
     SizeAndPosition2Bttns2Rows
@@ -1819,7 +1772,7 @@ xt: Exit Sub
 eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
 End Sub
 
-Private Sub Setup3_Bttns(ByVal vbuttons As Variant)
+Private Sub Setup3_Bttns(ByVal vButtons As Variant)
 ' --------------------------------------------------------------------------------------
 ' Setup and position the applied reply buttons and calculate the max reply button width.
 ' Note: When the provided vButtons argument is a string it wil be converted into a
@@ -1835,11 +1788,11 @@ Private Sub Setup3_Bttns(ByVal vbuttons As Variant)
     lSetupRows = 1
     
     '~~ Setup all reply button by calculatig their maximum width and height
-    Select Case TypeName(vbuttons)
-        Case "Long":        SetupBttnsFromValue vbuttons ' buttons are specified by one single VBA.MsgBox button value only
-        Case "String":      SetupBttnsFromString vbuttons
-        Case "Collection":  SetupBttnsFromCollection vbuttons
-        Case "Dictionary":  SetupBttnsFromCollection vbuttons
+    Select Case TypeName(vButtons)
+        Case "Long":        SetupBttnsFromValue vButtons ' buttons are specified by one single VBA.MsgBox button value only
+        Case "String":      SetupBttnsFromString vButtons
+        Case "Collection":  SetupBttnsFromCollection vButtons
+        Case "Dictionary":  SetupBttnsFromCollection vButtons
         Case Else
             '~~ Because vbuttons is not provided by a known/accepted format
             '~~ the message will be setup with an Ok only button", vbExclamation
@@ -1901,14 +1854,9 @@ Private Sub SetupBttnsFromCollection(ByVal cllButtons As Collection)
     Bttn.Width = DFLT_BTTN_MIN_WIDTH
     
     For Each v In cllButtons
+        If IsNumeric(v) Then v = mMsg.ButtonsNumeric(v)
         Select Case v
-            Case vbOKOnly
-                SetupBttnsFromValue v
-            Case vbOKCancel, vbYesNo, vbRetryCancel
-                SetupBttnsFromValue v
-            Case vbYesNoCancel, vbAbortRetryIgnore
-                SetupBttnsFromValue v
-            Case vbYesNo
+            Case vbOKOnly, vbOKCancel, vbYesNo, vbRetryCancel, vbYesNoCancel, vbAbortRetryIgnore, vbYesNo, vbResumeOk
                 SetupBttnsFromValue v
             Case Else
                 If v <> vbNullString Then
@@ -1960,6 +1908,8 @@ Private Sub SetupBttnsFromValue(ByVal lButtons As Long)
     Const PROC = "SetupBttnsFromValue"
     
     On Error GoTo eh
+    Dim ResumeErrorLine As String: ResumeErrorLine = "Resume" & vbLf & "Error Line"
+    Dim PassOn          As String: PassOn = "Pass on Error to" & vbLf & "Entry Procedure"
     
     Select Case lButtons
         Case vbOKOnly
@@ -1980,6 +1930,11 @@ Private Sub SetupBttnsFromValue(ByVal lButtons As Long)
             SetupButton ButtonRow:=lSetupRows, buttonindex:=lSetupRowButtons, buttoncaption:="Retry", buttonreturnvalue:=vbRetry
             lSetupRowButtons = lSetupRowButtons + 1
             SetupButton ButtonRow:=lSetupRows, buttonindex:=lSetupRowButtons, buttoncaption:="Cancel", buttonreturnvalue:=vbCancel
+        Case vbResumeOk
+            lSetupRowButtons = lSetupRowButtons + 1
+            SetupButton ButtonRow:=lSetupRows, buttonindex:=lSetupRowButtons, buttoncaption:=ResumeErrorLine, buttonreturnvalue:=vbResume
+            lSetupRowButtons = lSetupRowButtons + 1
+            SetupButton ButtonRow:=lSetupRows, buttonindex:=lSetupRowButtons, buttoncaption:="Ok", buttonreturnvalue:=vbOK
         Case vbYesNoCancel
             lSetupRowButtons = lSetupRowButtons + 1
             SetupButton ButtonRow:=lSetupRows, buttonindex:=lSetupRowButtons, buttoncaption:="Yes", buttonreturnvalue:=vbYes
@@ -1994,6 +1949,12 @@ Private Sub SetupBttnsFromValue(ByVal lButtons As Long)
             SetupButton ButtonRow:=lSetupRows, buttonindex:=lSetupRowButtons, buttoncaption:="Retry", buttonreturnvalue:=vbRetry
             lSetupRowButtons = lSetupRowButtons + 1
             SetupButton ButtonRow:=lSetupRows, buttonindex:=lSetupRowButtons, buttoncaption:="Ignore", buttonreturnvalue:=vbIgnore
+        Case vbResumeOk
+            lSetupRowButtons = lSetupRowButtons + 1
+            SetupButton ButtonRow:=lSetupRows, buttonindex:=lSetupRowButtons, buttoncaption:="Resume" & vbLf & "Error Line", buttonreturnvalue:=vbResume
+            lSetupRowButtons = lSetupRowButtons + 1
+            SetupButton ButtonRow:=lSetupRows, buttonindex:=lSetupRowButtons, buttoncaption:="Ok", buttonreturnvalue:=vbOK
+    
         Case Else
             MsgBox "The value provided for the ""buttons"" argument is not a known VB MsgBox value"
     End Select
@@ -2588,15 +2549,12 @@ End Function
 
 Public Sub TimedDoEvents(ByVal tde_source As String)
 
-#If Debugging = 1 Then
-    Debug.Print "> DoEvents in '" & tde_source & "'"
-#End If
     TimerBegin
-    ' The way faster DoEvents method does not suffice for waht it is used in this module
-'    If GetQueueStatus(QS_HOTKEY Or QS_KEY Or QS_MOUSEBUTTON Or QS_PAINT) Then DoEvents
+    ' Unfortunately the 'way faster DoEvents' method below does not have the desired effect in this module
+    ' If GetQueueStatus(QS_HOTKEY Or QS_KEY Or QS_MOUSEBUTTON Or QS_PAINT) Then DoEvents
     DoEvents ' this is way slower
 #If Debugging = 1 Then
-    Debug.Print "< DoEvents in '" & tde_source & "' (" & TimerEnd & " msec elapsed)"
+'    Debug.Print "DoEvents in '" & tde_source & "' interrupted the code execution for " & TimerEnd & " msec"
 #End If
 
 End Sub

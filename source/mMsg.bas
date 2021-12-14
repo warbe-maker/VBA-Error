@@ -24,24 +24,29 @@ Option Explicit
 ' ------------------------------------------------------------------------------
 ' ------------------------------------------------------------
 ' Means to get and calculate the display devices DPI in points
-Const SM_XVIRTUALSCREEN                 As Long = &H4C&
-Const SM_YVIRTUALSCREEN                 As Long = &H4D&
-Const SM_CXVIRTUALSCREEN                As Long = &H4E&
-Const SM_CYVIRTUALSCREEN                As Long = &H4F&
-Const LOGPIXELSX                        As Long = 88
-Const LOGPIXELSY                        As Long = 90
-Const TWIPSPERINCH                      As Long = 1440
+Const SM_XVIRTUALSCREEN                         As Long = &H4C&
+Const SM_YVIRTUALSCREEN                         As Long = &H4D&
+Const SM_CXVIRTUALSCREEN                        As Long = &H4E&
+Const SM_CYVIRTUALSCREEN                        As Long = &H4F&
+Const LOGPIXELSX                                As Long = 88
+Const LOGPIXELSY                                As Long = 90
+Const TWIPSPERINCH                              As Long = 1440
 Private Declare PtrSafe Function GetSystemMetrics32 Lib "user32" Alias "GetSystemMetrics" (ByVal nIndex As Long) As Long
 Private Declare PtrSafe Function GetDC Lib "user32" (ByVal hWnd As Long) As Long
 Private Declare PtrSafe Function GetDeviceCaps Lib "gdi32" (ByVal hDC As Long, ByVal nIndex As Long) As Long
 Private Declare PtrSafe Function ReleaseDC Lib "user32" (ByVal hWnd As Long, ByVal hDC As Long) As Long
 ' ------------------------------------------------------------
-Public Const MSG_WIDTH_MIN_LIMIT_PERCENTAGE    As Long = 25
-Public Const MSG_WIDTH_MAX_LIMIT_PERCENTAGE    As Long = 98
-Public Const MSG_HEIGHT_MIN_LIMIT_PERCENTAGE   As Long = 20
-Public Const MSG_HEIGHT_MAX_LIMIT_PERCENTAGE   As Long = 95
+Public Const MSG_WIDTH_MIN_LIMIT_PERCENTAGE     As Long = 25
+Public Const MSG_WIDTH_MAX_LIMIT_PERCENTAGE     As Long = 98
+Public Const MSG_HEIGHT_MIN_LIMIT_PERCENTAGE    As Long = 20
+Public Const MSG_HEIGHT_MAX_LIMIT_PERCENTAGE    As Long = 95
 
-Public Const END_OF_PROGRESS As String = "EndOfProgress"
+Public Const END_OF_PROGRESS                    As String = "EndOfProgress"
+
+' Extension of the VBA.MsgBox constants for the Debugging option of the ErrMsg service
+' to display additional debugging buttons
+Public Const vbResumeOk                         As Long = 7 ' Buttons value in mMsg.ErrMsg (pass on not supported)
+Public Const vbResume                           As Long = 6 ' return value (equates to vbYes)
 
 Public ProgressText As String
 
@@ -212,191 +217,257 @@ xt: Exit Function
 eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
 End Function
 
-Public Function Buttons(ParamArray msg_buttons() As Variant) As Collection
+Public Function Buttons(ByRef bttns_collection As Collection, _
+                        ParamArray bttns() As Variant) As Collection
 ' --------------------------------------------------------------------------
-' Returns a collection of the items provided (msg_buttons). When more
-' than 7 items are provided the function adds a button row break.
-' The function considers a possible kind of mistake when the ParamArray
-' contains only one item which is a comma delimited string.
-' So instead of 3 argument "A", "B", "C" only one "A,B,C" is provided.
+' Returns a collection comprising of the provided collection
+' (bttns_collection) with the provided items (bttns) added and only the
+' provided items (bttns) as collection (bttns_coollection. The function may
+' thus be used to have a collection with the provided items and one with the
+' provided items added to the provided collection.
+' Example: Set cll = Buttons(cll, "A", "B") ' mode add
+' Example: Buttons cll, "A", "B"
 ' --------------------------------------------------------------------------
     
-    Dim cll     As New Collection
-    Dim i       As Long
-    Dim j       As Long         ' buttons in a row counter
-    Dim k       As Long: k = 1  ' button rows counter
-    Dim l       As Long         ' total buttons count
-    Dim va1     As Variant      ' array of button captions from a comma delimeted string
-    Dim va2()   As Variant      ' array of button captions either from va1 or from msg_butttons
-    Dim s       As String
+    Dim i               As Long
+    Dim s               As String
+    Dim cllOnly         As New Collection
+    Dim lOnlyBttnsInRow As Long                 ' buttons in a row counter
+    Dim lOnlyBttns      As Long                 ' total buttons in cllOnly
+    Dim lOnlyRows       As Long: lOnlyRows = 1  ' button rows counter
+    Dim cllAdd          As Collection
+    Dim lAddBttnsInRow  As Long                 ' buttons in a row counter (excludes break items)
+    Dim lAddBttns       As Long                 ' total buttons in cllAdd
+    Dim lAddRows        As Long: lAddRows = 1   ' button rows counter
+    Dim v1              As Variant
+    Dim v2              As Variant
+    Dim cllBttns        As New Collection
+    
+    If bttns_collection Is Nothing Then
+        Set bttns_collection = New Collection
+        Set cllAdd = New Collection
+    Else
+        Set cllAdd = bttns_collection
+        '~~ Count the buttons already specified in cllAdd
+        For Each v1 In cllAdd
+            If v1 = vbLf Or v1 = vbCrLf Or v1 = vbCr Then
+                lAddBttnsInRow = 0
+            Else
+                lAddBttnsInRow = lAddBttnsInRow + 1
+                lAddRows = lAddRows + 1
+                lAddBttns = lAddBttns + 1
+            End If
+        Next v1
+    End If
     
     On Error Resume Next
-    i = LBound(msg_buttons)
+    i = LBound(bttns)
     If Err.Number <> 0 Then GoTo xt
     
-    '~~ Transpose the the buttons argument into an array considering that
-    '~~  the ParaArray may contain only one comma delimited string.
-    If LBound(msg_buttons) = UBound(msg_buttons) Then
-        s = msg_buttons(LBound(msg_buttons))
-        va1 = Split(s, ",")
-        ReDim va2(UBound(va1))
-        For i = LBound(va1) To UBound(va1)
-            va2(i) = va1(i)
-        Next i
-    Else
-        ReDim va2(UBound(msg_buttons))
-        For i = LBound(msg_buttons) To UBound(msg_buttons)
-            va2(i) = msg_buttons(i)
-        Next i
-    End If
+    '~~ Transpose the the buttons argument (bttns) into a collection considering
+    '~~ that an item may be one with sub-items in a comma delimited string.
+    For Each v1 In bttns
+        If InStr(v1, ",") <> 0 Then
+            '~~ Comma deliomited string
+            For Each v2 In Split(v1, ",")
+                cllBttns.Add v2
+            Next v2
+        Else
+            cllBttns.Add v1
+        End If
+    Next v1
     
-    '~~ Return the array (va2) as Collection
-    For i = LBound(va2) To UBound(va2)
-        If VarType(va2(i)) = vbEmpty Then GoTo nxt
-        If (k = 7 And j = 7) Or l = 49 Then GoTo xt
-        Select Case va2(i)
+    '~~ Prepare the cllAdd and the cllOnly Collection
+    For Each v1 In cllBttns
+        If VarType(v1) = vbEmpty Then GoTo nx  ' skip empty items
+        If (lOnlyRows = 7 And lOnlyBttnsInRow = 7) Or lAddBttns = 49 Then GoTo xt ' max possible buttons reached
+        Select Case v1
+            
             Case vbLf, vbCrLf, vbCr
-                cll.Add va2(i)
-                j = 0
-                k = k + 1
-            Case vbOKOnly, vbOKCancel, vbAbortRetryIgnore, vbYesNoCancel, vbYesNo, vbRetryCancel
-                If j = 7 Then
-                    cll.Add vbLf
-                    j = 0
-                    k = k + 1
+                cllOnly.Add v1: lOnlyBttnsInRow = 0
+                cllAdd.Add v1:  lAddBttnsInRow = 0
+            
+            Case vbOKOnly, vbOKCancel, vbYesNo, vbRetryCancel, vbResumeOk
+                '~~ Two more buttons
+                If lOnlyBttnsInRow = 6 Then
+                    cllOnly.Add vbLf
+                    lOnlyBttnsInRow = 0
                 End If
-                cll.Add va2(i)
-                j = j + 1
-                l = l + 1
+                If lAddBttnsInRow = 6 Then
+                    cllAdd.Add vbLf
+                    lAddBttnsInRow = 0
+                End If
+                cllOnly.Add v1: lOnlyBttnsInRow = lOnlyBttnsInRow + 2
+                cllAdd.Add v1:  lAddBttnsInRow = lAddBttnsInRow + 2
+                lAddBttns = lAddBttns + 2
+            
+            Case vbAbortRetryIgnore, vbYesNoCancel
+                '~~ Three more buttons
+                If lOnlyBttnsInRow = 5 Then
+                    cllOnly.Add vbLf
+                    lOnlyBttnsInRow = 0
+                End If
+                If lAddBttnsInRow = 5 Then
+                    cllAdd.Add vbLf
+                    lAddBttnsInRow = 0
+                End If
+                cllOnly.Add v1: lOnlyBttnsInRow = lOnlyBttnsInRow + 2
+                cllAdd.Add v1:  lAddBttnsInRow = lAddBttnsInRow + 3
+                lAddBttns = lAddBttns + 3
+            
             Case Else
-                If TypeName(va2(i)) = "String" Then
+                If TypeName(v1) = "String" Then
                     ' Any invalid buttons value will be ignored without notice
-                    If j = 7 Then
-                        cll.Add vbLf
-                        j = 0
-                        k = k + 1
+                    If lOnlyBttnsInRow = 7 Then
+                        cllOnly.Add vbLf
+                        lOnlyBttnsInRow = 0
                     End If
-                    cll.Add va2(i)
-                    j = j + 1
-                    l = l + 1
+                    If lAddBttnsInRow = 7 Then
+                        cllAdd.Add vbLf
+                        lAddBttnsInRow = 0
+                    End If
+                    cllOnly.Add v1: lOnlyBttnsInRow = lOnlyBttnsInRow + 1:  lOnlyBttns = lOnlyBttns + 1
+                    cllAdd.Add v1:  lAddBttnsInRow = lAddBttnsInRow + 1:    lAddBttns = lAddBttns + 1
                 End If
         End Select
-nxt: Next i
+nx: Next v1
     
-xt: Set Buttons = cll
+xt: Set Buttons = cllAdd
+    Set bttns_collection = cllOnly
+    Exit Function
 
 End Function
 
-Public Sub ButtonsAdd(ByVal msg_buttons As Variant, _
-                      ByRef to_collection As Collection)
-' --------------------------------------------------------------------------
-' Adds the buttons (msg_buttons) - provided either as a comma delimited
-' string, an array, a Collection, or a Dictionary to the Collection
-' (to_collection). Allows to concatenate bunches of button captions.
-' --------------------------------------------------------------------------
-    Dim arry()  As Variant
-    Dim cll     As Collection
-    Dim dct     As Dictionary
-    Dim i       As Long
-    
-    If IsArray(msg_buttons) Then
-        For i = LBound(msg_buttons) To UBound(msg_buttons)
-            to_collection.Add msg_buttons(i)
-        Next i
-    Else
-        Select Case TypeName(msg_buttons)
-            Case "String"
-                ButtonsAdd Split(msg_buttons, ","), to_collection ' call recursively with the array as argument
-            Case "Collection"
-                Set cll = msg_buttons
-                ReDim arry(cll.Count - 1)
-                For i = 1 To cll.Count
-                    arry(i - 1) = cll.Item(i)
-                Next i
-                ButtonsAdd arry, to_collection ' call recursively with the array as argument
-            Case "Dictionary"
-                Set dct = msg_buttons
-                ReDim arry(dct.Count - 1)
-                For i = 1 To dct.Count
-                    arry(i - 1) = dct.Items()(i - 1)
-                Next i
-                ButtonsAdd arry, to_collection ' call recursively with the array as argument
-        End Select
-    End If
-    
-End Sub
+'Public Function ButtonsArray(ByVal msg_buttons As Variant) As Variant
+'' ------------------------------------------------------------------------------
+'' Returns the button captions (msg_buttons) which may be provided as komma
+'' delimited string, array, collection, or Dictionary, as komma delimited string.
+'' ------------------------------------------------------------------------------
+'
+'    Dim va()    As Variant
+'    Dim i       As Long
+'    Dim dct     As Dictionary
+'    Dim cll     As Collection
+'
+'    Debug.Print TypeName(msg_buttons)
+'    Select Case VarType(msg_buttons)
+'        Case vbArray:   ButtonsArray = msg_buttons
+'        Case vbString: ButtonsArray = Split(msg_buttons, ",")
+'        Case Else
+'            Select Case TypeName(msg_buttons)
+'                Case "Dictionary"
+'                    Set dct = msg_buttons
+'                    ReDim va(dct.Count - 1)
+'                    For i = 0 To dct.Count - 1
+'                        va(i) = dct.Items()(i)
+'                    Next i
+'                    ButtonsArray = va
+'                Case "Collection"
+'                    Set cll = msg_buttons
+'                    ReDim va(cll.Count - 1)
+'                    For i = 0 To cll.Count - 1
+'                        va(i) = cll.Item(i + 1)
+'                    Next i
+'                    ButtonsArray = va
+'            End Select
+'    End Select
+'
+'End Function
 
-Public Function ButtonsArray(ByVal msg_buttons As Variant) As Variant
-' ------------------------------------------------------------------------------
-' Returns the button captions (msg_buttons) which may be provided as komma
-' delimited string, array, collection, or Dictionary, as komma delimited string.
-' ------------------------------------------------------------------------------
-    
-    Dim va()    As Variant
-    Dim i       As Long
-    Dim dct     As Dictionary
-    Dim cll     As Collection
-    
-    Debug.Print TypeName(msg_buttons)
-    Select Case VarType(msg_buttons)
-        Case vbArray:   ButtonsArray = msg_buttons
-        Case vbString: ButtonsArray = Split(msg_buttons, ",")
-        Case Else
-            Select Case TypeName(msg_buttons)
-                Case "Dictionary"
-                    Set dct = msg_buttons
-                    ReDim va(dct.Count - 1)
-                    For i = 0 To dct.Count - 1
-                        va(i) = dct.Items()(i)
-                    Next i
-                    ButtonsArray = va
-                Case "Collection"
-                    Set cll = msg_buttons
-                    ReDim va(cll.Count - 1)
-                    For i = 0 To cll.Count - 1
-                        va(i) = cll.Item(i + 1)
-                    Next i
-                    ButtonsArray = va
-            End Select
-    End Select
-
-End Function
-
-Public Function ButtonsString(ByVal msg_buttons As Variant) As String
-' ------------------------------------------------------------------------------
-' Returns the button captions (msg_buttons) which may be provided as komma
-' delimited string, array, collection, or Dictionary, as komma delimited string.
-' ------------------------------------------------------------------------------
-    Const PROC = "ButtonsString"
+Public Function ButtonsNumeric(ByVal bn_num_buttons As Long) As Long
+' -------------------------------------------------------------------------------------
+' Returns the Buttons argument (bn_num_buttons) with additional options removed.
+' In order to mimic the Buttons argument of the VBA.MsgBox any values added for other
+' options but the display of the buttons are unstripped (i.e. the values are deducted).
+' -------------------------------------------------------------------------------------
+    Const PROC = "ButtonsNumeric"
     
     On Error GoTo eh
-    Dim v As Variant
+        
+    While bn_num_buttons >= vbCritical                  ' 16
+        Select Case bn_num_buttons
+            '~~ VBA.MsgBox Display options
+            Case Is >= vbMsgBoxRtlReading                ' 1048576  not implemented
+                bn_num_buttons = bn_num_buttons - vbMsgBoxRtlReading
     
-    Debug.Print TypeName(msg_buttons)
+            Case Is >= vbMsgBoxRight                     ' 524288   not implemented
+                bn_num_buttons = bn_num_buttons - vbMsgBoxRight
     
-    If IsArray(msg_buttons) Then
-        ButtonsString = Join(msg_buttons, ",")
-    Else
-        Select Case VarType(msg_buttons)
-            Case vbArray
-                ButtonsString = Split(msg_buttons, ",")
-            Case vbString
-            Case Else
-                Select Case TypeName(msg_buttons)
-                    Case "Dictionary"
-                    Case "Collection"
-                        For Each v In msg_buttons
-                            ButtonsString = v & ","
-                        Next v
-                        ButtonsString = Left(ButtonsString, Len(ButtonsString) - 1)
-                End Select
+            Case Is >= vbMsgBoxSetForeground             ' 65536    not implemented
+                bn_num_buttons = bn_num_buttons - vbMsgBoxSetForeground
+            
+            '~~ Display of a Help button
+            Case Is >= vbMsgBoxHelpButton                ' 16384    not implemented
+                bn_num_buttons = bn_num_buttons - vbMsgBoxHelpButton
+    
+            Case Is >= vbSystemModal                     ' 4096     not implemented
+                bn_num_buttons = bn_num_buttons - vbSystemModal
+    
+            Case Is >= vbDefaultButton4                  ' 768
+                bn_num_buttons = bn_num_buttons - vbDefaultButton4
+            
+            Case Is >= vbDefaultButton3                  ' 512
+                bn_num_buttons = bn_num_buttons - vbDefaultButton3
+            
+            Case Is >= vbDefaultButton2                  ' 256
+                bn_num_buttons = bn_num_buttons - vbDefaultButton2
+                
+            Case Is >= vbInformation                      ' 64
+                bn_num_buttons = bn_num_buttons - vbInformation
+            
+            Case Is >= vbExclamation                    ' 48
+                bn_num_buttons = bn_num_buttons - vbExclamation
+            
+            Case Is >= vbQuestion                       ' 32
+                bn_num_buttons = bn_num_buttons - vbQuestion
+    
+            Case Is >= vbCritical                       ' 16
+                bn_num_buttons = bn_num_buttons - vbCritical
+    
         End Select
-    End If
+    Wend
+    ButtonsNumeric = bn_num_buttons
 
 xt: Exit Function
 
-eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
+eh:
 End Function
+
+'Public Function ButtonsString(ByVal msg_buttons As Variant) As String
+'' ------------------------------------------------------------------------------
+'' Returns the button captions (msg_buttons) which may be provided as komma
+'' delimited string, array, collection, or Dictionary, as komma delimited string.
+'' ------------------------------------------------------------------------------
+'    Const PROC = "ButtonsString"
+'
+'    On Error GoTo eh
+'    Dim v As Variant
+'
+'    Debug.Print TypeName(msg_buttons)
+'
+'    If IsArray(msg_buttons) Then
+'        ButtonsString = Join(msg_buttons, ",")
+'    Else
+'        Select Case VarType(msg_buttons)
+'            Case vbArray
+'                ButtonsString = Split(msg_buttons, ",")
+'            Case vbString
+'            Case Else
+'                Select Case TypeName(msg_buttons)
+'                    Case "Dictionary"
+'                    Case "Collection"
+'                        For Each v In msg_buttons
+'                            ButtonsString = v & ","
+'                        Next v
+'                        ButtonsString = Left(ButtonsString, Len(ButtonsString) - 1)
+'                End Select
+'        End Select
+'    End If
+'
+'xt: Exit Function
+'
+'eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
+'End Function
 
 Private Sub ConvertPixelsToPoints(Optional ByVal x_dpi As Single, _
                                   Optional ByVal y_dpi As Single, _
@@ -426,6 +497,7 @@ Private Sub ConvertPixelsToPoints(Optional ByVal x_dpi As Single, _
 '        If Not y_pts = 0 Then Debug.Print y_dpi & " dpi = " & y_pts & " pt"
     End If
 End Sub
+
                                     
 Public Function Dsply(ByVal dsply_title As String, _
                       ByRef dsply_msg As TypeMsg, _
@@ -516,7 +588,8 @@ End Function
 Public Function ErrMsg(ByVal err_source As String, _
               Optional ByVal err_number As Long = 0, _
               Optional ByVal err_dscrptn As String = vbNullString, _
-              Optional ByVal err_line As Long = 0) As Variant
+              Optional ByVal err_line As Long = 0, _
+              Optional ByVal err_buttons As Variant = vbOKOnly) As Variant
 ' ------------------------------------------------------------------------------
 ' Displays an error message.
 '
@@ -540,7 +613,7 @@ Public Function ErrMsg(ByVal err_source As String, _
     If err_source = vbNullString Then err_source = Err.Source
     If err_dscrptn = vbNullString Then err_dscrptn = Err.Description
     If err_dscrptn = vbNullString Then err_dscrptn = "--- No error description available ---"
-    
+        
     '~~ Determine type of error
     Select Case err_number
         Case Is < 0
@@ -568,15 +641,15 @@ Public Function ErrMsg(ByVal err_source As String, _
     End If
     
     '~~ Prepare Error Title
-    ErrTitle = ErrType & " in: '" & err_source & "'" & ErrAtLine
+    ErrTitle = ErrType & " " & ErrNo & " in: '" & err_source & "'" & ErrAtLine
     
     '~~ Prepare the Error Reply Buttons
 #If Debugging = 1 Then
-    Set ErrButtons = mMsg.Buttons(vbYesNoCancel)
+    mMsg.Buttons ErrButtons, vbResumeOk
 #Else
-    Set ErrButtons = mMsg.Buttons(vbOK)
+    mMsg.Buttons ErrButtons, err_buttons
 #End If
-    
+        
     '~~ Display the error message by means of the mMsg's Dsply function
     With ErrMsgText.Section(1)
         With .Label
@@ -605,86 +678,23 @@ Public Function ErrMsg(ByVal err_source As String, _
 #If Debugging = 1 Then
     With ErrMsgText.Section(4)
         With .Label
-            .Text = "Debugging:"
+            .Text = "About Debugging:"
             .FontColor = rgbBlue
         End With
-        .Text.Text = "Reply with ""Yes""    to ""Resume the error line""" & vbLf & _
-                     "Reply with ""No""     to ""Resume with ther error line following line""" & vbLf & _
-                     "Reply with ""Cancel"" to continue (equivalent to Ok)"
+        .Text.Text = "The additional debugging option button is displayed because the " & _
+                     "Conditional Compile Argument 'Debugging = 1'."
         .Text.FontSize = 8
     End With
 #End If
     mMsg.Dsply dsply_title:=ErrTitle _
              , dsply_msg:=ErrMsgText _
              , dsply_buttons:=ErrButtons
-    
     ErrMsg = mMsg.RepliedWith
     
 End Function
 
 Private Function ErrSrc(ByVal sProc As String) As String
     ErrSrc = "mMsg." & sProc
-End Function
-
-Public Function MsgInstance(ByVal fi_key As String, _
-                   Optional ByVal fi_unload As Boolean = False) As fMsg
-' -------------------------------------------------------------------------
-' Returns an instance of the UserForm fMsg which is definitely
-' identified by anything uniqe for the instance (fi_key). This may be what
-' becomes the title (property Caption) or even an object such like a
-' Worksheet (if the instance is Worksheet specific). An already existing or
-' new created instance is maintained in a static Dictionary with fi_key as
-' the key and returned to the caller. When fi_unload is true only a possibly
-' already existing Userform identified by fi_key is unloaded.
-'
-' Requires: Reference to the "Microsoft Scripting Runtime".
-' Usage   : The fMsg has to be replaced by the name of the desired
-'           UserForm
-' -------------------------------------------------------------------------
-    Const PROC = "MsgInstance"
-    
-    On Error GoTo eh
-    Static Instances As Dictionary    ' Collection of (possibly still)  active form instances
-    
-    If Instances Is Nothing Then Set Instances = New Dictionary
-    
-    If fi_unload Then
-        If Instances.Exists(fi_key) Then
-            On Error Resume Next
-            Unload Instances(fi_key) ' The instance may be already unloaded
-            Instances.Remove fi_key
-        End If
-        Exit Function
-    End If
-    
-    If Not Instances.Exists(fi_key) Then
-        '~~ There is no evidence of an already existing instance
-        Set MsgInstance = New fMsg
-        Instances.Add fi_key, MsgInstance
-    Else
-        '~~ An instance identified by fi_key exists in the Dictionary.
-        '~~ It may however have already been unloaded.
-        On Error Resume Next
-        Set MsgInstance = Instances(fi_key)
-        Select Case Err.Number
-            Case 0
-            Case 13
-                If Instances.Exists(fi_key) Then
-                    '~~ The apparently no longer existing instance is removed from the Dictionarys
-                    Instances.Remove fi_key
-                End If
-                Set MsgInstance = New fMsg
-                Instances.Add fi_key, MsgInstance
-            Case Else
-                '~~ Unknown error!
-                Err.Raise 1 + vbObjectError, ErrSrc(PROC), "Unknown/unrecognized error!"
-        End Select
-        On Error GoTo -1
-    End If
-
-xt: Exit Function
-
-eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
 End Function
 
 Private Function Max(ParamArray va() As Variant) As Variant
@@ -795,6 +805,65 @@ xt: Exit Function
 eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
 End Function
 
+Public Function MsgInstance(ByVal fi_key As String, _
+                   Optional ByVal fi_unload As Boolean = False) As fMsg
+' -------------------------------------------------------------------------
+' Returns an instance of the UserForm fMsg which is uniquely identified by
+' a uniqe string (fi_key) which may be the title of the message or anything
+' else including an object . An already existing or new created instance is
+' maintained in a static Dictionary with (fi_key) as the key and returned
+' to the caller. When (fi_unload) is TRUE only a possibly already existing
+' Userform identified by (fi_key) is unloaded.
+'
+' Requires: Reference to the "Microsoft Scripting Runtime".
+' Usage   : The fMsg has to be replaced by the name of the desired UserForm
+' -------------------------------------------------------------------------
+    Const PROC = "MsgInstance"
+    
+    On Error GoTo eh
+    Static Instances As Dictionary    ' Collection of (possibly still)  active form instances
+    
+    If Instances Is Nothing Then Set Instances = New Dictionary
+    
+    If fi_unload Then
+        If Instances.Exists(fi_key) Then
+            On Error Resume Next
+            Unload Instances(fi_key) ' The instance may be already unloaded
+            Instances.Remove fi_key
+        End If
+        Exit Function
+    End If
+    
+    If Not Instances.Exists(fi_key) Then
+        '~~ There is no evidence of an already existing instance
+        Set MsgInstance = New fMsg
+        Instances.Add fi_key, MsgInstance
+    Else
+        '~~ An instance identified by fi_key exists in the Dictionary.
+        '~~ It may however have already been unloaded.
+        On Error Resume Next
+        Set MsgInstance = Instances(fi_key)
+        Select Case Err.Number
+            Case 0
+            Case 13
+                If Instances.Exists(fi_key) Then
+                    '~~ The apparently no longer existing instance is removed from the Dictionarys
+                    Instances.Remove fi_key
+                End If
+                Set MsgInstance = New fMsg
+                Instances.Add fi_key, MsgInstance
+            Case Else
+                '~~ Unknown error!
+                Err.Raise 1 + vbObjectError, ErrSrc(PROC), "Unknown/unrecognized error!"
+        End Select
+        On Error GoTo -1
+    End If
+
+xt: Exit Function
+
+eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
+End Function
+
 Public Function Pnts(ByVal pt_value As Long, _
                      ByVal pt_dimension As String) As Single
 ' ------------------------------------------------------------------------------
@@ -827,33 +896,58 @@ Public Function Prcnt(ByVal pc_value As Long, _
     End If
 End Function
 
-Public Function ReplyString( _
-          ByVal vReply As Variant) As String
-' ------------------------------------------
-' Returns the Dsply or Box return value as
-' string. An invalid value is ignored.
-' ------------------------------------------
-
-    If VarType(vReply) = vbString Then
-        ReplyString = vReply
-    Else
-        Select Case vReply
-            Case vbAbort:   ReplyString = "Abort"
-            Case vbCancel:  ReplyString = "Cancel"
-            Case vbIgnore:  ReplyString = "Ignore"
-            Case vbNo:      ReplyString = "No"
-            Case vbOK:      ReplyString = "Ok"
-            Case vbRetry:   ReplyString = "Retry"
-            Case vbYes:     ReplyString = "Yes"
-        End Select
-    End If
-    
-End Function
-
 Public Function RoundUp(ByVal v As Variant) As Variant
 ' -------------------------------------------------------------------------------------
 ' Returns (v) rounded up to the next integer. Note: to round down omit the "+ 0.5").
 ' -------------------------------------------------------------------------------------
     RoundUp = Int(v) + (v - Int(v) + 0.5) \ 1
 End Function
+
+Public Function StackIsEmpty(ByVal stck As Collection) As Boolean
+' ----------------------------------------------------------------------------
+' Returns TRUE when the stack (stck) is empty.
+' ----------------------------------------------------------------------------
+    If stck Is Nothing _
+    Then StackIsEmpty = True _
+    Else StackIsEmpty = stck.Count = 0
+End Function
+
+Public Function StackPop(ByVal stck As Collection) As Variant
+' ----------------------------------------------------------------------------
+' Common Stack Pop service. Returns the last item pushed on the stack (stck)
+' and removes the item from the stack. When the stack (stck) is empty a
+' vbNullString is returned.
+' ----------------------------------------------------------------------------
+    Const PROC = "StckPop"
+    
+    On Error GoTo eh
+    If StackIsEmpty(stck) Then GoTo xt
+    
+    On Error Resume Next
+    Set StackPop = stck(stck.Count)
+    If Err.Number <> 0 _
+    Then StackPop = stck(stck.Count)
+    stck.Remove stck.Count
+
+xt: Exit Function
+
+eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
+End Function
+
+Public Sub StackPush(ByRef stck As Collection, _
+                     ByVal stck_item As Variant)
+' ----------------------------------------------------------------------------
+' Common Stack Push service. Pushes (adds) an item (stck_item) to the stack
+' (stck). When the provided stack (stck) is Nothing the stack is created.
+' ----------------------------------------------------------------------------
+    Const PROC = "StckPush"
+    
+    On Error GoTo eh
+    If stck Is Nothing Then Set stck = New Collection
+    stck.Add stck_item
+
+xt: Exit Sub
+
+eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
+End Sub
 
