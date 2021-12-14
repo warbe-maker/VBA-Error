@@ -88,11 +88,11 @@ The dedicated _Common VBA Component Workbook_ **[ErH.xlsm][8]** is used for deve
 
 Those interested not only in using the _Common VBA Error Services_ but also feel prepared to ask question, make suggestions, open raising issues may fork or clone the [public repo][8] to their own computer. A process which is very well supported by the [GitHub Desktop for Windows][9] which is the environment I do uses for the version control and a a continuous improvement process.
 
-[1]:https://gitcdn.link/repo/warbe-maker/Common-VBA-Error-Services/master/source/mErH.bas
-[2]:https://gitcdn.link/repo/warbe-maker/Common-VBA-Error-Services/master/source/fMsg.frm
-[3]:https://gitcdn.link/repo/warbe-maker/Common-VBA-Error-Services/master/source/fMsg.frx
-[4]:https://gitcdn.link/repo/warbe-maker/Common-VBA-Error-Services/master/source/mMsg.bas
-[5]:https://gitcdn.link/repo/warbe-maker/Common-VBA-Error-Services/master/source/mTrc.bas
+[1]:https://gitcdn.link/cdn/warbe-maker/Common-VBA-Error-Services/master/source/mErH.bas
+[2]:https://gitcdn.link/cdn/warbe-maker/Common-VBA-Error-Services/master/source/fMsg.frm
+[3]:https://gitcdn.link/cdn/warbe-maker/Common-VBA-Error-Services/master/source/fMsg.frx
+[4]:https://gitcdn.link/cdn/warbe-maker/Common-VBA-Error-Services/master/source/mMsg.bas
+[5]:https://gitcdn.link/cdn/warbe-maker/Common-VBA-Error-Services/master/source/mTrc.bas
 [6]:https://warbe-maker.github.io/warbe-maker.github.io/vba/common/error/handling/2021/01/16/Common-VBA-Error-Services.html
 [7]:https://docs.microsoft.com/en-us/dotnet/api/microsoft.visualbasic.constants.vbobjecterror?view=netcore-3.1
-[8]:https://gitcdn.link/repo/warbe-maker/Common-VBA-Error-Services/master/source/ErH.xlsm
+[8]:https://gitcdn.link/cdn/warbe-maker/Common-VBA-Error-Services/master/source/ErH.xlsm
