@@ -1061,7 +1061,6 @@ Private Function ErrMsg(ByVal err_source As String, _
 '
 '        eh: Select Case ErrMsg(ErrSrc(PROC))
 '               Case vbResume:  Stop: Resume
-'               Case vbPassOn:  Err.Raise Err.Number, ErrSrc(PROC), Err.Description
 '               Case Else:      GoTo xt
 '            End Select
 '        End Sub/Function/Property
@@ -1269,9 +1268,8 @@ Private Function Ntry(ByVal ntry_tcks As Currency, _
 xt: Exit Function
     
 eh: Select Case ErrMsg(ErrSrc(PROC))
-        Case vbYes: Stop: Resume
-        Case vbNo:  Stop: Resume Next
-        Case Else:  GoTo xt
+        Case vbResume:  Stop: Resume
+        Case Else:      GoTo xt
     End Select
 End Function
 
@@ -1405,9 +1403,8 @@ Private Function StckEd(ByVal stck_id As String, _
 xt: Exit Function
 
 eh: Select Case ErrMsg(ErrSrc(PROC))
-        Case vbYes: Stop: Resume
-        Case vbNo:  Stop: Resume Next
-        Case Else:  GoTo xt
+        Case vbResume:  Stop: Resume
+        Case Else:      GoTo xt
     End Select
 End Function
 
@@ -1516,9 +1513,8 @@ Private Sub TrcAdd( _
 xt: Exit Sub
 
 eh: Select Case ErrMsg(ErrSrc(PROC))
-        Case vbYes: Stop: Resume
-        Case vbNo:  Stop: Resume Next
-        Case Else:  GoTo xt
+        Case vbResume:  Stop: Resume
+        Case Else:      GoTo xt
     End Select
 End Sub
 
@@ -1550,9 +1546,8 @@ Private Sub TrcBgn(ByVal trc_id As String, _
 xt: Exit Sub
     
 eh: Select Case ErrMsg(ErrSrc(PROC))
-        Case vbYes: Stop: Resume
-        Case vbNo:  Stop: Resume Next
-        Case Else:  GoTo xt
+        Case vbResume:  Stop: Resume
+        Case Else:      GoTo xt
     End Select
 End Sub
 
@@ -1600,9 +1595,8 @@ Private Sub TrcEnd(ByVal trc_id As String, _
 xt: Exit Sub
     
 eh: Select Case ErrMsg(ErrSrc(PROC))
-        Case vbYes: Stop: Resume
-        Case vbNo:  Stop: Resume Next
-        Case Else:  GoTo xt
+        Case vbResume:  Stop: Resume
+        Case Else:      GoTo xt
     End Select
 End Sub
 

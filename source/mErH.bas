@@ -478,19 +478,14 @@ Public Function ErrMsg( _
     '~~    (Not EntryProcIsReached(err_source)) and
     '~~ 2. the user has no choice to press another but the Ok button.
     '~~ ---------------------------------------------------------------------------
-    Debug.Print "EntryProcIsKnown:                   " & EntryProcIsKnown
-    Debug.Print "Not EntryProcIsReached(err_source): " & Not EntryProcIsReached(err_source)
-    Debug.Print "ErrBttns(err_buttons) = 1:          " & ErrBttns(err_buttons)
     If EntryProcIsKnown _
     And Not EntryProcIsReached(err_source) _
     And ErrBttns(err_buttons) = 1 _
     Then
-        Debug.Print "Add to ErrPath: " & err_source
         ErrPathAdd err_source ' on the way up to the 'Entry Procedure' gather the 'path to the error'
 #If ExecTrace = 1 Then
         mTrc.EoP err_source, sType & lNo & " " & sLine
 #End If
-        Debug.Print StackPop(ProcStack, err_source)
         sInitErrInfo = vbNullString
         Err.Raise err_number, err_source, err_dscrptn
     End If
