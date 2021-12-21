@@ -14,22 +14,25 @@ Option Explicit
 
 Public Sub CompManService(ByVal cm_service As String, _
                           ByVal hosted As String)
-' -----------------------------------------------------
-' Execution of the CompMan service (cm_service) pre-
-' ferably via the CompMan-Addin or when not available
-' alternatively via the CompMan.xlsb Workbook.
-' -----------------------------------------------------
+' ----------------------------------------------------------------------------
+' Execution of the CompMan service (cm_service) preferably via the CompMan
+' Development instance when available (assuming it is for testing). Only when
+' not available the CompMan AddIn services (CompMan.xlam) are used.
+' ----------------------------------------------------------------------------
     Const COMPMAN_BY_ADDIN = "CompMan.xlam!mCompMan."
     Const COMPMAN_BY_DEVLP = "CompMan.xlsb!mCompMan."
     
     On Error Resume Next
-    Application.Run COMPMAN_BY_ADDIN & cm_service, ThisWorkbook, hosted
+    Application.Run COMPMAN_BY_DEVLP & cm_service, ThisWorkbook, hosted
     If Err.Number = 1004 Then
         On Error Resume Next
-        Application.Run COMPMAN_BY_DEVLP & cm_service, ThisWorkbook, hosted
+        Application.Run COMPMAN_BY_ADDIN & cm_service, ThisWorkbook, hosted
         If Err.Number = 1004 Then
             Application.StatusBar = "'" & cm_service & "' neither available by '" & COMPMAN_BY_ADDIN & "' nor by '" & COMPMAN_BY_DEVLP & "'!"
         End If
     End If
+
+xt: Exit Sub
+
 End Sub
 
