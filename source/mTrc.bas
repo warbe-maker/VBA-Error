@@ -14,7 +14,7 @@ Option Explicit
 '
 ' W. Rauschenberger, Berlin, Nov. 2021
 ' ------------------------------------------------------------------------
-Public Enum enDisplayedInfo
+Public Enum enDsplydInfo
     Detailed = 1
     Compact = 2
 End Enum
@@ -50,64 +50,49 @@ Private Const DIR_BEGIN_ID  As String = ">"     ' Begin procedure or code trace 
 Private Const DIR_END_ID    As String = "<"     ' End procedure or code trace indicator
 Private Const TRC_INFO_DELIM As String = " !!! "
 
-Private cllStck             As New Collection   ' Trace stack
 Private cllNtryLast         As Collection       '
-Private cllTrc              As Collection       ' Collection of begin and end trace entries
-Private cyTcksOvrhdTrcStrt  As Currency         ' Overhead ticks caused by the collection of a traced item's entry
-Private cyTcksOvrhdTrc      As Currency         ' Overhead ticks caused by the collection of a traced item's entry
 Private cySysFrequency      As Currency         ' Execution Trace SysFrequency (initialized with init)
 Private cyTcksOvrhd         As Currency         ' Overhead ticks caused by the collection of a traced item's entry
 Private cyTcksOvrhdItm      As Currency         ' Execution Trace time accumulated by caused by the time tracking itself
+Private cyTcksOvrhdTrc      As Currency         ' Overhead ticks caused by the collection of a traced item's entry
+Private cyTcksOvrhdTrcStrt  As Currency         ' Overhead ticks caused by the collection of a traced item's entry
+Private cyTcksPaused        As Currency         ' Accumulated with procedure Continue
+Private cyTcksPauseStart    As Currency         ' Set with procedure Pause
 Private dtTraceBegin        As Date             ' Initialized at start of execution trace
 Private iTrcLvl             As Long             ' Increased with each begin entry and decreased with each end entry
 Private lDisplayedInfo      As Long             ' Detailed or Compact, defaults to Compact
 Private lPrecision          As Long             ' Precision for displayed seconds, defaults to 6 decimals (0,000000)
+Private sFirstTraceItem     As String
 Private sFrmtScsElpsd       As String           ' -------------
 Private sFrmtScsGrss        As String           ' Format String
 Private sFrmtScsNt          As String           ' for Seconds
-Private sFrmtScsOvrhdNtry   As String           ' -------------
 Private sFrmtScsOvrhdItm    As String           ' -------------
+Private sFrmtScsOvrhdNtry   As String           ' -------------
 Private sFrmtTcksElpsd      As String           ' -------------
-Private sFrmtTcksGrss       As String           ' Format String
-Private sFrmtTcksNt         As String           ' for
-Private sFrmtTcksOvrhdNtry  As String           ' Ticks
-Private sFrmtTcksOvrhdItm   As String           ' Ticks
+Private sFrmtTcksGrss       As String           '
+Private sFrmtTcksNt         As String           ' Format String
+Private sFrmtTcksOvrhdItm   As String           ' for Ticks
+Private sFrmtTcksOvrhdNtry  As String           '
 Private sFrmtTcksSys        As String           ' -------------
-Private sFirstTraceItem     As String
-Private cyTcksPauseStart    As Currency         ' Set with procedure Pause
-Private cyTcksPaused        As Currency         ' Accumulated with procedure Continue
+Private sTraceLogFile       As String           ' When not vbNullString the trace is written into file and tzhe display is suspended
+Private Trace               As Collection       ' Collection of begin and end trace entries
+Private TraceStack          As Collection       ' Trace stack
 
-Private Property Get DIR_BEGIN_CODE() As String
-    DIR_BEGIN_CODE = DIR_BEGIN_ID
-End Property
+Private Property Get DIR_BEGIN_CODE() As String:            DIR_BEGIN_CODE = DIR_BEGIN_ID:                  End Property
 
-Private Property Get DIR_BEGIN_PROC() As String
-    DIR_BEGIN_PROC = VBA.String$(2, DIR_BEGIN_ID)
-End Property
+Private Property Get DIR_BEGIN_PROC() As String:            DIR_BEGIN_PROC = VBA.String$(2, DIR_BEGIN_ID):  End Property
 
-Private Property Get DIR_END_CODE() As String
-    DIR_END_CODE = DIR_END_ID
-End Property
+Private Property Get DIR_END_CODE() As String:              DIR_END_CODE = DIR_END_ID:                      End Property
 
-Private Property Get DIR_END_PROC() As String
-    DIR_END_PROC = VBA.String$(2, DIR_END_ID)
-End Property
+Private Property Get DIR_END_PROC() As String:              DIR_END_PROC = VBA.String$(2, DIR_END_ID):      End Property
 
-Private Property Get DisplayedInfo() As enDisplayedInfo
-    DisplayedInfo = lDisplayedInfo
-End Property
+Private Property Get DisplayedInfo() As enDsplydInfo:       DisplayedInfo = lDisplayedInfo:                 End Property
 
-Public Property Let DisplayedInfo(ByVal l As enDisplayedInfo)
-    lDisplayedInfo = l
-End Property
+Public Property Let DisplayedInfo(ByVal l As enDsplydInfo): lDisplayedInfo = l:                             End Property
 
-Private Property Get DisplayedSecsPrecision() As Long
-    DisplayedSecsPrecision = lPrecision
-End Property
+Private Property Get DisplayedPrecision() As Long:          DisplayedPrecision = lPrecision:                End Property
 
-Public Property Let DisplayedSecsPrecision(ByVal l As Long)
-    lPrecision = l
-End Property
+Public Property Let DisplayedPrecision(ByVal l As Long):    lPrecision = l:                                 End Property
 
 Private Property Get DsplyLnIndnttn(Optional ByRef trc_entry As Collection) As String
     DsplyLnIndnttn = RepeatStrng("|  ", ItmLvl(trc_entry))
@@ -253,6 +238,62 @@ Private Property Get SysFrequency() As Currency
     SysFrequency = cySysFrequency
 End Property
 
+Public Property Let TraceLogFile( _
+                        Optional ByVal tl_append As Boolean = False, _
+                                 ByVal tl_file As String)
+    sTraceLogFile = tl_file
+    With New FileSystemObject
+        If Not tl_append Then
+            If .FileExists(tl_file) Then .DeleteFile tl_file, True
+        End If
+    End With
+End Property
+
+Private Property Let TraceLogTxt( _
+                        Optional ByVal tl_file As Variant, _
+                        Optional ByVal tl_append As Boolean = True, _
+                        Optional ByRef tl_split As String, _
+                                 ByVal tl_string As String)
+' ----------------------------------------------------------------------------
+' Writes the string (tl_string) into the file (tl_file) which might be a file
+' object or a file's full name.
+' Note: tl_split is not used but specified to comply with Property Get.
+' ----------------------------------------------------------------------------
+    Const PROC = "TraceLogTxt-Let"
+    
+    On Error GoTo eh
+    Dim fso As New FileSystemObject
+    Dim ts  As TextStream
+    Dim sFl As String
+   
+    tl_split = tl_split ' not used! just for coincidence with Get
+    With fso
+        If TypeName(tl_file) = "File" Then
+            sFl = tl_file.Path
+        Else
+            '~~ tl_file is regarded a file's full name, created if not existing
+            sFl = tl_file
+            If Not .FileExists(sFl) Then .CreateTextFile sFl
+        End If
+        
+        If tl_append _
+        Then Set ts = .OpenTextFile(Filename:=sFl, IOMode:=ForAppending) _
+        Else Set ts = .OpenTextFile(Filename:=sFl, IOMode:=ForWriting)
+    End With
+    
+    ts.WriteLine tl_string
+
+xt: ts.Close
+    Set fso = Nothing
+    Set ts = Nothing
+    Exit Property
+    
+eh: Select Case ErrMsg(ErrSrc(PROC))
+        Case vbResume:  Stop: Resume
+        Case Else:      GoTo xt
+    End Select
+End Property
+
 Private Function AppErr(ByVal app_err_no As Long) As Long
 ' ------------------------------------------------------------------------------
 ' Ensures that a programmed (i.e. an application) error numbers never conflicts
@@ -297,7 +338,7 @@ Public Sub BoP(ByVal bop_id As String, _
     Else
         If bop_id = sFirstTraceItem Then
             '~~ A previous trace had not come to a regular end and thus will be erased
-            Set cllTrc = Nothing
+            Set Trace = Nothing
             Initialize
         End If
     End If
@@ -322,7 +363,7 @@ Public Sub BoP_ErH(ByVal bopeh_id As String, _
     Else
         If bopeh_id = sFirstTraceItem Then
             '~~ A previous trace had not come to a regular end and thus will be erased
-            Set cllTrc = Nothing
+            Set Trace = Nothing
             Initialize
         End If
     End If
@@ -341,7 +382,7 @@ Private Sub ComputeSecsGrssOvrhdNet()
     Dim v   As Variant
     Dim cll As Collection
     
-    For Each v In cllTrc
+    For Each v In Trace
         Set cll = v
         NtryScsOvrhdNtry(cll) = CDbl(NtryTcksOvrhdNtry(cll)) / CDbl(SysFrequency)
         NtryScsElpsd(cll) = CDec(NtryTcksElpsd(cll)) / CDec(SysFrequency)
@@ -374,7 +415,7 @@ Private Function ComputeSecsOvrhdTtlEntry() As Double
     Dim cll As Collection
     Dim dbl As Double
     
-    For Each v In cllTrc
+    For Each v In Trace
         Set cll = v
         dbl = dbl + NtryScsOvrhdNtry(cll)
     Next v
@@ -387,7 +428,7 @@ eh: Select Case ErrMsg(ErrSrc(PROC))
         Case vbNo:  Stop: Resume Next
         Case Else:  GoTo xt
     End Select
-    Set cllTrc = Nothing
+    Set Trace = Nothing
 End Function
 
 Private Sub ComputeTcksElpsd()
@@ -402,7 +443,7 @@ Private Sub ComputeTcksElpsd()
     Dim cyTcksBegin     As Currency
     Dim cyTcksElapsed   As Currency
     
-    For Each v In cllTrc
+    For Each v In Trace
         Set cll = v
         If cyTcksBegin = 0 Then cyTcksBegin = ItmTcksSys(cll)
         cyTcksElapsed = ItmTcksSys(cll) - cyTcksBegin
@@ -431,7 +472,7 @@ Private Sub ComputeTcksNet()
     Dim v   As Variant
     Dim cll As Collection
     
-    For Each v In cllTrc
+    For Each v In Trace
         Set cll = v
         NtryTcksNt(cll) = NtryTcksGrss(cll) - NtryTcksOvrhdNtry(cll)
     Next v
@@ -458,7 +499,7 @@ Private Function ComputeTcksOvrhdItem() As Currency
     Dim cll As Collection
     Dim cy  As Currency
     
-    For Each v In cllTrc
+    For Each v In Trace
         Set cll = v
         cy = cy + NtryTcksOvrhdNtry(cll)
     Next v
@@ -471,7 +512,7 @@ eh: Select Case ErrMsg(ErrSrc(PROC))
         Case vbNo:  Stop: Resume Next
         Case Else:  GoTo xt
     End Select
-    Set cllTrc = Nothing
+    Set Trace = Nothing
 End Function
 
 Public Sub Continue()
@@ -491,7 +532,7 @@ Public Sub Dsply()
     Dim SctnText    As TypeMsgText
     Dim TrcResult   As TypeMsg
     
-    If TrcIsEmpty Then Exit Sub
+    If TrcIsEmpty Or sTraceLogFile <> vbNullString Then GoTo xt
     
     NtryTcksOvrhdNtry(cllNtryLast) = cyTcksOvrhd
     If DisplayedInfo = 0 Then DisplayedInfo = Compact
@@ -506,7 +547,7 @@ Public Sub Dsply()
     DsplyValuesFormatSet       ' Setup the format for the displayed ticks and sec values
     
     sTrace = DsplyHdr(lLenHeader)
-    For Each v In cllTrc
+    For Each v In Trace
         Set cllTrcEntry = v
         sTrace = sTrace & vbLf & DsplyLn(cllTrcEntry)
         If DsplyArgs(cllTrcEntry) <> vbNullString Then
@@ -525,9 +566,11 @@ Public Sub Dsply()
         .Text.FontSize = 8
     End With
     
-    mMsg.Dsply dsply_title:="Execution Trace, displayed because the Conditional Compile Argument ""ExecTrace = 1""!" _
+    mMsg.Dsply dsply_title:="Execution Trace " & Format(Now(), "MM-DD hh:mm:ss") & _
+                            " (displayed because the Conditional Compile Argument ""ExecTrace = 1""!)" _
              , dsply_msg:=TrcResult _
-             , dsply_width_min:=60
+             , dsply_width_min:=60 _
+             , dsply_modeless:=True
             
 xt: mTrc.Terminate
     Exit Sub
@@ -552,9 +595,9 @@ Private Function DsplyAbout() As String
     DsplyAbout = "> The trace itself, i.e. the collection of the begin and end data for each traced procedure or code snippet " & vbLf _
                & "  caused a performance loss of " & Format$(dblTtlScsOvrhdNtry, sFrmtScsOvrhdItm) & " seconds (=" & Format$(dblOvrhdPcntg, "0.00") & "%). " _
                & "For a best possible execution time precision" & vbLf _
-               & "  the overhead per traced item has been deducted from each of the " & cllTrc.Count / 2 & " traced item's execution time." & vbLf _
+               & "  the overhead per traced item has been deducted from each of the " & Trace.Count / 2 & " traced item's execution time." & vbLf _
                & "> The precision (decimals) for the displayed seconds defaults to 0,000000 (6 decimals)." & vbLf _
-               & "  This may be changed via the 'DisplayedSecsPrecision' Property." & vbLf _
+               & "  This may be changed via the 'DisplayedPrecision' Property." & vbLf _
                & "> Though the traced execution time comes with the highest possible precisssion it will vary from execution" & vbLf _
                & "  to execution because of different system conditions. For an estimation of the average execution time and" & vbLf _
                & "  the possible time spread, the trace will have to be repeated several times." & vbLf _
@@ -721,7 +764,7 @@ eh: Select Case ErrMsg(ErrSrc(PROC))
         Case vbNo:  Stop: Resume Next
         Case Else:  GoTo xt
     End Select
-    Set cllTrc = Nothing
+    Set Trace = Nothing
 End Function
 
 Public Function DsplyHdrCntrAbv(ByVal s1 As String, _
@@ -808,7 +851,7 @@ eh: Select Case ErrMsg(ErrSrc(PROC))
         Case vbNo:  Stop: Resume Next
         Case Else:  GoTo xt
     End Select
-    Set cllTrc = Nothing
+    Set Trace = Nothing
 End Function
 
 Private Function DsplyNtryAllCnsstnt(ByRef dct As Dictionary) As Boolean
@@ -839,10 +882,10 @@ Private Function DsplyNtryAllCnsstnt(ByRef dct As Dictionary) As Boolean
     
     '~~ Check for missing corresponding end entries while calculating the execution time for each end entry.
     For i = 1 To NtryLastBegin
-        If NtryIsBegin(cllTrc(i), cllBeginEntry) Then
+        If NtryIsBegin(Trace(i), cllBeginEntry) Then
             bConsistent = False
-            For j = i + 1 To cllTrc.Count
-                If NtryIsEnd(cllTrc(j), cllEndEntry) Then
+            For j = i + 1 To Trace.Count
+                If NtryIsEnd(Trace(j), cllEndEntry) Then
                     If ItmId(cllBeginEntry) = ItmId(cllEndEntry) Then
                         If ItmLvl(cllBeginEntry) = ItmLvl(cllEndEntry) Then
                             '~~ Calculate the executesd seconds for the end entry
@@ -865,7 +908,7 @@ next_begin_entry:
     Next i
     
     '~~ Check for missing corresponding begin entries (if the end entry has no executed ticks)
-    For Each v In cllTrc
+    For Each v In Trace
         If NtryIsEnd(v, cllEndEntry) Then
             If NtryTcksGrss(cllEndEntry) = 0 Then
                 '~~ No corresponding begin entry found
@@ -906,12 +949,12 @@ eh: Select Case ErrMsg(ErrSrc(PROC))
     End Select
 End Function
 
-Private Function DsplyTcksDffToScs(ByVal beginticks As Currency, _
+Private Function DsplyTcksDffToScs(ByVal BeginTicks As Currency, _
                                    ByVal endticks As Currency) As Currency
 ' ------------------------------------------------------------------------
 ' Returns the difference between begin- and endticks as seconds.
 ' ------------------------------------------------------------------------
-    IIf endticks - beginticks > 0, DsplyTcksDffToScs = (endticks - beginticks) / cySysFrequency, DsplyTcksDffToScs = 0
+    IIf endticks - BeginTicks > 0, DsplyTcksDffToScs = (endticks - BeginTicks) / cySysFrequency, DsplyTcksDffToScs = 0
 End Function
 
 Private Function DsplyValue( _
@@ -923,36 +966,28 @@ Private Function DsplyValue( _
     Else DsplyValue = IIf(dv_value >= 0, Format$(dv_value, dv_frmt), Space$(Len(dv_frmt)))
 End Function
 
-Private Function DsplyValueFormat(ByRef thisformat As String, _
-                                  ByVal forvalue As Variant) As String
-    thisformat = String$(DsplyValueLength(forvalue), "0") & "." & String$(DisplayedSecsPrecision, "0")
-End Function
-
-Public Function DsplyValueLength(ByVal v As Variant) As Long
-
-    If InStr(CStr(v), ".") <> 0 Then
-        DsplyValueLength = Len(Split(CStr(v), ".")(0))
-    ElseIf InStr(CStr(v), ",") <> 0 Then
-        DsplyValueLength = Len(Split(CStr(v), ",")(0))
-    Else
-        DsplyValueLength = Len(v)
-    End If
-
-End Function
+Private Property Get DsplyValueFormat(Optional ByVal forvalue As Variant = 999.999) As String
+    Select Case CLng(forvalue)
+        Case Is < 10:       DsplyValueFormat = "0" & "." & String$(DisplayedPrecision, "0")
+        Case Is < 100:      DsplyValueFormat = "00" & "." & String$(DisplayedPrecision, "0")
+        Case Is < 1000:     DsplyValueFormat = "000" & "." & String$(DisplayedPrecision, "0")
+        Case Is < 10000:    DsplyValueFormat = "0000" & "." & String$(DisplayedPrecision, "0")
+    End Select
+End Property
 
 Private Sub DsplyValuesFormatSet()
     Dim cllLast As Collection:  Set cllLast = NtryLst
-    DsplyValueFormat thisformat:=sFrmtTcksSys, forvalue:=ItmTcksSys(cllLast)
-    DsplyValueFormat thisformat:=sFrmtTcksElpsd, forvalue:=NtryTcksElpsd(cllLast)
-    DsplyValueFormat thisformat:=sFrmtTcksGrss, forvalue:=NtryTcksGrss(cllLast)
-    DsplyValueFormat thisformat:=sFrmtTcksOvrhdNtry, forvalue:=NtryTcksOvrhdNtry(cllLast)
-    DsplyValueFormat thisformat:=sFrmtTcksOvrhdItm, forvalue:=NtryTcksOvrhdItmMax
-    DsplyValueFormat thisformat:=sFrmtTcksNt, forvalue:=NtryTcksNt(cllLast)
-    DsplyValueFormat thisformat:=sFrmtScsElpsd, forvalue:=NtryScsElpsd(cllLast)
-    DsplyValueFormat thisformat:=sFrmtScsGrss, forvalue:=NtryScsGrss(cllLast)
-    DsplyValueFormat thisformat:=sFrmtScsOvrhdNtry, forvalue:=NtryScsOvrhdNtry(cllLast)
-    DsplyValueFormat thisformat:=sFrmtScsOvrhdItm, forvalue:=NtryScsOvrhdItm(cllLast)
-    DsplyValueFormat thisformat:=sFrmtScsNt, forvalue:=NtryScsNt(cllLast)
+    sFrmtTcksSys = DsplyValueFormat(ItmTcksSys(cllLast))
+    sFrmtTcksElpsd = DsplyValueFormat(NtryTcksElpsd(cllLast))
+    sFrmtTcksGrss = DsplyValueFormat(NtryTcksGrss(cllLast))
+    sFrmtTcksOvrhdNtry = DsplyValueFormat(NtryTcksOvrhdNtry(cllLast))
+    sFrmtTcksOvrhdItm = DsplyValueFormat(NtryTcksOvrhdItmMax)
+    sFrmtTcksNt = DsplyValueFormat(NtryTcksNt(cllLast))
+    sFrmtScsElpsd = DsplyValueFormat(NtryScsElpsd(cllLast))
+    sFrmtScsGrss = DsplyValueFormat(NtryScsGrss(cllLast))
+    sFrmtScsOvrhdNtry = DsplyValueFormat(NtryScsOvrhdNtry(cllLast))
+    sFrmtScsOvrhdItm = DsplyValueFormat(NtryScsOvrhdItm(cllLast))
+    sFrmtScsNt = DsplyValueFormat(NtryScsNt(cllLast))
 End Sub
 
 Public Sub EoC(ByVal eoc_id As String, _
@@ -964,8 +999,8 @@ Public Sub EoC(ByVal eoc_id As String, _
     Dim cll As Collection
     
     cyTcksOvrhdTrcStrt = SysCrrntTcks
-    If StckIsEmpty Then Exit Sub
-    If cllTrc Is Nothing Then Exit Sub
+    If StckIsEmpty(TraceStack) Then Exit Sub
+    If Trace Is Nothing Then Exit Sub
     TrcEnd trc_id:=eoc_id, trc_dir:=DIR_END_CODE, trc_inf:=eoc_inf, trc_cll:=cll
     cyTcksOvrhdTrc = SysCrrntTcks - cyTcksOvrhdTrcStrt ' overhead ticks caused by the collection of the begin trace entry
 
@@ -981,11 +1016,11 @@ Public Sub EoP(ByVal eop_id As String, _
     Dim cll As Collection
     
     cyTcksOvrhdTrcStrt = SysCrrntTcks
-    If StckIsEmpty Then Exit Sub        ' Nothing to trace any longer. Stack has been emptied after an error to finish the trace
-    If cllTrc Is Nothing Then Exit Sub  ' No trace or trace has finished
+    If StckIsEmpty(TraceStack) Then Exit Sub        ' Nothing to trace any longer. Stack has been emptied after an error to finish the trace
+    If Trace Is Nothing Then Exit Sub  ' No trace or trace has finished
     
     TrcEnd trc_id:=eop_id, trc_dir:=DIR_END_PROC, trc_inf:=eop_inf, trc_cll:=cll
-    If StckIsEmpty Then
+    If StckIsEmpty(TraceStack) Then
         Dsply
     End If
     cyTcksOvrhdTrc = SysCrrntTcks - cyTcksOvrhdTrcStrt ' overhead ticks caused by the collection of the end-of-trace entry
@@ -1172,6 +1207,7 @@ Private Function ErrMsg(ByVal err_source As String, _
 xt: Exit Function
 
 End Function
+
 Private Function ErrSrc(ByVal sProc As String) As String
     ErrSrc = "mTrc." & sProc
 End Function
@@ -1183,8 +1219,8 @@ Public Sub Finish(Optional ByRef inf As String = vbNullString)
 ' ------------------------------------------------------------
     Dim cll As Collection
     
-    While Not StckIsEmpty
-        Set cll = StckTop
+    While Not StckIsEmpty(TraceStack)
+        Set cll = StckTop(TraceStack)
         If NtryIsCode(cll) _
         Then mTrc.EoC eoc_id:=ItmId(cll), eoc_inf:=inf _
         Else mTrc.EoP eop_id:=ItmId(cll), eop_inf:=inf
@@ -1197,7 +1233,7 @@ Private Sub Initialize()
 ' -------------------------------------------------------
 ' Public allows an error handler to initialize the trace.
 ' -------------------------------------------------------
-    Set cllTrc = New Collection
+    Set Trace = New Collection
     Set cllNtryLast = Nothing
     dtTraceBegin = Now()
     cyTcksOvrhdItm = 0
@@ -1208,7 +1244,7 @@ Private Sub Initialize()
     
 End Sub
 
-Private Function Itm( _
+Private Function itm( _
                ByVal itm_drctv As String, _
                ByVal itm_id As String, _
                ByVal itm_inf As String, _
@@ -1227,7 +1263,7 @@ Private Function Itm( _
     av(enItmLvl) = itm_lvl
     av(enItmTcksSys) = itm_tckssys
     av(enPosItmArgs) = itm_args
-    Itm = av
+    itm = av
     
 End Function
 
@@ -1260,7 +1296,7 @@ Private Function Ntry(ByVal ntry_tcks As Currency, _
     Dim cll As New Collection
     Dim VarItm  As Variant
     
-    VarItm = Itm(itm_drctv:=ntry_dir, itm_id:=ntry_id, itm_inf:=ntry_inf, itm_lvl:=ntry_lvl, itm_tckssys:=ntry_tcks, itm_args:=ntry_args)
+    VarItm = itm(itm_drctv:=ntry_dir, itm_id:=ntry_id, itm_inf:=ntry_inf, itm_lvl:=ntry_lvl, itm_tckssys:=ntry_tcks, itm_args:=ntry_args)
     NtryItm(cll) = VarItm
 '    NtryTestDsply ntry_tcks:=ntry_tcks, ntry_dir:=ntry_dir, ntry_id:=ntry_id, ntry_lvl:=ntry_lvl, ntry_inf:=ntry_inf
     Set Ntry = cll
@@ -1309,8 +1345,8 @@ Private Function NtryLastBegin() As Long
     
     Dim i As Long
     
-    For i = cllTrc.Count To 1 Step -1
-        If NtryIsBegin(cllTrc(i)) Then
+    For i = Trace.Count To 1 Step -1
+        If NtryIsBegin(Trace(i)) Then
             NtryLastBegin = i
             Exit Function
         End If
@@ -1319,7 +1355,7 @@ Private Function NtryLastBegin() As Long
 End Function
 
 Private Function NtryLst() As Collection ' Retun last entry
-    Set NtryLst = cllTrc(cllTrc.Count)
+    Set NtryLst = Trace(Trace.Count)
 End Function
 
 Private Function NtryTcksOvrhdItmMax() As Double
@@ -1327,7 +1363,7 @@ Private Function NtryTcksOvrhdItmMax() As Double
     Dim cll As Collection
     Dim v   As Variant
     
-    For Each v In cllTrc
+    For Each v In Trace
         Set cll = v
         NtryTcksOvrhdItmMax = Max(NtryTcksOvrhdItmMax, NtryTcksOvrhdItm(cll))
     Next v
@@ -1341,10 +1377,10 @@ Private Sub NtryTestDsply( _
                     ByVal ntry_lvl As Long, _
                     ByVal ntry_inf As String)
                     
-    If cllStck Is Nothing Then
+    If TraceStack Is Nothing Then
         Debug.Print ntry_tcks, ntry_lvl, "(1)", ntry_dir, ntry_id, ntry_inf
     Else
-        Debug.Print ntry_tcks, ntry_lvl, "(" & cllStck.Count & ")", ntry_dir, ntry_id, ntry_inf
+        Debug.Print ntry_tcks, ntry_lvl, "(" & TraceStack.Count & ")", ntry_dir, ntry_id, ntry_inf
     End If
 End Sub
 
@@ -1368,12 +1404,12 @@ Private Sub StckAdjust(ByVal trc_id As String)
     Dim cllNtry As Collection
     Dim i       As Long
     
-    For i = cllStck.Count To 1 Step -1
-        Set cllNtry = cllStck(i)
+    For i = TraceStack.Count To 1 Step -1
+        Set cllNtry = TraceStack(i)
         If ItmId(cllNtry) = trc_id Then
             Exit For
         Else
-            cllStck.Remove (cllStck.Count)
+            TraceStack.Remove (TraceStack.Count)
             iTrcLvl = iTrcLvl - 1
         End If
     Next i
@@ -1393,13 +1429,14 @@ Private Function StckEd(ByVal stck_id As String, _
     Dim cllNtry As Collection
     Dim i       As Long
     
-    For i = cllStck.Count To 1 Step -1
-        Set cllNtry = cllStck(i)
+    For i = TraceStack.Count To 1 Step -1
+        Set cllNtry = TraceStack(i)
         If ItmId(cllNtry) = stck_id Then ' And ItmLvl(cllNtry) = stck_lvl Then
             StckEd = True
             Exit Function
         End If
     Next i
+
 xt: Exit Function
 
 eh: Select Case ErrMsg(ErrSrc(PROC))
@@ -1408,53 +1445,65 @@ eh: Select Case ErrMsg(ErrSrc(PROC))
     End Select
 End Function
 
-Private Function StckIsEmpty() As Boolean
-    StckIsEmpty = cllStck Is Nothing
-    If Not StckIsEmpty Then StckIsEmpty = cllStck.Count = 0
+Private Function StckIsEmpty(ByVal stck As Collection) As Boolean
+    StckIsEmpty = stck Is Nothing
+    If Not StckIsEmpty Then StckIsEmpty = stck.Count = 0
 End Function
 
-Private Sub StckPop(ByVal pop As Collection)
-' ------------------------------------------
+Private Sub StckPop(ByRef stck As Collection, _
+                    ByVal stck_item As Variant, _
+           Optional ByRef stck_ppd As Collection)
+' ----------------------------------------------------------------------------
 '
-' ------------------------------------------
-    Dim cllTop As Collection: Set cllTop = StckTop
+' ----------------------------------------------------------------------------
+    Const PROC = "StckPop"
     
-    While ItmId(pop) <> ItmId(cllTop) And Not StckIsEmpty
+    On Error GoTo eh
+    Dim cllTop  As Collection: Set cllTop = StckTop(stck)
+    Dim cll     As Collection: Set cll = stck_item
+    
+    While ItmId(cll) <> ItmId(cllTop) And Not StckIsEmpty(TraceStack)
         '~~ Finish any unfinished code trace still on the stack which needs to be finished first
         If NtryIsCode(cllTop) Then
             mTrc.EoC eoc_id:=ItmId(cllTop), eoc_inf:="ended by stack!!"
         Else
             mTrc.EoP eop_id:=ItmId(cllTop), eop_inf:="ended by stack!!"
         End If
-        If Not StckIsEmpty Then Set cllTop = StckTop
+        If Not StckIsEmpty(TraceStack) Then Set cllTop = StckTop(stck)
     Wend
     
-    If StckIsEmpty Then GoTo xt
+    If StckIsEmpty(TraceStack) Then GoTo xt
     
-    If ItmId(pop) = ItmId(cllTop) Then
-        cllStck.Remove cllStck.Count
-        Set cllTop = StckTop
+    If ItmId(cll) = ItmId(cll) Then
+        Set stck_ppd = cllTop
+        TraceStack.Remove TraceStack.Count
+        Set cllTop = StckTop(TraceStack)
     Else
-        Debug.Print "Stack Pop ='" & ItmId(pop) _
+        Debug.Print "Stack Pop ='" & ItmId(cll) _
                   & "', Stack Top = '" & ItmId(cllTop) _
                   & "', Stack Dir = '" & ItmDrctv(cllTop) _
                   & "', Stack Lvl = '" & ItmLvl(cllTop) _
-                  & "', Stack Cnt = '" & cllStck.Count
+                  & "', Stack Cnt = '" & TraceStack.Count
         Stop
     End If
-xt:
+
+xt: Exit Sub
+
+eh: Select Case ErrMsg(ErrSrc(PROC))
+        Case vbResume:  Stop: Resume
+        Case Else:      GoTo xt
+    End Select
 End Sub
 
-Private Sub StckPush(ByVal cll As Collection)
-      
-    If cllStck Is Nothing Then Set cllStck = New Collection
-    cllStck.Add cll
-
+Private Sub StckPush(ByRef stck As Collection, _
+                     ByVal stck_item As Variant)
+    If stck Is Nothing Then Set stck = New Collection
+    stck.Add stck_item
 End Sub
 
-Private Function StckTop() As Collection
-    If Not StckIsEmpty _
-    Then Set StckTop = cllStck(cllStck.Count)
+Private Function StckTop(ByVal stck As Collection) As Collection
+    If Not StckIsEmpty(stck) _
+    Then Set StckTop = stck(stck.Count)
 End Function
 
 Public Sub Terminate()
@@ -1462,19 +1511,78 @@ Public Sub Terminate()
 ' Should be called by any error handling when a new execution trace
 ' is about to begin with the very first procedure's execution.
 ' -----------------------------------------------------------------
-    Set cllTrc = Nothing
-    Set cllStck = Nothing
+    Set Trace = Nothing
+    Set TraceStack = Nothing
     cyTcksPaused = 0
 End Sub
 
-Private Sub TrcAdd( _
-             ByVal trc_id As String, _
-             ByVal trc_tcks As Currency, _
-             ByVal trc_dir As String, _
-             ByVal trc_lvl As Long, _
-    Optional ByVal trc_args As Variant, _
-    Optional ByVal trc_inf As String = vbNullString, _
-    Optional ByRef trc_ntry As Collection)
+Private Sub TraceLogBgn(ByVal tl_ticks As Currency, _
+                        ByVal tl_dir As String, _
+                        ByVal tl_id As String)
+' ----------------------------------------------------------------------------
+' Write an begin trace line to the trace log file (sTraceLogFile) - provided
+' one had been specified. When the TraceStack contains the very first item
+' write an additional Begion trace header line.
+' ----------------------------------------------------------------------------
+    Dim LogText As String
+    
+    sFrmtScsElpsd = DsplyValueFormat(99.99999)
+    
+    If Not sTraceLogFile = vbNullString Then
+        If TraceStack.Count = 1 Then
+            TraceLogTxt(sTraceLogFile) = vbNullString ' empty line in new file
+            LogText = String(Len(sFrmtScsElpsd) + 2, " ") & tl_dir & Format(Now(), " hh:mm:ss") & " Begin execution trace "
+            TraceLogTxt(sTraceLogFile) = LogText
+        End If
+        LogText = String(Len(sFrmtScsElpsd) + 2, " ") & RepeatStrng("|  ", TraceStack.Count) & tl_dir & " " & ThisWorkbook.Name & " " & tl_id
+        TraceLogTxt(sTraceLogFile) = LogText
+    End If
+End Sub
+
+Private Sub TraceLogEnd(ByVal tl_ticks_begin As Currency, _
+                        ByVal tl_ticks_end As Currency, _
+                        ByVal tl_dir As String, _
+                        ByVal tl_id As String)
+' ----------------------------------------------------------------------------
+' Write an end trace line to the trace log file (sTraceLogFile) - provided
+' one had been specified - with the execution time calculated in seconds.
+' When the TraceStack is empty write an additional End trace footer line.
+' ----------------------------------------------------------------------------
+    Dim LogText         As String
+    Dim TicksElapsed    As Currency: TicksElapsed = tl_ticks_end - tl_ticks_begin
+    Dim SecsElapsed     As Currency: SecsElapsed = CDec(TicksElapsed) / CDec(SysFrequency)
+    
+    sFrmtScsElpsd = DsplyValueFormat(99.99999)
+  
+    If Not sTraceLogFile = vbNullString Then
+        LogText = " " & Format(SecsElapsed, sFrmtScsElpsd) & " " & RepeatStrng("|  ", TraceStack.Count + 1) & tl_dir & " " & ThisWorkbook.Name & " " & tl_id
+        TraceLogTxt(sTraceLogFile) = LogText
+        If TraceStack.Count = 0 Then
+            LogText = String(Len(sFrmtScsElpsd) + 2, " ") & tl_dir & Format(Now(), " hh:mm:ss") & " End execution trace "
+            TraceLogTxt(sTraceLogFile) = LogText
+        End If
+    End If
+End Sub
+
+Public Property Let TraceLogInfo(ByVal tl_inf As String)
+' ----------------------------------------------------------------------------
+' Write an info line (tl_inf) to the trace log file (sTraceLogFile) provided
+' one had been specified for this execution trace
+' ----------------------------------------------------------------------------
+Dim LogText As String
+    If Not sTraceLogFile = vbNullString And TraceStack.Count > 1 Then
+        LogText = String(Len(sFrmtScsElpsd) + 2, " ") & RepeatStrng("|  ", TraceStack.Count) & "|  " & ThisWorkbook.Name & " " & tl_inf
+        TraceLogTxt(tl_file:=sTraceLogFile, tl_append:=True) = LogText
+    End If
+End Property
+
+Private Sub TrcAdd(ByVal trc_id As String, _
+                   ByVal trc_tcks As Currency, _
+                   ByVal trc_dir As String, _
+                   ByVal trc_lvl As Long, _
+          Optional ByVal trc_args As Variant, _
+          Optional ByVal trc_inf As String = vbNullString, _
+          Optional ByRef trc_ntry As Collection)
 ' ----------------------------------------------------
 ' Adds an entry to the trace collection.
 ' ----------------------------------------------------
@@ -1501,7 +1609,7 @@ Private Sub TrcAdd( _
     
     If Not bAlreadyAdded Then
         Set trc_ntry = Ntry(ntry_tcks:=trc_tcks, ntry_dir:=trc_dir, ntry_id:=trc_id, ntry_lvl:=trc_lvl, ntry_inf:=trc_inf, ntry_args:=trc_args)
-        cllTrc.Add trc_ntry
+        Trace.Add trc_ntry
         Set cllNtryLast = trc_ntry
         sLastDrctv = trc_dir
         sLastId = trc_id
@@ -1522,10 +1630,10 @@ Private Sub TrcBgn(ByVal trc_id As String, _
                    ByVal trc_dir As String, _
           Optional ByVal trc_args As Variant, _
           Optional ByRef trc_cll As Collection)
-' ----------------------------------------------
-' Collect a trace begin entry with the current
-' ticks count for the procedure or code (item).
-' ----------------------------------------------
+' ----------------------------------------------------------------------------
+' Collect a trace begin entry with the current ticks count for the procedure
+' or code (item).
+' ----------------------------------------------------------------------------
     Const PROC = "TrcEnd"
     
     On Error GoTo eh
@@ -1533,7 +1641,6 @@ Private Sub TrcBgn(ByVal trc_id As String, _
     Dim i As Long
            
     iTrcLvl = iTrcLvl + 1
-'    Debug.Print "TraceBegin : " & trc_id
     TrcAdd trc_id:=trc_id _
          , trc_tcks:=cy _
          , trc_dir:=trc_dir _
@@ -1541,7 +1648,8 @@ Private Sub TrcBgn(ByVal trc_id As String, _
          , trc_inf:=vbNullString _
          , trc_args:=trc_args _
          , trc_ntry:=trc_cll
-    StckPush trc_cll
+    StckPush TraceStack, trc_cll
+    TraceLogBgn tl_ticks:=cy, tl_dir:=trc_dir, tl_id:=trc_id
 
 xt: Exit Sub
     
@@ -1563,8 +1671,9 @@ Private Sub TrcEnd(ByVal trc_id As String, _
     
     On Error GoTo eh
     Dim cy  As Currency:    cy = SysCrrntTcks - cyTcksPaused
-    Dim top As Collection:  Set top = StckTop
-       
+    Dim Top As Collection:  Set Top = StckTop(TraceStack)
+    Dim itm As Collection
+    
     If trc_inf <> vbNullString Then
         trc_inf = TRC_INFO_DELIM & trc_inf & TRC_INFO_DELIM
     End If
@@ -1578,8 +1687,8 @@ Private Sub TrcEnd(ByVal trc_id As String, _
         StckAdjust trc_id
     End If
     
-    If ItmId(top) <> trc_id And ItmLvl(top) = iTrcLvl Then
-        StckPop top
+    If ItmId(Top) <> trc_id And ItmLvl(Top) = iTrcLvl Then
+        StckPop TraceStack, Top
     End If
 
     TrcAdd trc_id:=trc_id _
@@ -1589,7 +1698,9 @@ Private Sub TrcEnd(ByVal trc_id As String, _
          , trc_inf:=vbNullString _
          , trc_ntry:=trc_cll
          
-    StckPop trc_cll
+    StckPop stck:=TraceStack, stck_item:=trc_cll, stck_ppd:=itm
+    TraceLogEnd tl_ticks_begin:=ItmTcksSys(itm), tl_ticks_end:=cy, tl_dir:=trc_dir, tl_id:=trc_id
+    
     iTrcLvl = iTrcLvl - 1
 
 xt: Exit Sub
@@ -1601,12 +1712,12 @@ eh: Select Case ErrMsg(ErrSrc(PROC))
 End Sub
 
 Private Function TrcIsEmpty() As Boolean
-    TrcIsEmpty = cllTrc Is Nothing
-    If Not TrcIsEmpty Then TrcIsEmpty = cllTrc.Count = 0
+    TrcIsEmpty = Trace Is Nothing
+    If Not TrcIsEmpty Then TrcIsEmpty = Trace.Count = 0
 End Function
 
 Private Function TrcLast() As Collection
-    If cllTrc.Count <> 0 _
-    Then Set TrcLast = cllTrc(cllTrc.Count)
+    If Trace.Count <> 0 _
+    Then Set TrcLast = Trace(Trace.Count)
 End Function
 
