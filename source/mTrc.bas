@@ -1531,10 +1531,10 @@ Private Sub TraceLogBgn(ByVal tl_ticks As Currency, _
     If Not sTraceLogFile = vbNullString Then
         If TraceStack.Count = 1 Then
             TraceLogTxt(sTraceLogFile) = vbNullString ' empty line in new file
-            LogText = String(Len(sFrmtScsElpsd) + 2, " ") & tl_dir & Format(Now(), " hh:mm:ss") & " Begin execution trace "
+            LogText = VBA.String(Len(sFrmtScsElpsd) + 2, " ") & tl_dir & VBA.Format(Now(), " hh:mm:ss") & " Begin execution trace "
             TraceLogTxt(sTraceLogFile) = LogText
         End If
-        LogText = String(Len(sFrmtScsElpsd) + 2, " ") & RepeatStrng("|  ", TraceStack.Count) & tl_dir & " " & ThisWorkbook.Name & " " & tl_id
+        LogText = VBA.String(Len(sFrmtScsElpsd) + 2, " ") & RepeatStrng("|  ", TraceStack.Count) & tl_dir & " " & ThisWorkbook.Name & " " & tl_id
         TraceLogTxt(sTraceLogFile) = LogText
     End If
 End Sub

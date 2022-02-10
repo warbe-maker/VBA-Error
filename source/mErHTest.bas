@@ -189,7 +189,7 @@ xt: Exit Function
 End Function
 
 Private Function ErrSrc(ByVal s As String) As String
-    ErrSrc = "mTest." & s
+    ErrSrc = "mErHTest." & s
 End Function
 
 Private Function RegressionInfo() As String
@@ -217,17 +217,14 @@ Public Sub Test_1_Application_Error()
     Const PROC = "Test_1_Application_Error"
     
     On Error GoTo eh
-    
     BoP ErrSrc(PROC)
     
     Test_1_Application_Error_TestProc_2a
-
-    Debug.Assert mErH.MostRecentError = AppErr(1)
-    
+  
 xt: EoP ErrSrc(PROC)
     Exit Sub
 
-eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
+eh: Select Case ErrMsg(ErrSrc(PROC))
         Case vbResume:  Stop: Resume
         Case Else:      GoTo xt
     End Select
@@ -244,7 +241,7 @@ Private Sub Test_1_Application_Error_TestProc_2a()
 xt: EoP ErrSrc(PROC)
     Exit Sub
 
-eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
+eh: Select Case ErrMsg(ErrSrc(PROC))
         Case vbResume:  Stop: Resume
         Case Else:      GoTo xt
     End Select
@@ -261,7 +258,7 @@ Private Sub Test_1_Application_Error_TestProc_2b()
 xt: EoP ErrSrc(PROC)
     Exit Sub
 
-eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
+eh: Select Case ErrMsg(err_source:=ErrSrc(PROC))
         Case vbResume:  Stop: Resume
         Case Else:      GoTo xt
     End Select
@@ -277,6 +274,7 @@ Private Sub Test_1_Application_Error_TestProc_2c()
     On Error GoTo eh
 
     BoP ErrSrc(PROC)
+    BoTP ErrSrc(PROC), AppErr(1)
 181 Err.Raise AppErr(1), ErrSrc(PROC), _
         "This is a programmed i.e. an ""Application Error""!" & CONCAT & _
         "The AppErr service has been used to turn the positive into a negative number by adding " & _
@@ -290,7 +288,7 @@ Private Sub Test_1_Application_Error_TestProc_2c()
 xt: EoP ErrSrc(PROC)
     Exit Sub
 
-eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
+eh: Select Case ErrMsg(err_source:=ErrSrc(PROC))
         Case vbResume:  Stop: Resume
         Case Else:      GoTo xt
     End Select
@@ -298,14 +296,11 @@ End Sub
 
 Public Sub Test_2_VB_Runtime_Error()
 ' -------------------------------------------------------------------------------
-' - With Conditional Compile Argument BopEop = 0:
-'   Display of the error with the error path only
-' - With Conditional Compile Argument BopEop = 1:
-'   Display of the error with the error path plus
-'   Display of a full execution trace
-'
-' Requires:
-' - Conditional Compile Argument ExecTrace = 1.
+' With Conditional Compile Argument:
+' - MsgComp = 0 : ErHComp = 0  Display of the error with VBA.MsgBox
+' - MsgComp = 1 : ErHComp = 0  Display of the error without error path
+' - ErHComp = 1                Display of the error with the path to the error
+' - ExecTrace = 1              Display of the test execution trace
 ' -------------------------------------------------------------------------------
     Const PROC = "Test_2_VB_Runtime_Error"
     
@@ -314,12 +309,10 @@ Public Sub Test_2_VB_Runtime_Error()
     BoP ErrSrc(PROC)
     Test_2_VB_Runtime_Error_TestProc_3a
 
-    Debug.Assert mErH.MostRecentError = 11
-
 xt: EoP ErrSrc(PROC)
     Exit Sub
 
-eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
+eh: Select Case ErrMsg(err_source:=ErrSrc(PROC))
         Case vbResume:  Stop: Resume
         Case Else:      GoTo xt
     End Select
@@ -336,7 +329,7 @@ Private Sub Test_2_VB_Runtime_Error_TestProc_3a()
 xt: EoP ErrSrc(PROC)
     Exit Sub
 
-eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
+eh: Select Case ErrMsg(err_source:=ErrSrc(PROC))
         Case vbResume:  Stop: Resume
         Case Else:      GoTo xt
     End Select
@@ -353,7 +346,7 @@ Private Sub Test_2_VB_Runtime_Error_TestProc_3b()
 xt: EoP ErrSrc(PROC)
     Exit Sub
 
-eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
+eh: Select Case ErrMsg(err_source:=ErrSrc(PROC))
         Case vbResume:  Stop: Resume
         Case Else:      GoTo xt
     End Select
@@ -370,7 +363,7 @@ Private Sub Test_2_VB_Runtime_Error_TestProc_3c()
 xt: EoP ErrSrc(PROC)
     Exit Sub
 
-eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
+eh: Select Case ErrMsg(err_source:=ErrSrc(PROC))
         Case vbResume:  Stop: Resume
         Case Else:      GoTo xt
     End Select
@@ -395,7 +388,7 @@ Private Sub Test_2_VB_Runtime_Error_TestProc_3d( _
 xt: EoP ErrSrc(PROC)
     Exit Sub
 
-eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
+eh: Select Case ErrMsg(err_source:=ErrSrc(PROC))
         Case vbResume:  Stop: Resume
         Case Else:      GoTo xt
     End Select
@@ -416,7 +409,7 @@ Public Sub Test_4_DebugAndTest_with_ErrMsg()
 xt: EoP ErrSrc(PROC)
     Exit Sub
 
-eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
+eh: Select Case ErrMsg(err_source:=ErrSrc(PROC))
         Case vbResume:  Stop: Resume
         Case Else:      GoTo xt
     End Select
@@ -433,7 +426,7 @@ Private Sub Test_4_DebugAndTest_with_ErrMsg_TestProc_5a()
 xt: EoP ErrSrc(PROC)
     Exit Sub
     
-eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
+eh: Select Case ErrMsg(err_source:=ErrSrc(PROC))
         Case vbResume:  Stop: Resume
         Case Else:      GoTo xt
     End Select
@@ -448,7 +441,7 @@ Public Sub Test_5_No_Exit_Statement()
     On Error GoTo eh
 xt: Exit Sub
 
-eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
+eh: Select Case ErrMsg(err_source:=ErrSrc(PROC))
         Case vbResume:  Stop: Resume
         Case Else:      GoTo xt
     End Select
@@ -476,7 +469,7 @@ Public Sub Test_6_VB_Runtime_Error_Pass_on()
 xt: EoP ErrSrc(PROC)
     Exit Sub
 
-eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
+eh: Select Case ErrMsg(err_source:=ErrSrc(PROC))
         Case vbResume:  Stop: Resume
         Case Else:      GoTo xt
     End Select
@@ -490,7 +483,7 @@ Private Sub Test_6_VB_Runtime_Error_TestProc_3a()
 
 xt: Exit Sub
 
-eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
+eh: Select Case ErrMsg(err_source:=ErrSrc(PROC))
         Case vbResume:  Stop: Resume
         Case Else:      GoTo xt
     End Select
@@ -504,7 +497,7 @@ Private Sub Test_6_VB_Runtime_Error_TestProc_3b()
 
 xt: Exit Sub
 
-eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
+eh: Select Case ErrMsg(err_source:=ErrSrc(PROC))
         Case vbResume:  Stop: Resume
         Case Else:      GoTo xt
     End Select
@@ -518,7 +511,7 @@ Private Sub Test_6_VB_Runtime_Error_TestProc_3c()
 
 xt: Exit Sub
 
-eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
+eh: Select Case ErrMsg(err_source:=ErrSrc(PROC))
         Case vbResume:  Stop: Resume
         Case Else:      GoTo xt
     End Select
@@ -540,7 +533,7 @@ Private Sub Test_6_VB_Runtime_Error_TestProc_3d( _
 
 xt: Exit Sub
 
-eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
+eh: Select Case ErrMsg(err_source:=ErrSrc(PROC))
         Case vbResume:  Stop: Resume
         Case Else:      GoTo xt
     End Select
@@ -568,19 +561,20 @@ Public Sub Test_0_Regression()
     mErH.Regression = True
     mTrc.DisplayedInfo = Compact
     
-'    mErH.BoTP ErrSrc(PROC), AppErr(1), 11
     BoP ErrSrc(PROC)
+    mErH.BoTP ErrSrc(PROC), AppErr(1)
     Test_1_Application_Error
+    mErH.BoTP ErrSrc(PROC), 11
     Test_2_VB_Runtime_Error
-
-    Debug.Assert RecentErrors(1) = AppErr(1)
-    Debug.Assert RecentErrors(2) = 11
     
 xt: EoP ErrSrc(PROC)
     mErH.Regression = False
     Exit Sub
     
-eh: mErH.ErrMsg err_source:=ErrSrc(PROC)
+eh: Select Case ErrMsg(err_source:=ErrSrc(PROC))
+        Case vbResume:  Stop: Resume
+        Case Else:      GoTo xt
+    End Select
 End Sub
 
 Public Sub Test_7_VB_Runtime_Error_EntryProc_known()
@@ -603,7 +597,7 @@ Public Sub Test_7_VB_Runtime_Error_EntryProc_known()
 xt: EoP ErrSrc(PROC)
     Exit Sub
 
-eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
+eh: Select Case ErrMsg(err_source:=ErrSrc(PROC))
         Case vbResume:  Stop: Resume
         Case Else:      GoTo xt
     End Select
@@ -618,7 +612,7 @@ Private Sub Test_7_VB_Runtime_Error_TestProc_3a()
     
 xt: Exit Sub
 
-eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
+eh: Select Case ErrMsg(err_source:=ErrSrc(PROC))
         Case vbResume:  Stop: Resume
         Case Else:      GoTo xt
     End Select
@@ -633,7 +627,7 @@ Private Sub Test_7_VB_Runtime_Error_TestProc_3b()
     
 xt: Exit Sub
 
-eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
+eh: Select Case ErrMsg(err_source:=ErrSrc(PROC))
         Case vbResume:  Stop: Resume
         Case Else:      GoTo xt
     End Select
@@ -648,7 +642,7 @@ Private Sub Test_7_VB_Runtime_Error_TestProc_3c()
     
 xt: Exit Sub
 
-eh: Select Case mErH.ErrMsg(ErrSrc(PROC))
+eh: Select Case ErrMsg(ErrSrc(PROC))
         Case vbResume:  Stop: Resume
         Case Else:      GoTo xt
     End Select
@@ -671,7 +665,7 @@ Private Sub Test_7_VB_Runtime_Error_TestProc_3d( _
 
 xt: Exit Sub
 
-eh: Select Case mErH.ErrMsg(ErrSrc(PROC))
+eh: Select Case ErrMsg(ErrSrc(PROC))
         Case vbResume:  Stop: Resume
         Case Else:      GoTo xt
     End Select
@@ -695,7 +689,7 @@ Public Sub Test_8_VB_Runtime_Error_EntryProc_unknown()
 
 xt: Exit Sub
 
-eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
+eh: Select Case ErrMsg(err_source:=ErrSrc(PROC))
         Case vbResume:  Stop: Resume
         Case Else:      GoTo xt
     End Select
@@ -710,7 +704,7 @@ Private Sub Test_8_VB_Runtime_Error_TestProc_3a()
     
 xt: Exit Sub
 
-eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
+eh: Select Case ErrMsg(err_source:=ErrSrc(PROC))
         Case vbResume:  Stop: Resume
         Case Else:      GoTo xt
     End Select
@@ -725,7 +719,7 @@ Private Sub Test_8_VB_Runtime_Error_TestProc_3b()
     
 xt: Exit Sub
 
-eh: Select Case mErH.ErrMsg(err_source:=ErrSrc(PROC))
+eh: Select Case ErrMsg(err_source:=ErrSrc(PROC))
         Case vbResume:  Stop: Resume
         Case Else:      GoTo xt
     End Select
@@ -740,7 +734,7 @@ Private Sub Test_8_VB_Runtime_Error_TestProc_3c()
     
 xt: Exit Sub
 
-eh: Select Case mErH.ErrMsg(ErrSrc(PROC))
+eh: Select Case ErrMsg(ErrSrc(PROC))
         Case vbResume:  Stop: Resume
         Case Else:      GoTo xt
     End Select
@@ -763,7 +757,7 @@ Private Sub Test_8_VB_Runtime_Error_TestProc_3d( _
 
 xt: Exit Sub
 
-eh: Select Case mErH.ErrMsg(ErrSrc(PROC))
+eh: Select Case ErrMsg(ErrSrc(PROC))
         Case vbResume:  Stop: Resume
         Case Else:      GoTo xt
     End Select
