@@ -83,6 +83,23 @@ With `mErH.Regression = True` the _ErrMsg_ service runs in regression test mode 
 ## Usage
 See blog-post [A common VBA Error Handler][6] for the details
 
+### Personal and public use of (my) _Common Components_
+I do not like the idea maintaining different code versions of _Common Components_, one which I use in my VB-Projects and another 'public' version. On the other hand I do not want to urge users of my _Common Components_ to also use the other _Common Components_ which have become a de facto standard for me.
+
+#### Managing the splits
+The primary goal is to provide _Common Components_ which are as autonomous as possible by allowing to optionally use them in a more sophisticated environment. This is achieved by a couple of procedures which only optionally use other _Common Components_ when also installed which is indicated by the use of a couple of _Conditional Compile Arguments_:
+
+| Conditional<br>Compile&nbsp;Argument | Purpose |
+| ------------------------------------ | ------- |
+| _Debugging_                          | Indicates that error messages should be displayed with a debugging option allowing to resume the error line |
+| _ExecTrace_                          | Indicates that the _[mTrc][4]_ module is installed
+| _MsgComp_                            | indicates that the _[mMsg][3]_, _[fMsg.frm][1]_, and _[fMsg.frx][2]_ are installed |
+| _ErHComp_                            | Indicates that the _[mErH][6]_ is installed |
+
+By these means other users are no bothered by my personal preferences - or are only as little as possible :-).
+
+
+
 ## Contribution, development, test, maintenance
 The dedicated _Common VBA Component Workbook_ **[ErH.xlsm][8]** is used for development, test, and maintenance. I keep this Workbook in a dedicated folder which is the local equivalent (in github terminology the clone of this public GitHub repo. The module **_mTest_** contains all obligatory test procedures executed when the code is modified. Code modifications are preferably made in a Github branch which is merged to the master once a code change has finished and successfully tested.
 
