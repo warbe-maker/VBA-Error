@@ -131,7 +131,7 @@ Private Function ErrMsg(ByVal err_source As String, _
     '~~ Obtain error information from the Err object for any argument not provided
     If err_no = 0 Then err_no = Err.Number
     If err_line = 0 Then ErrLine = Erl
-    If err_source = vbNullString Then err_source = Err.Source
+    If err_source = vbNullString Then err_source = Err.source
     If err_dscrptn = vbNullString Then err_dscrptn = Err.Description
     If err_dscrptn = vbNullString Then err_dscrptn = "--- No error description available ---"
     
@@ -219,6 +219,7 @@ Public Sub Test_1_Application_Error()
     On Error GoTo eh
     BoP ErrSrc(PROC)
     
+    mErH.Asserted AppErr(1)
     Test_1_Application_Error_TestProc_2a
   
 xt: EoP ErrSrc(PROC)
@@ -274,7 +275,7 @@ Private Sub Test_1_Application_Error_TestProc_2c()
     On Error GoTo eh
 
     BoP ErrSrc(PROC)
-    BoTP ErrSrc(PROC), AppErr(1)
+    Asserted AppErr(1)
 181 Err.Raise AppErr(1), ErrSrc(PROC), _
         "This is a programmed i.e. an ""Application Error""!" & CONCAT & _
         "The AppErr service has been used to turn the positive into a negative number by adding " & _
@@ -307,6 +308,7 @@ Public Sub Test_2_VB_Runtime_Error()
     On Error GoTo eh
     
     BoP ErrSrc(PROC)
+    mErH.Asserted 11
     Test_2_VB_Runtime_Error_TestProc_3a
 
 xt: EoP ErrSrc(PROC)
@@ -559,16 +561,18 @@ Public Sub Test_0_Regression()
     On Error GoTo eh
     
     mErH.Regression = True
-    mTrc.DisplayedInfo = Compact
     
     BoP ErrSrc(PROC)
-    mErH.BoTP ErrSrc(PROC), AppErr(1)
     Test_1_Application_Error
-    mErH.BoTP ErrSrc(PROC), 11
     Test_2_VB_Runtime_Error
     
 xt: EoP ErrSrc(PROC)
     mErH.Regression = False
+#If ExecTrace = 1 Then
+    mTrc.Dsply
+    Kill mTrc.LogFile
+    mTrc.Terminate
+#End If
     Exit Sub
     
 eh: Select Case ErrMsg(err_source:=ErrSrc(PROC))

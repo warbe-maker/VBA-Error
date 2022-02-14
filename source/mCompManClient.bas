@@ -34,17 +34,41 @@ Public Sub CompManService(ByVal cm_service As String, _
     Const COMPMAN_BY_DEVLP = "CompMan.xlsb!mCompMan."
     
     On Error GoTo eh
-    Dim Done As Boolean
+    Dim vDone As Variant
     
     On Error Resume Next
-    
-    Done = Application.Run(COMPMAN_BY_ADDIN & cm_service, ThisWorkbook, hosted)
-    If Err.Number = 1004 Or Not Done Then
+    vDone = Application.Run(COMPMAN_BY_ADDIN & cm_service, ThisWorkbook, hosted)
+    If Err.Number = 1004 Then
+        '~~ The Addin is (currently) not available at all. Let's try with the CompMan.xlsb which might be open
         On Error Resume Next
         Application.Run COMPMAN_BY_DEVLP & cm_service, ThisWorkbook, hosted
         If Err.Number = 1004 Then
             Application.StatusBar = "'" & cm_service & "' neither available by '" & COMPMAN_BY_ADDIN & "' nor by '" & COMPMAN_BY_DEVLP & "'!"
+            GoTo xt
         End If
+    ElseIf Err.Number = 0 Then
+        Select Case vDone
+            Case AppErr(1)
+            '~~ CompMan is not configured prperly
+            Case AppErr(2)
+                '~~ Workbook not serviced because not in the configured serviced folder
+                GoTo xt
+            Case AppErr(3)
+                '~~ The requestes service was UpdateOutdatedUsedCommonComponents but
+                '~~ the servicing and the service Workbook are both CompMan.xlsb and
+                '~~ the Workbook cannot update itself. This error only happens when the
+                '~~ Addin is not available.
+            Case AppErr(4)
+                '~~ The Addin is available but is currently paused. It requires CompMan.xlsb
+                '~~ to Continue it. When CompMan.xlsb is open, the service will be provided however
+                On Error Resume Next
+                Application.Run COMPMAN_BY_DEVLP & cm_service, ThisWorkbook, hosted
+                If Err.Number = 1004 Then
+                    Application.StatusBar = "'" & cm_service & "' neither available by '" & COMPMAN_BY_ADDIN & "' nor by '" & COMPMAN_BY_DEVLP & "'!"
+                End If
+        End Select
+    ElseIf IsString(vDone) Then
+        Application.StatusBar = vDone
     End If
 
 xt: Exit Sub
@@ -141,7 +165,7 @@ Public Function ErrMsg(ByVal err_source As String, _
     '~~ Obtain error information from the Err object for any argument not provided
     If err_no = 0 Then err_no = Err.Number
     If err_line = 0 Then ErrLine = Erl
-    If err_source = vbNullString Then err_source = Err.Source
+    If err_source = vbNullString Then err_source = Err.source
     If err_dscrptn = vbNullString Then err_dscrptn = Err.Description
     If err_dscrptn = vbNullString Then err_dscrptn = "--- No error description available ---"
     
@@ -199,6 +223,23 @@ End Function
 
 Private Function ErrSrc(ByVal sProc As String) As String
     ErrSrc = "mCompManClient." & sProc
+End Function
+
+Private Function IsString(ByVal v As Variant, _
+                 Optional ByVal vbnullstring_is_a_string = False) As Boolean
+' ----------------------------------------------------------------------------
+' Returns TRUE when v is neither an object nor numeric.
+' ----------------------------------------------------------------------------
+    Dim s As String
+    On Error Resume Next
+    s = v
+    If Err.Number = 0 Then
+        If Not IsNumeric(v) Then
+            If (s = vbNullString And vbnullstring_is_a_string) _
+            Or s <> vbNullString _
+            Then IsString = True
+        End If
+    End If
 End Function
 
 

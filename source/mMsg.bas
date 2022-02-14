@@ -338,42 +338,6 @@ xt: Set Buttons = cllAdd
 
 End Function
 
-'Public Function ButtonsArray(ByVal msg_buttons As Variant) As Variant
-'' ------------------------------------------------------------------------------
-'' Returns the button captions (msg_buttons) which may be provided as komma
-'' delimited string, array, collection, or Dictionary, as komma delimited string.
-'' ------------------------------------------------------------------------------
-'
-'    Dim va()    As Variant
-'    Dim i       As Long
-'    Dim dct     As Dictionary
-'    Dim cll     As Collection
-'
-'    Debug.Print TypeName(msg_buttons)
-'    Select Case VarType(msg_buttons)
-'        Case vbArray:   ButtonsArray = msg_buttons
-'        Case vbString: ButtonsArray = Split(msg_buttons, ",")
-'        Case Else
-'            Select Case TypeName(msg_buttons)
-'                Case "Dictionary"
-'                    Set dct = msg_buttons
-'                    ReDim va(dct.Count - 1)
-'                    For i = 0 To dct.Count - 1
-'                        va(i) = dct.Items()(i)
-'                    Next i
-'                    ButtonsArray = va
-'                Case "Collection"
-'                    Set cll = msg_buttons
-'                    ReDim va(cll.Count - 1)
-'                    For i = 0 To cll.Count - 1
-'                        va(i) = cll.Item(i + 1)
-'                    Next i
-'                    ButtonsArray = va
-'            End Select
-'    End Select
-'
-'End Function
-
 Public Function ButtonsNumeric(ByVal bn_num_buttons As Long) As Long
 ' -------------------------------------------------------------------------------------
 ' Returns the Buttons argument (bn_num_buttons) with additional options removed.
@@ -432,42 +396,6 @@ xt: Exit Function
 
 eh:
 End Function
-
-'Public Function ButtonsString(ByVal msg_buttons As Variant) As String
-'' ------------------------------------------------------------------------------
-'' Returns the button captions (msg_buttons) which may be provided as komma
-'' delimited string, array, collection, or Dictionary, as komma delimited string.
-'' ------------------------------------------------------------------------------
-'    Const PROC = "ButtonsString"
-'
-'    On Error GoTo eh
-'    Dim v As Variant
-'
-'    Debug.Print TypeName(msg_buttons)
-'
-'    If IsArray(msg_buttons) Then
-'        ButtonsString = Join(msg_buttons, ",")
-'    Else
-'        Select Case VarType(msg_buttons)
-'            Case vbArray
-'                ButtonsString = Split(msg_buttons, ",")
-'            Case vbString
-'            Case Else
-'                Select Case TypeName(msg_buttons)
-'                    Case "Dictionary"
-'                    Case "Collection"
-'                        For Each v In msg_buttons
-'                            ButtonsString = v & ","
-'                        Next v
-'                        ButtonsString = Left(ButtonsString, Len(ButtonsString) - 1)
-'                End Select
-'        End Select
-'    End If
-'
-'xt: Exit Function
-'
-'eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
-'End Function
 
 Private Sub ConvertPixelsToPoints(Optional ByVal x_dpi As Single, _
                                   Optional ByVal y_dpi As Single, _
@@ -572,7 +500,7 @@ Public Function Dsply(ByVal dsply_title As String, _
         If dsply_modeless Then
             DisplayDone = False
             .Show vbModeless
-            .top = 1
+            .Top = 1
             .Left = 1
         Else
             .Show vbModal
