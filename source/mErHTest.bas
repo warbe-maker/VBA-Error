@@ -205,6 +205,62 @@ Private Function RegressionInfo() As String
 
 End Function
 
+Private Sub RegressionKeepLog()
+    Dim sFile As String
+
+#If ExecTrace = 1 Then
+#If MsgComp = 1 Or ErHComp = 1 Then
+    '~~ avoid the error message when the Conditional Compile Argument 'MsgComp = 0'!
+    mTrc.Dsply
+#End If
+    '~~ Keep the regression test result
+    With New FileSystemObject
+        sFile = .GetParentFolderName(mTrc.LogFile) & "\RegressionTest.log"
+        If .FileExists(sFile) Then .DeleteFile (sFile)
+        .GetFile(mTrc.LogFile).Name = "RegressionTest.log"
+    End With
+    mTrc.Terminate
+#End If
+
+End Sub
+
+Public Sub Test_0_Regression()
+' -----------------------------------------------------------------------------
+' 1. This regression test requires the Conditional Compile Argument "Test = 1"
+'    to run un-attended
+' 2. The BoP/EoP statements in this regression test procedure produce one final
+'    execution trace provided the Conditional Compile Argument "ExecTrace = 1".
+' 3. Error conditions tested provide the asserted error number which bypasses
+'    the display of the error message - which is documented in the execution
+'    trace however. By avoiding a user action required when the error is
+'    displayed allows a fully automated regression test.
+' 4. In case any tests fails: The Conditional Compile Argument "Debugging = 1"
+'    allows to identify the code line which causes the error through an extra
+'    "Debug: Resume error code line" button displayed with the error message
+'    and processed when clicked as "Stop: Resume" when the button is clicked.
+' ------------------------------------------------------------------------------
+    Const PROC = "Test_0_Regression"
+    
+    On Error GoTo eh
+    
+    mErH.Regression = True
+    mTrc.LogTitle = "Regression Test mErH"
+    
+    BoP ErrSrc(PROC)
+    Test_1_Application_Error
+    Test_2_VB_Runtime_Error
+    
+xt: EoP ErrSrc(PROC)
+    mErH.Regression = False
+    RegressionKeepLog
+    Exit Sub
+    
+eh: Select Case ErrMsg(err_source:=ErrSrc(PROC))
+        Case vbResume:  Stop: Resume
+        Case Else:      GoTo xt
+    End Select
+End Sub
+
 Public Sub Test_1_Application_Error()
 ' -----------------------------------------------------------
 ' This test procedure obligatory after any code modification.
@@ -275,7 +331,8 @@ Private Sub Test_1_Application_Error_TestProc_2c()
     On Error GoTo eh
 
     BoP ErrSrc(PROC)
-    Asserted AppErr(1)
+    mErH.Asserted AppErr(1)
+    
 181 Err.Raise AppErr(1), ErrSrc(PROC), _
         "This is a programmed i.e. an ""Application Error""!" & CONCAT & _
         "The AppErr service has been used to turn the positive into a negative number by adding " & _
@@ -464,9 +521,8 @@ Public Sub Test_6_VB_Runtime_Error_Pass_on()
     On Error GoTo eh
     
     BoP ErrSrc(PROC)
+    mErH.Asserted AppErr(1)
     Test_6_VB_Runtime_Error_TestProc_3a
-
-    Debug.Assert mErH.MostRecentError = 11
 
 xt: EoP ErrSrc(PROC)
     Exit Sub
@@ -535,46 +591,6 @@ Private Sub Test_6_VB_Runtime_Error_TestProc_3d( _
 
 xt: Exit Sub
 
-eh: Select Case ErrMsg(err_source:=ErrSrc(PROC))
-        Case vbResume:  Stop: Resume
-        Case Else:      GoTo xt
-    End Select
-End Sub
-
-Public Sub Test_0_Regression()
-' -----------------------------------------------------------------------------
-' 1. This regression test requires the Conditional Compile Argument "Test = 1"
-'    to run un-attended
-' 2. The BoP/EoP statements in this regression test procedure produce one final
-'    execution trace provided the Conditional Compile Argument "ExecTrace = 1".
-' 3. Error conditions tested provide the asserted error number which bypasses
-'    the display of the error message - which is documented in the execution
-'    trace however. By avoiding a user action required when the error is
-'    displayed allows a fully automated regression test.
-' 4. In case any tests fails: The Conditional Compile Argument "Debugging = 1"
-'    allows to identify the code line which causes the error through an extra
-'    "Debug: Resume error code line" button displayed with the error message
-'    and processed when clicked as "Stop: Resume" when the button is clicked.
-' ------------------------------------------------------------------------------
-    Const PROC = "Test_0_Regression"
-    
-    On Error GoTo eh
-    
-    mErH.Regression = True
-    
-    BoP ErrSrc(PROC)
-    Test_1_Application_Error
-    Test_2_VB_Runtime_Error
-    
-xt: EoP ErrSrc(PROC)
-    mErH.Regression = False
-#If ExecTrace = 1 Then
-    mTrc.Dsply
-    Kill mTrc.LogFile
-    mTrc.Terminate
-#End If
-    Exit Sub
-    
 eh: Select Case ErrMsg(err_source:=ErrSrc(PROC))
         Case vbResume:  Stop: Resume
         Case Else:      GoTo xt
@@ -766,5 +782,4 @@ eh: Select Case ErrMsg(ErrSrc(PROC))
         Case Else:      GoTo xt
     End Select
 End Sub
-
 

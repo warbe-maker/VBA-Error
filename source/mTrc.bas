@@ -1,51 +1,80 @@
 Attribute VB_Name = "mTrc"
 Option Explicit
 ' ----------------------------------------------------------------------------
-' Standard Module mTrc:
-'       Services to trace the execution(time) of procedures and code snippets
-'       whereby the time is traced with the highest possible precision. The
-'       trace result is written to a file which ensures a trace even when the
-'       execution terminates on exception.
+' Standard Module  m T r c :
+' Services to trace the execution  of procedures and code snippets. The
+' elapsed execution time of traced items comes with the highest possible
+' precision. The trace result is written to a log file which ensures at least
+' a partial trace when the execution exceptionally terminates.
 '
-'       The trace sevice is triggered by the Conditional Compile Argument
-'       'ExecTrace = 1' provided this "Common Component" is installed in a
-'       VB-Project. When the module is installed and the Conditional Compile
-'       Argument 'ExecTrace = 0' there will be no effect on the performance at
-'       all. Even the trace service is active its impact on the performance is
-'       very little.
+' When this module is installed the sevices are triggered/activated by the
+' Conditional Compile Argument 'ExecTrace = 1'. When the module is installed
+' and the Conditional Compile Argument is turned to 'ExecTrace = 0' all
+' services are disabled thus avoiding any effect on the performance - which is
+' already very little when the services are active.
 '
 ' Public services:
-' - BoC             Indicate the Begin of the execution trace of a Code
-'                   snippet
-' - BoP             Indicate the Begin of the execution trace of a
-'                   Procedure
-' - BoP_ErH         Exclusively used by the mErH module
-' - Continue        Continues counting the execution time when it had
-'                   been paused. Paused and Continue is used by the mErH
-'                   module by example to avoid useless execution time
-'                   count.
-' - Dsply           Displays the content of the trace log file
-' - EoC             Indicate the End of the execution trace of a Code
-'                   snippet
-' - EoP             Indicate the End of the execution trace of a Procedure.
-' - Pause           Stops counting the execution time, e.g. which an error
-'                   message is displayed.
-' - LogFile         Property to provide the full name of a file to which
-'                   execution trace log is written. When no LogFile is
-'                   provided, it defaults "ExecTrace.log" in ThisWorkbook's
-'                   parent folder.
+' - BoC             Indicates the (B)egin (o)f the execution trace of a (C)ode
+'                   snippet.
+' - BoP             Indicates the (B)egin (o)f the execution trace of a
+'                   (P)rocedure.
+' - BoP_ErH         Exclusively used by the mErH module.
+' - Continue        Commands the execution trace to continue taking the
+'                   execution time when it had been paused. Pause and Continue
+'                   is used by the mErH module for example to avoid useless
+'                   execution time taking while waiting for the users reply.
+' - Dsply           Displays the content of the trace log file. Available only
+'                   when the mMsg/fMsg modules are installed and this is
+'                   indicated by the Conditional Compile Argument
+'                   'MsgComp = 1'. Without mMsg/fMsg the trace result log
+'                   will be viewed with any appropriate text file viewer.
+' - EoC             Indicates the (E)nd (o)f the execution trace of a (C)ode
+'                   snippet.
+' - EoP             Indicates the (E)nd (o)f the execution trace of a
+'                   (P)rocedure.
+' - Pause           Stops the execution traces time taking, e.g. while an
+'                   error  message is displayed.
+' - LogFile         Provides the full name of a desired trace log file which
+'                   defaults to "ExecTrace.log" in ThisWorkbook's parent
+'                   folder.
 ' - LogInfo         Explicitely writes an entry to the trace lof file by
 '                   considering the nesting level (i.e. the indentation).
 '
-' Uses: mMsg, fMsg  To display the trace result. The trace result may be
-'                   to long for the VBA.MsgBox and the display needs to
-'                   be displayed with in monospaced for a proper text
-'                   indentation and alignment.
+' Optionally may use:
+' - mMsg/fMsg 1)    To enable the Dsply service for which the VBA.MsgBox
+'                   is inappropriate, also displays more comprehensive
+'                   error messages.
+' - mErH 2)         To display proper error messages by providing additional
+'                   information such like the 'path to the error'. 2)
+'
+' Requires:         Reference to 'Microsoft Scripting Runtime'
 '
 ' See: https://github.com/warbe-maker/Common-VBA-Execution-Trace-Service
 '
+' 1) See https://github.com/warbe-maker/Common-VBA-Message-Service for how to
+'    install an use.
+' 2) See https://github.com/warbe-maker/Common-VBA-Error-Services for how to
+'    install an use.
+'
 ' W. Rauschenberger, Berlin, Feb. 2022
 ' ----------------------------------------------------------------------------
+#If Not MsgComp = 1 Then
+    ' ------------------------------------------------------------------------
+    ' The 'minimum error handling' aproach implemented with this module and
+    ' provided by the ErrMsg function uses the VBA.MsgBox to display an error
+    ' message which includes a debugging option to resume the error line
+    ' provided the Conditional Compile Argument 'Debugging = 1'.
+    ' This declaration allows the mTrc module to work completely autonomous.
+    ' It becomes obsolete when the mMsg/fMsg module is installed 1) which must
+    ' be indicated by the Conditional Compile Argument MsgComp = 1
+    '
+    ' 1) See https://github.com/warbe-maker/Common-VBA-Message-Service for
+    '    how to install an use.
+    ' ------------------------------------------------------------------------
+    Private Const vbResumeOk As Long = 7 ' Buttons value in mMsg.ErrMsg (pass on not supported)
+    Private Const vbResume   As Long = 6 ' return value (equates to vbYes)
+#End If
+
 Public Enum enDsplydInfo
     Detailed = 1
     Compact = 2
@@ -136,10 +165,22 @@ Private Property Let NtryTcksOvrhdNtry(Optional ByRef trc_entry As Collection, B
 End Property
 
 Public Sub Dsply()
-    mMsg.Box box_title:="Trasce result of the Regression test for the mTrc module" _
+' ----------------------------------------------------------------------------
+' Display service, available only when the mMsg component is installed.
+' ----------------------------------------------------------------------------
+#If MsgComp = 1 Or ErHComp = 1 Then
+    mMsg.Box box_title:="Trasce log by the Common VBA Execution Trace Service 'mTrc.Dsply'" _
            , box_msg:=LogTxt(mTrc.LogFile) _
            , box_monospaced:=True
+#Else
+    VBA.MsgBox "The mMsg.Box service is not available and the VBA.MsgBox is inappropriate " & _
+               "to display a file's content." & vbLf & _
+               "Either the Common VBA Message Service is not installed or it is installed " & _
+               "but neither of the Conditional Compile Arguments MsgComp, ErHComp is set to 1." & vbLf & vbLf & _
+               "The display of the trace result will be done by any text file viewer."
+#End If
 End Sub
+
 Private Property Get SplitStr(ByRef s As String)
 ' ----------------------------------------------------------------------------
 ' Returns the split string in string (s) used by VBA.Split() to turn the
@@ -166,8 +207,8 @@ Public Property Get LogFile(Optional ByVal tl_append As Boolean = False) As Stri
     LogFile = sLogFile
 End Property
 
-Public Property Let LogFile(Optional ByVal tl_append As Boolean = True, _
-                                          ByVal tl_file As String)
+Public Property Let LogFile(Optional ByVal tl_append As Boolean = False, _
+                                     ByVal tl_file As String)
 ' ----------------------------------------------------------------------------
 ' Determines the file to which the execution trace is written to.
 ' When the Conditional Compile Argument 'ExecTrace = 0' an existing file with
@@ -178,7 +219,7 @@ Public Property Let LogFile(Optional ByVal tl_append As Boolean = True, _
 #If ExecTrace = 1 Then
     sLogFile = tl_file
     With fso
-        If Not tl_append Then
+        If tl_append = False Then
             If .FileExists(tl_file) Then .DeleteFile tl_file, True
         End If
     End With
@@ -189,6 +230,7 @@ Public Property Let LogFile(Optional ByVal tl_append As Boolean = True, _
 #End If
     
     Set fso = Nothing
+
 End Property
 
 Private Function LogInfoLvl() As Long
@@ -938,14 +980,14 @@ Private Sub LogEnd(ByVal tl_ntry As Collection)
     ElapsedSecs = LogElapsedSecs(et_ticks_end:=ItmTcks(tl_ntry), et_ticks_start:=ItmTcks(BgnNtry))
     
     If Not sLogFile = vbNullString Then
-        LogText = LogLinePrefix & ElapsedSecsTotal & ElapsedSecs & RepeatStrng("|  ", ItmLvl(tl_ntry)) & ItmDir(tl_ntry) & " " & ItmId(tl_ntry)
+        LogText = LogLinePrefix & ElapsedSecsTotal & ElapsedSecs & RepeatStrng("|  ", ItmLvl(tl_ntry)) & ItmDir(tl_ntry) & " " & ItmId(tl_ntry) & ItmInf(tl_ntry)
         LogTxt(sLogFile) = LogText
         If TraceStack.Count = 1 Then
             LogText = LogLinePrefix & ElapsedSecsTotal & ElapsedSecs & ItmDir(tl_ntry) & " "
             If LogTitle = vbNullString _
             Then LogText = LogText & "End execution trace " _
             Else LogText = LogText & LogTitle
-            LogText = LogText & ". Impact on performance (caused by the trace) was " & LogSecsOverhead & " seconds !"
+            LogText = LogText & ". Impact on performance (caused by the trace) was " & LogSecsOverhead & "seconds!"
             LogTxt(sLogFile) = LogText
         End If
     End If
@@ -1086,7 +1128,7 @@ Private Sub TrcEnd(ByVal trc_id As String, _
          , trc_tcks:=cy _
          , trc_dir:=trc_dir _
          , trc_lvl:=iTrcLvl _
-         , trc_inf:=vbNullString _
+         , trc_inf:=trc_inf _
          , trc_ntry:=trc_cll
          
     StckPop stck:=TraceStack, stck_item:=trc_cll, stck_ppd:=itm

@@ -1,0 +1,12 @@
+22-02-15 23:14:09                 >> Regression Test mErH
+22-02-15 23:14:09 00,0000         |  >> mErHTest.Test_0_Regression
+22-02-15 23:14:09 00,0021         |  |  >> mErHTest.Test_1_Application_Error
+22-02-15 23:14:09 00,0030         |  |  |  >> mErHTest.Test_1_Application_Error_TestProc_2a
+22-02-15 23:14:09 00,0034         |  |  |  |  >> mErHTest.Test_1_Application_Error_TestProc_2b
+22-02-15 23:14:09 00,0043         |  |  |  |  |  >> mErHTest.Test_1_Application_Error_TestProc_2c
+22-02-15 23:14:09 00,0056 00,0014 |  |  |  |  |  << mErHTest.Test_1_Application_Error_TestProc_2c !!! Application Error 1 at line 181 !!! 
+22-02-15 23:14:09 00,0069 00,0035 |  |  |  |  << mErHTest.Test_1_Application_Error_TestProc_2b !!! Application Error 1 at line 181 !!! 
+22-02-15 23:14:09 00,0098 00,0068 |  |  |  << mErHTest.Test_1_Application_Error_TestProc_2a !!! Application Error 1 at line 181 !!! 
+22-02-15 23:14:09 00,0116 00,0095 |  |  << mErHTest.Test_1_Application_Error !!! Application Error 1 at line 181 !!! 
+22-02-15 23:14:09 00,0128 00,0128 |  << mErHTest.Test_0_Regression
+22-02-15 23:14:09 00,0128 00,0128 << Regression Test mErH. Impact on performance (caused by the trace) was 00,0000 seconds!
