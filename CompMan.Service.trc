@@ -1,132 +1,31 @@
-22-02-15 13:23:21                 >> Update Outdated (by Addin) for ErH.xlsm: 
-22-02-15 13:23:21 00,0000         |  >> mCompMan.UpdateOutdatedCommonComponents
-22-02-15 13:23:21 00,1038         |  |  >> mCompMan.MaintainPropertiesOfHostedRawCommonComponents
-22-02-15 13:23:21 00,1409 00,0371 |  |  << mCompMan.MaintainPropertiesOfHostedRawCommonComponents
-22-02-15 13:23:21 00,1418         |  |  >> mUpdate.Outdated
-22-02-15 13:23:22 00,6251         |  |  |  >> mUpdate.UpdateConfirmed
-22-02-15 13:23:27 05,7072 05,0821 |  |  |  << mUpdate.UpdateConfirmed
-22-02-15 13:23:27 05,7084         |  |  |  >> mRenew.ByImport
-22-02-15 13:23:27 05,7088         |  |  |  |  >> mRenew.SaveWbk
-22-02-15 13:23:27 06,1932 00,4844 |  |  |  |  << mRenew.SaveWbk
-22-02-15 13:23:27 06,1943         |  |  |  |  > Rename the to-be-re-imported component
-22-02-15 13:23:27 06,1981 00,0038 |  |  |  |  < Rename the to-be-re-imported component
-22-02-15 13:23:27 06,1986         |  |  |  |  > Import the Raw Common Component
-22-02-15 13:23:27 06,2030 00,0044 |  |  |  |  < Import the Raw Common Component
-22-02-15 13:23:27 06,2035         |  |  |  |  > Export the Used Common Component
-22-02-15 13:23:27 06,2150 00,0115 |  |  |  |  < Export the Used Common Component
-22-02-15 13:23:27 06,2156         |  |  |  |  >> mRenew.SaveWbk
-22-02-15 13:23:28 06,5258 00,3102 |  |  |  |  << mRenew.SaveWbk
-22-02-15 13:23:28 06,5266 00,8182 |  |  |  << mRenew.ByImport
-22-02-15 13:23:28 06,5716 06,4298 |  |  << mUpdate.Outdated
-22-02-15 13:23:28 06,5724 06,5724 |  << mCompMan.UpdateOutdatedCommonComponents
-22-02-15 13:23:28 06,5724 06,5724 << Update Outdated (by Addin) for ErH.xlsm: . Impact on performance (caused by the trace) was 00,0006 seconds!
+22-02-16 08:29:24                 >> Update Outdated (by Addin) for ErH.xlsm: 
+22-02-16 08:29:24 00,0000         |  >> mCompMan.UpdateOutdatedCommonComponents
+22-02-16 08:29:24 00,1077         |  |  >> mCompMan.MaintainPropertiesOfHostedRawCommonComponents
+22-02-16 08:29:24 00,3194 00,2117 |  |  << mCompMan.MaintainPropertiesOfHostedRawCommonComponents
+22-02-16 08:29:24 00,3519         |  |  >> mUpdate.Outdated
+22-02-16 08:29:25 01,0723 00,7203 |  |  << mUpdate.Outdated
+22-02-16 08:29:25 01,0731 01,0731 |  << mCompMan.UpdateOutdatedCommonComponents
+22-02-16 08:29:25 01,0731 01,0731 << Update Outdated (by Addin) for ErH.xlsm: . Impact on performance (caused by the trace) was 00,0008 seconds!
 
-22-02-15 14:29:44                 >> Export Changed (by Addin) for ErH.xlsm: 
-22-02-15 14:29:44 00,0000         |  >> mCompMan.ExportChangedComponents
-22-02-15 14:29:44 00,0498         |  |  >> mService.ExportChangedComponents
-22-02-15 14:29:44 00,1010         |  |  |  >> mCompMan.MaintainPropertiesOfHostedRawCommonComponents
-22-02-15 14:29:45 00,1135 00,0125 |  |  |  << mCompMan.MaintainPropertiesOfHostedRawCommonComponents
-22-02-15 14:29:45 00,1140         |  |  |  >> mExport.ChangedComponents
-22-02-15 14:29:45 01,0688 00,9548 |  |  |  << mExport.ChangedComponents
-22-02-15 14:29:45 01,0697 01,0199 |  |  << mService.ExportChangedComponents
-22-02-15 14:29:45 01,0703 01,0703 |  << mCompMan.ExportChangedComponents
-22-02-15 14:29:45 01,0703 01,0703 << Export Changed (by Addin) for ErH.xlsm: . Impact on performance (caused by the trace) was 00,0006 seconds!
-
-22-02-15 21:51:19                 >> Update Outdated (by Addin) for ErH.xlsm: 
-22-02-15 21:51:19 00,0000         |  >> mCompMan.UpdateOutdatedCommonComponents
-22-02-15 21:51:19 00,1026         |  |  >> mCompMan.MaintainPropertiesOfHostedRawCommonComponents
-22-02-15 21:51:19 00,1340 00,0315 |  |  << mCompMan.MaintainPropertiesOfHostedRawCommonComponents
-22-02-15 21:51:19 00,1348         |  |  >> mUpdate.Outdated
-22-02-15 21:51:20 00,5016         |  |  |  >> mUpdate.UpdateConfirmed
-22-02-15 21:51:22 02,7094 02,2078 |  |  |  << mUpdate.UpdateConfirmed
-22-02-15 21:51:22 02,7105         |  |  |  >> mRenew.ByImport
-22-02-15 21:51:22 02,7109         |  |  |  |  >> mRenew.SaveWbk
-22-02-15 21:51:22 03,0413 00,3304 |  |  |  |  << mRenew.SaveWbk
-22-02-15 21:51:22 03,0418         |  |  |  |  > Rename the to-be-re-imported component
-22-02-15 21:51:22 03,0765 00,0347 |  |  |  |  < Rename the to-be-re-imported component
-22-02-15 21:51:22 03,0769         |  |  |  |  > Import the Raw Common Component
-22-02-15 21:51:22 03,0868 00,0098 |  |  |  |  < Import the Raw Common Component
-22-02-15 21:51:22 03,0872         |  |  |  |  > Export the Used Common Component
-22-02-15 21:51:22 03,0969 00,0097 |  |  |  |  < Export the Used Common Component
-22-02-15 21:51:22 03,0974         |  |  |  |  >> mRenew.SaveWbk
-22-02-15 21:51:23 03,4562 00,3588 |  |  |  |  << mRenew.SaveWbk
-22-02-15 21:51:23 03,4569 00,7464 |  |  |  << mRenew.ByImport
-22-02-15 21:51:23 03,5110 03,3762 |  |  << mUpdate.Outdated
-22-02-15 21:51:23 03,5118 03,5118 |  << mCompMan.UpdateOutdatedCommonComponents
-22-02-15 21:51:23 03,5118 03,5118 << Update Outdated (by Addin) for ErH.xlsm: . Impact on performance (caused by the trace) was 00,0007 seconds!
-
-22-02-15 22:24:32                 >> Export Changed (by Addin) for ErH.xlsm: 
-22-02-15 22:24:32 00,0000         |  >> mCompMan.ExportChangedComponents
-22-02-15 22:24:32 00,0499         |  |  >> mService.ExportChangedComponents
-22-02-15 22:24:32 00,0994         |  |  |  >> mCompMan.MaintainPropertiesOfHostedRawCommonComponents
-22-02-15 22:24:32 00,1129 00,0135 |  |  |  << mCompMan.MaintainPropertiesOfHostedRawCommonComponents
-22-02-15 22:24:32 00,1134         |  |  |  >> mExport.ChangedComponents
-22-02-15 22:24:33 01,0942 00,9808 |  |  |  << mExport.ChangedComponents
-22-02-15 22:24:33 01,0951 01,0452 |  |  << mService.ExportChangedComponents
-22-02-15 22:24:33 01,0959 01,0959 |  << mCompMan.ExportChangedComponents
-22-02-15 22:24:33 01,0959 01,0959 << Export Changed (by Addin) for ErH.xlsm: . Impact on performance (caused by the trace) was 00,0007 seconds!
-
-22-02-15 22:35:30                 >> Export Changed (by Addin) for ErH.xlsm: 
-22-02-15 22:35:30 00,0000         |  >> mCompMan.ExportChangedComponents
-22-02-15 22:35:30 00,0550         |  |  >> mService.ExportChangedComponents
-22-02-15 22:35:30 00,1075         |  |  |  >> mCompMan.MaintainPropertiesOfHostedRawCommonComponents
-22-02-15 22:35:30 00,1231 00,0156 |  |  |  << mCompMan.MaintainPropertiesOfHostedRawCommonComponents
-22-02-15 22:35:30 00,1236         |  |  |  >> mExport.ChangedComponents
-22-02-15 22:35:31 00,8927 00,7692 |  |  |  << mExport.ChangedComponents
-22-02-15 22:35:31 00,8934 00,8384 |  |  << mService.ExportChangedComponents
-22-02-15 22:35:31 00,8939 00,8939 |  << mCompMan.ExportChangedComponents
-22-02-15 22:35:31 00,8939 00,8939 << Export Changed (by Addin) for ErH.xlsm: . Impact on performance (caused by the trace) was 00,0004 seconds!
-
-22-02-15 23:12:14                 >> Update Outdated (by Addin) for ErH.xlsm: 
-22-02-15 23:12:14 00,0000         |  >> mCompMan.UpdateOutdatedCommonComponents
-22-02-15 23:12:14 00,0587         |  |  >> mCompMan.MaintainPropertiesOfHostedRawCommonComponents
-22-02-15 23:12:14 00,1130 00,0543 |  |  << mCompMan.MaintainPropertiesOfHostedRawCommonComponents
-22-02-15 23:12:14 00,1142         |  |  >> mUpdate.Outdated
-22-02-15 23:12:14 00,4317         |  |  |  >> mUpdate.UpdateConfirmed
-22-02-15 23:12:16 01,9429 01,5112 |  |  |  << mUpdate.UpdateConfirmed
-22-02-15 23:12:16 01,9447         |  |  |  >> mRenew.ByImport
-22-02-15 23:12:16 01,9455         |  |  |  |  >> mRenew.SaveWbk
-22-02-15 23:12:16 02,3070 00,3616 |  |  |  |  << mRenew.SaveWbk
-22-02-15 23:12:16 02,3076         |  |  |  |  > Rename the to-be-re-imported component
-22-02-15 23:12:16 02,3111 00,0035 |  |  |  |  < Rename the to-be-re-imported component
-22-02-15 23:12:16 02,3116         |  |  |  |  > Import the Raw Common Component
-22-02-15 23:12:16 02,3174 00,0058 |  |  |  |  < Import the Raw Common Component
-22-02-15 23:12:16 02,3178         |  |  |  |  > Export the Used Common Component
-22-02-15 23:12:16 02,3272 00,0094 |  |  |  |  < Export the Used Common Component
-22-02-15 23:12:16 02,3278         |  |  |  |  >> mRenew.SaveWbk
-22-02-15 23:12:16 02,6675 00,3397 |  |  |  |  << mRenew.SaveWbk
-22-02-15 23:12:16 02,6680 00,7233 |  |  |  << mRenew.ByImport
-22-02-15 23:12:16 02,7315 02,6173 |  |  << mUpdate.Outdated
-22-02-15 23:12:16 02,7325 02,7325 |  << mCompMan.UpdateOutdatedCommonComponents
-22-02-15 23:12:16 02,7325 02,7325 << Update Outdated (by Addin) for ErH.xlsm: . Impact on performance (caused by the trace) was 00,0008 seconds!
-
-22-02-15 23:15:07                 >> Export Changed (by Addin) for ErH.xlsm: 
-22-02-15 23:15:07 00,0000         |  >> mCompMan.ExportChangedComponents
-22-02-15 23:15:07 00,0631         |  |  >> mService.ExportChangedComponents
-22-02-15 23:15:07 00,1137         |  |  |  >> mCompMan.MaintainPropertiesOfHostedRawCommonComponents
-22-02-15 23:15:07 00,1293 00,0156 |  |  |  << mCompMan.MaintainPropertiesOfHostedRawCommonComponents
-22-02-15 23:15:07 00,1301         |  |  |  >> mExport.ChangedComponents
-22-02-15 23:15:08 00,9951 00,8650 |  |  |  << mExport.ChangedComponents
-22-02-15 23:15:08 00,9961 00,9330 |  |  << mService.ExportChangedComponents
-22-02-15 23:15:08 00,9967 00,9967 |  << mCompMan.ExportChangedComponents
-22-02-15 23:15:08 00,9967 00,9967 << Export Changed (by Addin) for ErH.xlsm: . Impact on performance (caused by the trace) was 00,0006 seconds!
-
-22-02-15 23:22:04                 >> Export Changed (by Addin) for ErH.xlsm: 
-22-02-15 23:22:04 00,0000         |  >> mCompMan.ExportChangedComponents
-22-02-15 23:22:04 00,0518         |  |  >> mService.ExportChangedComponents
-22-02-15 23:22:04 00,1015         |  |  |  >> mCompMan.MaintainPropertiesOfHostedRawCommonComponents
-22-02-15 23:22:04 00,1145 00,0130 |  |  |  << mCompMan.MaintainPropertiesOfHostedRawCommonComponents
-22-02-15 23:22:04 00,1151         |  |  |  >> mExport.ChangedComponents
-22-02-15 23:22:04 00,9015 00,7864 |  |  |  << mExport.ChangedComponents
-22-02-15 23:22:04 00,9022 00,8504 |  |  << mService.ExportChangedComponents
-22-02-15 23:22:04 00,9027 00,9027 |  << mCompMan.ExportChangedComponents
-22-02-15 23:22:04 00,9027 00,9027 << Export Changed (by Addin) for ErH.xlsm: . Impact on performance (caused by the trace) was 00,0004 seconds!
-
-22-02-15 23:23:03                 >> Update Outdated (by Addin) for ErH.xlsm: 
-22-02-15 23:23:03 00,0000         |  >> mCompMan.UpdateOutdatedCommonComponents
-22-02-15 23:23:03 00,0582         |  |  >> mCompMan.MaintainPropertiesOfHostedRawCommonComponents
-22-02-15 23:23:03 00,0770 00,0188 |  |  << mCompMan.MaintainPropertiesOfHostedRawCommonComponents
-22-02-15 23:23:03 00,0779         |  |  >> mUpdate.Outdated
-22-02-15 23:23:03 00,3354 00,2574 |  |  << mUpdate.Outdated
-22-02-15 23:23:03 00,3363 00,3363 |  << mCompMan.UpdateOutdatedCommonComponents
-22-02-15 23:23:03 00,3363 00,3363 << Update Outdated (by Addin) for ErH.xlsm: . Impact on performance (caused by the trace) was 00,0009 seconds!
+22-02-16 11:26:01                 >> Update Outdated (by Addin) for ErH.xlsm: 
+22-02-16 11:26:01 00,0000         |  >> mCompMan.UpdateOutdatedCommonComponents
+22-02-16 11:26:01 00,0510         |  |  >> mCompMan.MaintainPropertiesOfHostedRawCommonComponents
+22-02-16 11:26:01 00,0725 00,0216 |  |  << mCompMan.MaintainPropertiesOfHostedRawCommonComponents
+22-02-16 11:26:01 00,0731         |  |  >> mUpdate.Outdated
+22-02-16 11:26:01 00,4186         |  |  |  >> mUpdate.UpdateConfirmed
+22-02-16 11:26:03 02,1470 01,7284 |  |  |  << mUpdate.UpdateConfirmed
+22-02-16 11:26:03 02,1482         |  |  |  >> mRenew.ByImport
+22-02-16 11:26:03 02,1487         |  |  |  |  >> mRenew.SaveWbk
+22-02-16 11:26:03 02,8647 00,7160 |  |  |  |  << mRenew.SaveWbk
+22-02-16 11:26:03 02,8654         |  |  |  |  > Rename the to-be-re-imported component
+22-02-16 11:26:03 02,8711 00,0057 |  |  |  |  < Rename the to-be-re-imported component
+22-02-16 11:26:03 02,8719         |  |  |  |  > Import the Raw Common Component
+22-02-16 11:26:03 02,8834 00,0115 |  |  |  |  < Import the Raw Common Component
+22-02-16 11:26:03 02,8842         |  |  |  |  > Export the Used Common Component
+22-02-16 11:26:04 02,8989 00,0147 |  |  |  |  < Export the Used Common Component
+22-02-16 11:26:04 02,8994         |  |  |  |  >> mRenew.SaveWbk
+22-02-16 11:26:04 03,4990 00,5997 |  |  |  |  << mRenew.SaveWbk
+22-02-16 11:26:04 03,5001 01,3518 |  |  |  << mRenew.ByImport
+22-02-16 11:26:04 03,5889 03,5158 |  |  << mUpdate.Outdated
+22-02-16 11:26:04 03,5899 03,5899 |  << mCompMan.UpdateOutdatedCommonComponents
+22-02-16 11:26:04 03,5899 03,5899 << Update Outdated (by Addin) for ErH.xlsm: . Impact on performance (caused by the trace) was 00,0009 seconds!

@@ -1,6 +1,15 @@
-22-02-15 23:23:03 Update Outdated (by Addin) for ErH.xlsm: 
-22-02-15 23:23:03 -----------------------------------------
-22-02-15 23:23:03 UserForm           fMsg .........: Used Common Component up-to-date
-22-02-15 23:23:03 Standard-Module    mCompManClient: Used Common Component up-to-date
-22-02-15 23:23:03 Standard-Module    mMsg .........: Used Common Component up-to-date
-22-02-15 23:23:03 Standard-Module    mTrc .........: Used Common Component up-to-date
+22-02-16 11:26:01 Update Outdated (by Addin) for ErH.xlsm: 
+22-02-16 11:26:01 -----------------------------------------
+22-02-16 11:26:01 UserForm           fMsg .........: Used Common Component up-to-date
+22-02-16 11:26:01 Standard-Module    mCompManClient: Used Common Component up-to-date
+22-02-16 11:26:01 Standard-Module    mMsg .........: Used Common Component up-to-date
+22-02-16 11:26:01 Standard-Module    mTrc .........: Outdated Used Common Component! (Export-Files 'E:\Ablage\Excel VBA\DevAndTest\Common-VBA-Error-Services\source\mTrc.bas' differs from 'E:\Ablage\Excel VBA\DevAndTest\Common-Components\mTrc.bas')
+22-02-16 11:26:03                                    DoEvents delayed continuation for 00011 msec)
+22-02-16 11:26:03                                    Workbook saved (DoEvents delayed continuation for 00070 msec)
+22-02-16 11:26:03                                    'mTrc' renamed to 'mTrc_RenamedByCompMan'
+22-02-16 11:26:03                                    'mTrc_RenamedByCompMan' removed (removal is postponed by Excel until process has finished)
+22-02-16 11:26:03                                    'mTrc' (re-)imported from 'E:\Ablage\Excel VBA\DevAndTest\Common-Components\mTrc.bas'
+22-02-16 11:26:04                                    'mTrc' exported to 'E:\Ablage\Excel VBA\DevAndTest\Common-VBA-Error-Services\source\mTrc.bas'
+22-02-16 11:26:04                                    DoEvents delayed continuation for 00025 msec)
+22-02-16 11:26:04                                    Workbook saved (DoEvents delayed continuation for 00046 msec)
+22-02-16 11:26:04                                    Used Common Component renewed/updated by (re-)import of the Raw's Export File (E:\Ablage\Excel VBA\DevAndTest\Common-Components\mTrc.bas)

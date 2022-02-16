@@ -169,7 +169,7 @@ Public Sub Dsply()
 ' Display service, available only when the mMsg component is installed.
 ' ----------------------------------------------------------------------------
 #If MsgComp = 1 Or ErHComp = 1 Then
-    mMsg.Box box_title:="Trasce log by the Common VBA Execution Trace Service 'mTrc.Dsply'" _
+    mMsg.Box box_title:="Trasce log provided by the Common VBA Execution Trace Service (displayed by mTrc.Dsply)" _
            , box_msg:=LogTxt(mTrc.LogFile) _
            , box_monospaced:=True
 #Else
@@ -916,8 +916,9 @@ Private Sub LogBgn(ByVal tl_ntry As Collection)
     StckPush TraceStack, tl_ntry
     
     If TraceStack.Count = 1 Then
-        If sLogFile = vbNullString Then
-            sLogFile = Replace(ThisWorkbook.FullName, ThisWorkbook.Name, "ExecTrace.log")
+        If mTrc.LogFile = vbNullString Then
+            '~~ Provide a default log file not appended when non had been specified
+            mTrc.LogFile(False) = Replace(ThisWorkbook.FullName, ThisWorkbook.Name, "ExecTrace.log")
         End If
         
         '~~ When the very first trace entry had been pushed on the stack
@@ -925,8 +926,12 @@ Private Sub LogBgn(ByVal tl_ntry As Collection)
         cyTcksAtStart = ItmTcks(tl_ntry)
     
         If LogTxt(sLogFile) <> vbNullString Then
-            LogTxt(sLogFile) = vbNullString ' empty line in new file
+            LogTxt(sLogFile) = vbNullString ' empty separator line when appended
         End If
+        
+        '~~ Service header
+        LogText = LogLinePrefix & "Execution trace by 'Common VBA Execution Trace Service' (https://github.com/warbe-maker/Common-VBA-Execution-Trace-Service)"
+        LogTxt(sLogFile) = LogText
         
         LogText = LogLinePrefix & String((Len(TRC_LOG_SEC_FRMT)) * 2, " ") & ItmDir(tl_ntry)
         If LogTitle = vbNullString _
@@ -987,7 +992,11 @@ Private Sub LogEnd(ByVal tl_ntry As Collection)
             If LogTitle = vbNullString _
             Then LogText = LogText & "End execution trace " _
             Else LogText = LogText & LogTitle
-            LogText = LogText & ". Impact on performance (caused by the trace) was " & LogSecsOverhead & "seconds!"
+            LogTxt(sLogFile) = LogText
+            '~~ Service footer
+            LogText = LogLinePrefix & String(Len(ElapsedSecsTotal & ElapsedSecs), " ") & "Impact on the overall performance (caused by the trace itself): " & LogSecsOverhead & "seconds!"
+            LogTxt(sLogFile) = LogText
+            LogText = LogLinePrefix & "Execution trace by 'Common VBA Execution Trace Service' (https://github.com/warbe-maker/Common-VBA-Execution-Trace-Service)"
             LogTxt(sLogFile) = LogText
         End If
     End If
