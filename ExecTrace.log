@@ -1,0 +1,29 @@
+22-02-17 11:38:39 Execution trace by 'Common VBA Execution Trace Service' (https://github.com/warbe-maker/Common-VBA-Execution-Trace-Service)
+22-02-17 11:38:39                 >> Begin execution trace 
+22-02-17 11:38:39 00,0000         |  >> mErHTest.Test_2_VB_Runtime_Error
+22-02-17 11:38:39 00,0038         |  |  >> mErHTest.Test_2_VB_Runtime_Error_TestProc_3a
+22-02-17 11:38:39 00,0043         |  |  |  >> mErHTest.Test_2_VB_Runtime_Error_TestProc_3b
+22-02-17 11:38:39 00,0047         |  |  |  |  >> mErHTest.Test_2_VB_Runtime_Error_TestProc_3c
+22-02-17 11:38:39 00,0052         |  |  |  |  |  >> mErHTest.Test_2_VB_Runtime_Error_TestProc_3d
+22-02-17 11:38:52 13,3169 13,3117 |  |  |  |  |  << mErHTest.Test_2_VB_Runtime_Error_TestProc_3d !!! VB-Runtime Error 11  !!! 
+22-02-17 11:39:21 31,2440 31,2393 |  |  |  |  << mErHTest.Test_2_VB_Runtime_Error_TestProc_3c
+22-02-17 11:39:21 31,2449 31,2406 |  |  |  << mErHTest.Test_2_VB_Runtime_Error_TestProc_3b
+22-02-17 11:39:21 31,2455 31,2417 |  |  << mErHTest.Test_2_VB_Runtime_Error_TestProc_3a
+22-02-17 11:39:21 31,2459 31,2459 |  << mErHTest.Test_2_VB_Runtime_Error
+22-02-17 11:39:21 31,2459 31,2459 << End execution trace 
+22-02-17 11:39:21                 Impact on the overall performance (caused by the trace itself): 00,0005 seconds!
+22-02-17 11:39:21 Execution trace by 'Common VBA Execution Trace Service' (https://github.com/warbe-maker/Common-VBA-Execution-Trace-Service)
+
+22-02-17 11:39:48 Execution trace by 'Common VBA Execution Trace Service' (https://github.com/warbe-maker/Common-VBA-Execution-Trace-Service)
+22-02-17 11:39:48                 >> Begin execution trace 
+22-02-17 11:39:48 00,0000         |  >> mErHTest.Test_1_Application_Error
+22-02-17 11:39:48 00,0024         |  |  >> mErHTest.Test_1_Application_Error_TestProc_2a
+22-02-17 11:39:48 00,0029         |  |  |  >> mErHTest.Test_1_Application_Error_TestProc_2b
+22-02-17 11:39:48 00,0035         |  |  |  |  >> mErHTest.Test_1_Application_Error_TestProc_2c
+22-02-17 11:40:00 12,2532 12,2497 |  |  |  |  << mErHTest.Test_1_Application_Error_TestProc_2c !!! Application Error 1 at line 181 !!! 
+22-02-17 11:40:14 09,3793 09,3765 |  |  |  << mErHTest.Test_1_Application_Error_TestProc_2b
+22-02-17 11:40:14 09,3800 09,3776 |  |  << mErHTest.Test_1_Application_Error_TestProc_2a
+22-02-17 11:40:14 09,3804 09,3804 |  << mErHTest.Test_1_Application_Error
+22-02-17 11:40:14 09,3804 09,3804 << End execution trace 
+22-02-17 11:40:14                 Impact on the overall performance (caused by the trace itself): 00,0004 seconds!
+22-02-17 11:40:14 Execution trace by 'Common VBA Execution Trace Service' (https://github.com/warbe-maker/Common-VBA-Execution-Trace-Service)

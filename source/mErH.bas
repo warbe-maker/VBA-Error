@@ -39,14 +39,15 @@ Option Private Module
 ' W. Rauschenberger, Berlin, Dec 2021
 ' ------------------------------------------------------------------------------
 
-Public Const CONCAT         As String = "||"
+Public Const CONCAT                 As String = "||"
+Private Const ErrMsgDefaultButton   As Long = vbOKOnly
 
 Private cllErrPath          As Collection   ' managed by ErrPath... procedures exclusively
 Private ProcStack           As Collection   ' stack maintained by BoP (push) and EoP (pop)
 Private lSubsequErrNo       As Long         ' possibly different from the initial error number if it changes when passed on
 Private vErrsAsserted       As Variant      ' possibly provided with BoTP
 Private vErrReply           As Variant
-Private vArguments()        As Variant      ' The last procedures (with BoP) provided arguments
+Private vArguments()        As String       ' Arguments passed with the BoP statement
 Private cllRecentErrors     As Collection
 Private bRegression         As Boolean
 Private CurrentProc         As String
@@ -56,8 +57,6 @@ Private Property Get EntryProc():                               EntryProc = Stac
 Private Property Get EntryProcIsKnown() As Boolean:             EntryProcIsKnown = Not StackIsEmpty(ProcStack):             End Property
 
 Private Property Get EntryProcReached() As Boolean:             EntryProcReached = StackBottom(ProcStack) = CurrentProc:    End Property
-
-Public Property Get ErrMsgDefaultButton() As String:            ErrMsgDefaultButton = "Ok":                                 End Property
 
 Public Property Get ErrReply() As Variant:                      ErrReply = vErrReply:                                       End Property
 
@@ -96,7 +95,7 @@ Public Sub Asserted(ParamArray botp_errs_asserted() As Variant)
 End Sub
 
 Public Sub BoP(ByVal bop_id As String, _
-          ParamArray bop_arguments() As Variant)
+      Optional ByVal bop_arguments As Variant = vbNullString)
 ' -------------------------------------------------
 ' Trace and stack Begin of Procedure.
 ' The traced_arguments argument is passed on to the
@@ -113,9 +112,13 @@ Public Sub BoP(ByVal bop_id As String, _
     End If
     
     StackPush ProcStack, bop_id
+    If IsArray(bop_arguments) Then
+        BoPArguments = Join(bop_arguments, ";")
+    Else
+        BoPArguments = bop_arguments
+    End If
 #If ExecTrace = 1 Then
-    vArguments = bop_arguments
-    mTrc.BoP_ErH bop_id, vArguments    ' start of the procedure's execution trace
+    mTrc.BoP_ErH bop_id, BoPArguments    ' start of the procedure's execution trace
 #End If
 
 xt: Exit Sub
@@ -180,82 +183,80 @@ Private Function ErrArgName(ByVal s As String) As Boolean
     Then ErrArgName = True
 End Function
 
-Private Function ErrArgs() As String
-' -------------------------------------------------------------
-' Returns a string with the collection of the traced arguments
-' Any entry ending with a ":" or "=" is an arguments name with
-' its value in the subsequent item.
-' -------------------------------------------------------------
-    Dim va()    As Variant
+Private Property Let BoPArguments(ByVal v As String)
+    If v <> vbNullString Then
+        vArguments = Split(v, ";")
+    End If
+End Property
+
+Private Property Get BoPArguments() As String
+' ----------------------------------------------------------------------------
+' Returns a string with the arguments which had been passed with the BoP
+' statement in the procedure which raised the error. Any argument string
+' ending with a ":" or "=" is an arguments name with its value in the
+' subsequent item.
+' ----------------------------------------------------------------------------
+    Const PROC = "BoPArguments-Get"
+    
+    On Error GoTo eh
     Dim i       As Long
     Dim sL      As String
     Dim sR      As String
+    Dim s       As String
     
-    On Error Resume Next
-    va = vArguments
-    If Err.Number <> 0 Then Exit Function
-    i = LBound(va)
-    If Err.Number <> 0 Then Exit Function
-    
-    For i = i To UBound(va)
-        If ErrArgs = vbNullString Then
-            ' This is the very first argument
-            If ErrArgName(va(i)) Then
-                ' The element is the name of an argument followed by a subsequent value
-                ErrArgs = va(i) & CStr(va(i + 1))
-                i = i + 1
-            Else
-                sL = ">": sR = "<"
-                ErrArgs = "Argument values: " & sL & va(i) & sR
-            End If
-        Else
-            If ErrArgName(va(i)) Then
-                ' The element is the name of an argument followed by a subsequent value
-                ErrArgs = ErrArgs & ", " & va(i) & CStr(va(i + 1))
-                i = i + 1
-            Else
-                sL = ">": sR = "<"
-                ErrArgs = ErrArgs & "  " & sL & va(i) & sR
-            End If
-        End If
-    Next i
+    If ArrayIsAllocated(vArguments) Then
+        s = Join(vArguments, ", ")
+        BoPArguments = "(" & Replace(s, "=, ", " = ") & ")"
+    End If
 
-End Function
+xt: Exit Property
+
+eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
+End Property
 
 Private Function ErrBttns(ByVal bttns As Variant) As Long
 ' ------------------------------------------------------------------------------
 ' Returns the number of specified buttons in (bttns).
 ' ------------------------------------------------------------------------------
-    Dim v As Variant
+    Dim v   As Variant
+    Dim s   As String
+    Dim i   As Long
+    Dim cll As Collection
     
     Select Case TypeName(bttns)
-        Case "Collection": ErrBttns = bttns.Count
+        Case "Collection"
+            Set cll = bttns
+            s = cll(1)
+            For i = 2 To cll.Count
+                s = s & "," & cll(i)
+            Next i
+            ErrBttns = ErrBttns(s)
         Case "String"
+            i = 0
             For Each v In Split(bttns, ",")
                 If IsNumeric(v) Then
                     Select Case v
-                        Case vbOKOnly:                              ErrBttns = ErrBttns + 1
-                        Case vbOKCancel, vbYesNo, vbRetryCancel:    ErrBttns = ErrBttns + 2
-                        Case vbAbortRetryIgnore, vbYesNoCancel:     ErrBttns = ErrBttns + 3
+                        Case vbOKOnly:                                          i = i + 1
+                        Case vbOKCancel, vbYesNo, vbRetryCancel, vbResumeOk:    i = i + 2
+                        Case vbAbortRetryIgnore, vbYesNoCancel:                 i = i + 3
                     End Select
                 Else
                     Select Case v
                         Case vbNullString, vbLf, vbCr, vbCrLf
-                        Case Else:  ErrBttns = ErrBttns + 1
+                        Case Else:  i = 1
                     End Select
                 End If
             Next v
     End Select
-
+    ErrBttns = i
 End Function
 
-Private Function ErrHndlrFailed( _
-        ByVal err_number As Long, _
-        ByVal err_source As String, _
-        ByVal err_buttons As Variant) As Boolean
-' ------------------------------------------
-'
-' ------------------------------------------
+Private Function ErrHndlrFailed(ByVal err_number As Long, _
+                                ByVal err_source As String, _
+                                ByVal err_buttons As Variant) As Boolean
+' ----------------------------------------------------------------------------
+' Returns TRUE when the error handling had been invoked with an error number 0
+' ----------------------------------------------------------------------------
 
     If err_number = 0 Then
         MsgBox Prompt:="The error handling has been called with an error number = 0 !" & vbLf & vbLf & _
@@ -273,7 +274,7 @@ Private Function ErrHndlrFailed( _
         Select Case err_buttons
             Case vbOKOnly, vbOKCancel, vbYesNo, vbRetryCancel, vbYesNoCancel, vbAbortRetryIgnore
             Case Else
-                MsgBox "When the errbuttons argument is a numeric value Only the valid VBA MsgBox vaulues are supported. " & _
+                MsgBox "When the err_buttons argument is a numeric value  o n l y  the valid VBA.MsgBox vaulues are supported. " & _
                        "For valid values please refer to:" & vbLf & _
                        "https://docs.microsoft.com/en-us/office/vba/Language/Reference/User-Interface-Help/msgbox-function" _
                        , vbOKOnly, "Only the valid VBA MsgBox vaulues are supported!"
@@ -376,27 +377,23 @@ Public Function ErrMsg( _
 '    Debug.Print "ErrBttns(err_buttons) = 1 : " & ErrBttns(err_buttons)
     
     If EntryProcIsKnown And CurrentProc <> EntryProc And ErrBttns(err_buttons) = 1 Then
-        '~~ When the Entry Procedure is known but yet not reached and there is just one
-        '~~ reply button displayed with the error message, the current procedure is added
-        '~~ to the 'path to the error' and the error is passed on to the caller.
-        '~~ When the Conditional Compile Argument 'Debugging = 1' there will be an extra button
-        '~~ to indicate with the reply that the error line is to be resumed. In this case the
-        '~~ error has to be displayed immediately with the error raising procidure.
+        '~~ When the Entry Procedure is known but yet not reached and there is just one reply
+        '~~ button displayed with the error message, the current procedure is added to the
+        '~~ 'path to the error' and the error is passed on to the caller.
+        ' !! With the Conditional Compile Argument 'Debugging = 1' there will be an extra !!
+        ' !! button for the error line is to be resumed. In this case the has to be       !!
+        ' !! displayed immediately with the error raising procidure. A path to the error  !!
+        ' !! will thus only be available to the extent the stack had been maintained by   !!
+        ' !! BoP/EoP statements on the way down to the error raising procedure.           !!
         ErrPathAdd err_source
 #If ExecTrace = 1 Then
         mTrc.EoP err_source, sType & lNo & " " & sLine
 #End If
-'        Debug.Print StackPop(ProcStack, err_source)
-'        On Error GoTo eh
         sInitErrInfo = vbNullString
-        Err.Raise err_number, err_source, err_dscrptn
-    End If
-       
-    If Not EntryProcIsKnown Or ErrBttns(err_buttons) = 1 Then
-        '~~ Either when the Entry Procedure is unknown or the user has no other choice
-        '~~ but to press the only one button
+        Err.Raise err_number, err_source, err_dscrptn ' pass on erro to caller
+    
+    ElseIf EntryProcIsKnown = False Then
         ErrPathAdd err_source ' add the 'Entry Procedure' as the last one now to the error path
-        
         
         '~~ The display of the error message will be skipped Regression = True and the error number is an Asserted one
         vErrReply = ErrMsgDsply(err_source:=sInitErrSource, err_number:=lInitErrNo, err_dscrptn:=sInitErrDscrptn, err_line:=lInitErrLine, err_buttons:=err_buttons, err_no_asserted:=lInitErrNo)
@@ -432,11 +429,9 @@ Private Sub ErrMsgButtons(ByRef err_buttons As Variant)
 
 #If Debugging = 1 Then
     mMsg.Buttons cll, vbResumeOk
+#Else
+    mMsg.Buttons cll, ErrMsgDefaultButton
 #End If
-    If err_buttons = vbNullString _
-    Then Set cll = mMsg.Buttons(cll, ErrMsgDefaultButton) _
-    Else Set cll = mMsg.Buttons(cll, ErrMsgDefaultButton, err_buttons) ' add the default button before the errbuttons specified
-    
     Set err_buttons = cll
 End Sub
 
@@ -512,9 +507,9 @@ Private Function ErrMsgDsply( _
             .Text = "Error source:"
             .FontColor = rgbBlue
         End With
-        If ErrArgs = vbNullString _
+        If BoPArguments = vbNullString _
         Then .Text.Text = sSource & " " & sLine: SctnText.MonoSpaced = True _
-        Else .Text.Text = sSource & " " & sLine & vbLf & "(with arguments: " & ErrArgs & ")"
+        Else .Text.Text = sSource & " " & sLine & vbLf & BoPArguments
         .Text.MonoSpaced = True
     End With
     With ErrMsgText.Section(3)
@@ -596,7 +591,7 @@ Private Sub ErrMsgMatter(ByVal err_source As String, _
     msg_details = IIf(err_line <> 0, msg_type & msg_no & " in " & err_source & " (at line " & err_line & ")", msg_type & msg_no & " in " & err_source)
     msg_dscrptn = IIf(InStr(err_dscrptn, CONCAT) <> 0, Split(err_dscrptn, CONCAT)(0), err_dscrptn)
     If InStr(err_dscrptn, CONCAT) <> 0 Then msg_info = Split(err_dscrptn, CONCAT)(1)
-    msg_source = Application.ActiveWindow.Caption & ":  " & err_source
+    msg_source = err_source
     
 End Sub
 

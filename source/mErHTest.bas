@@ -22,7 +22,7 @@ Private Sub BoP(ByVal b_proc As String, _
 ' ding procedures.
 ' ------------------------------------------------------------------------------
     Dim s As String
-    If UBound(b_arguments) >= 0 Then s = Join(b_arguments, ",")
+    If UBound(b_arguments) >= 0 Then s = Join(b_arguments, ";")
 #If ErHComp = 1 Then
     '~~ The error handling also hands over to the mTrc component when 'ExecTrace = 1'
     '~~ so the Else is only for the case the mTrc is installed but the merH is not.
@@ -243,16 +243,20 @@ Public Sub Test_0_Regression()
     
     On Error GoTo eh
     
-    mErH.Regression = True
-    mTrc.LogTitle = "Regression Test mErH"
+    '~~ Initialization of a new Trace Log File for this Regression test
+    '~~ ! must be done prior the first BoP !
+    mTrc.LogFile = Replace(ThisWorkbook.FullName, ThisWorkbook.Name, "Regression Test.log")
+    mTrc.LogTitle = "Regression Test module mErH"
     
+    mErH.Regression = True
+      
     BoP ErrSrc(PROC)
     Test_1_Application_Error
     Test_2_VB_Runtime_Error
     
 xt: EoP ErrSrc(PROC)
     mErH.Regression = False
-    RegressionKeepLog
+    mTrc.Dsply
     Exit Sub
     
 eh: Select Case ErrMsg(err_source:=ErrSrc(PROC))
@@ -417,7 +421,7 @@ Private Sub Test_2_VB_Runtime_Error_TestProc_3c()
     On Error GoTo eh
     
     BoP ErrSrc(PROC)
-    Test_2_VB_Runtime_Error_TestProc_3d test_arg1:="Test string", test_arg2:=20.5
+    Test_2_VB_Runtime_Error_TestProc_3d "Test string", 20.5
     
 xt: EoP ErrSrc(PROC)
     Exit Sub
@@ -431,16 +435,16 @@ End Sub
 Private Sub Test_2_VB_Runtime_Error_TestProc_3d( _
       ByVal test_arg1 As String, _
       ByVal test_arg2 As Currency)
-' ------------------------------------------------
-' Note: The error line intentionally has no line
-' number to demonstrate how it effects the error
-' message.
-' ------------------------------------------------
+' ----------------------------------------------------------------------------
+' Test and demonstrate an error message without knowing the line of error
+' (which is common) but still displaying a path to the error plus a debugging
+' option button - provided the Conditional Compile Argument 'Debuggging = 1'.
+' ----------------------------------------------------------------------------
     Const PROC = "Test_2_VB_Runtime_Error_TestProc_3d"
     
     On Error GoTo eh
     
-    BoP ErrSrc(PROC), "test_arg1 = ", test_arg1, "test_arg2 = ", test_arg2
+    BoP ErrSrc(PROC), "test_arg1=", test_arg1, "test_arg2=", test_arg2
     Dim l As Long
     l = 7 / 0
 

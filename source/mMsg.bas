@@ -16,9 +16,11 @@ Option Explicit
 '               identified by the window title - to display the progress of a
 '               process or monitor intermediate results.
 '
-' See details at:
-' https://warbe-maker.github.io/warbe-maker.github.io/vba/common/2020/11/17/Common-VBA-Message-Services.html
-' https://github.com/warbe-maker/Common-VBA-Message-Service
+' Uses:         fMsg
+'
+' Reqires:      Reference to "Microsoft Scripting Runtime"
+'
+' See: https://github.com/warbe-maker/Common-VBA-Message-Service
 '
 ' W. Rauschenberger, Berlin Jan 2021 (last revision)
 ' ------------------------------------------------------------------------------
@@ -148,17 +150,17 @@ Public Sub AssertWidthAndHeight(ByRef width_min As Long, _
     
 End Sub
 
-Public Function Box(ByVal box_title As String, _
-           Optional ByVal box_msg As String = vbNullString, _
-           Optional ByVal box_monospaced As Boolean = False, _
-           Optional ByVal box_buttons As Variant = vbOKOnly, _
-           Optional ByVal box_buttons_width_min = 70, _
-           Optional ByVal box_button_default = 1, _
-           Optional ByVal box_returnindex As Boolean = False, _
-           Optional ByVal box_width_min As Long = 300, _
-           Optional ByVal box_width_max As Long = 85, _
-           Optional ByVal box_height_min As Long = 20, _
-           Optional ByVal box_height_max As Long = 85) As Variant
+Public Function Box(Optional ByVal box_msg As String = vbNullString, _
+                    Optional ByVal box_title As String = vbNullString, _
+                    Optional ByVal box_monospaced As Boolean = False, _
+                    Optional ByVal box_buttons As Variant = vbOKOnly, _
+                    Optional ByVal box_buttons_width_min = 70, _
+                    Optional ByVal box_button_default = 1, _
+                    Optional ByVal box_returnindex As Boolean = False, _
+                    Optional ByVal box_width_min As Long = 300, _
+                    Optional ByVal box_width_max As Long = 85, _
+                    Optional ByVal box_height_min As Long = 20, _
+                    Optional ByVal box_height_max As Long = 85) As Variant
 ' -------------------------------------------------------------------------------------
 ' Common VBA Message Display: A service using the Common VBA Message Form as an
 ' alternative MsgBox.
@@ -175,12 +177,22 @@ Public Function Box(ByVal box_title As String, _
 '
 ' W. Rauschenberger, Berlin, Nov 2020
 ' -------------------------------------------------------------------------------------
-    Const PROC = "Box§"
+    Const PROC = "Box"
     
     On Error GoTo eh
     Dim Message As TypeMsgText
     Dim MsgForm As fMsg
 
+    '~~ Defaults
+    If box_title = vbNullString Then
+        '~~ Default tile when none had been provided
+        box_title = "Common VBA Message (mMsg.Box) Service"
+    End If
+    If box_msg = vbNullString Then
+        box_msg = "This message is displayed by the Common VBA Message Service 'mMsg.Box' " & _
+                  "as the default for a non provided message string (argument box_msg)"
+    End If
+    
     Message.Text = box_msg
     Message.MonoSpaced = box_monospaced
 
@@ -188,6 +200,7 @@ Public Function Box(ByVal box_title As String, _
                        , box_width_max _
                        , box_height_min _
                        , box_height_max
+    
     
     '~~ In order to avoid any interferance with modeless displayed fMsg form
     '~~ all services create and use their own instance identified by the message title.
@@ -538,7 +551,7 @@ Public Function ErrMsg(ByVal err_source As String, _
     '~~ Obtain error information from the Err object for any argument not provided
     If err_number = 0 Then err_number = Err.Number
     If err_line = 0 Then err_line = Erl
-    If err_source = vbNullString Then err_source = Err.Source
+    If err_source = vbNullString Then err_source = Err.source
     If err_dscrptn = vbNullString Then err_dscrptn = Err.Description
     If err_dscrptn = vbNullString Then err_dscrptn = "--- No error description available ---"
         
