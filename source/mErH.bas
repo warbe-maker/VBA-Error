@@ -90,6 +90,15 @@ Private Function AppErr(ByVal app_err_no As Long) As Long
     If app_err_no >= 0 Then AppErr = app_err_no + vbObjectError Else AppErr = Abs(app_err_no - vbObjectError)
 End Function
 
+Private Function ArrayIsAllocated(arr As Variant) As Boolean
+    
+    On Error Resume Next
+    ArrayIsAllocated = VBA.IsArray(arr) _
+                   And Not VBA.IsError(LBound(arr, 1)) _
+                   And LBound(arr, 1) <= UBound(arr, 1)
+    
+End Function
+
 Public Sub Asserted(ParamArray botp_errs_asserted() As Variant)
     vErrsAsserted = botp_errs_asserted
 End Sub
