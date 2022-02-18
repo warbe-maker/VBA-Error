@@ -1,22 +1,22 @@
-22-02-17 17:24:01 Update Outdated (by Addin) for ErH.xlsm: 
-22-02-17 17:24:01 -----------------------------------------
-22-02-17 17:24:02 UserForm           fMsg .........: Used Common Component up-to-date
-22-02-17 17:24:02 Standard-Module    mCompManClient: Used Common Component up-to-date
-22-02-17 17:24:02 Standard-Module    mMsg .........: Used Common Component up-to-date
-22-02-17 17:24:02 Standard-Module    mTrc .........: Used Common Component up-to-date
-22-02-17 17:26:40 ========================================
-22-02-17 17:26:40 Export Changed (by Addin) for ErH.xlsm: 
-22-02-17 17:26:40 ----------------------------------------
-22-02-17 17:26:41 UserForm           fMsg .........: Used Common Component code unchanged
-22-02-17 17:26:41 Standard-Module    mAnyModule ...: Other component unchanged
-22-02-17 17:26:41 Standard-Module    mCompManClient: Used Common Component code unchanged
-22-02-17 17:26:41 Standard-Module    mDemo ........: Other component unchanged
-22-02-17 17:26:41 Standard-Module    mErH .........: Hosted Raw Common Component code modified
-22-02-17 17:26:41                                    Hosted Raw Common Component code modified
-22-02-17 17:26:41                                    Exported, Revision Number increased, Export File copied to 'Common Components Folder'
-22-02-17 17:26:41 Standard-Module    mErHTest .....: Other component unchanged
-22-02-17 17:26:41 Standard-Module    mMsg .........: Used Common Component code unchanged
-22-02-17 17:26:41 Standard-Module    mTrc .........: Used Common Component code unchanged
-22-02-17 17:26:41 Workbook           wbErrHndlrTest: Other component unchanged
-22-02-17 17:26:41 Worksheet CodeName wsAbout ......: Other component unchanged
-22-02-17 17:26:41 Worksheet CodeName wsTest .......: Other component unchanged
+22-02-18 17:06:16 Update Outdated (by Addin) for ErH.xlsm: 
+22-02-18 17:06:16 -----------------------------------------
+22-02-18 17:06:17 UserForm           fMsg .........: Used Common Component up-to-date
+22-02-18 17:06:17 Standard-Module    mCompManClient: Used Common Component up-to-date
+22-02-18 17:06:17 Standard-Module    mMsg .........: Used Common Component up-to-date
+22-02-18 17:06:17 Standard-Module    mTrc .........: Used Common Component up-to-date
+22-02-18 17:49:30 ========================================
+22-02-18 17:49:30 Export Changed (by Addin) for ErH.xlsm: 
+22-02-18 17:49:30 ----------------------------------------
+22-02-18 17:49:31 Export-File obsolete (deleted because component no longer exists)
+22-02-18 17:49:31 UserForm           fMsg .........: Used Common Component code unchanged
+22-02-18 17:49:31 Standard-Module    mAnyModule ...: Other component unchanged
+22-02-18 17:49:32 Standard-Module    mCompManClient: Used Common Component code unchanged
+22-02-18 17:49:32 Standard-Module    mErHDemo .....: Other component code modification exported
+22-02-18 17:49:32                                    Modification exported
+22-02-18 17:49:32 Standard-Module    mErHTest .....: Other component code modification exported
+22-02-18 17:49:32                                    Modification exported
+22-02-18 17:49:32 Standard-Module    mMsg .........: Used Common Component code unchanged
+22-02-18 17:49:32 Standard-Module    mTrc .........: Used Common Component code unchanged
+22-02-18 17:49:32 Workbook           wbErrHndlrTest: Other component unchanged
+22-02-18 17:49:32 Worksheet CodeName wsAbout ......: Other component unchanged
+22-02-18 17:49:32 Worksheet CodeName wsTest .......: Other component unchanged

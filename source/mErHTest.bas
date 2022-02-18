@@ -1,5 +1,18 @@
 Attribute VB_Name = "mErHTest"
 Option Explicit
+' ----------------------------------------------------------------------------
+' Standard Module mErHTest
+'
+' Uses the following procedures for keeping the use of the Common VBA Error
+' Services, the Common VBA Message Service, and the Common VBA Execution
+' Trace Service optionsl:
+' - AppErr
+' - BoP
+' - EoP
+' - ErrMsg
+'
+' See: https://warbe-maker.github.io/vba/common/2022/02/15/Personal-and-public-Common-Components.html#conditional-compile-arguments
+' ----------------------------------------------------------------------------
 
 Private Function AppErr(ByVal app_err_no As Long) As Long
 ' ------------------------------------------------------------------------------
