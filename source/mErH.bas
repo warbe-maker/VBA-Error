@@ -444,13 +444,12 @@ Private Sub ErrMsgButtons(ByRef err_buttons As Variant)
     Set err_buttons = cll
 End Sub
 
-Private Function ErrMsgDsply( _
-                    ByVal err_source As String, _
-                    ByVal err_number As Long, _
-                    ByVal err_dscrptn As String, _
-                    ByVal err_line As Long, _
-           Optional ByVal err_no_asserted As Long = 0, _
-           Optional ByVal err_buttons As Variant = vbOKOnly) As Variant
+Private Function ErrMsgDsply(ByVal err_source As String, _
+                             ByVal err_number As Long, _
+                             ByVal err_dscrptn As String, _
+                             ByVal err_line As Long, _
+                    Optional ByVal err_no_asserted As Long = 0, _
+                    Optional ByVal err_buttons As Variant = vbOKOnly) As Variant
 ' ------------------------------------------------------------------------------
 ' Displays the error message. The displayed path to the error may be provided as
 ' the error is passed on to the 'Entry-Procedure' or based on all passed BoP/EoP
@@ -552,7 +551,7 @@ Private Function ErrMsgDsply( _
     
     mMsg.Dsply dsply_title:=sTitle _
              , dsply_msg:=ErrMsgText _
-             , dsply_buttons:=err_buttons
+             , dsply_buttons:=mMsg.Buttons(err_buttons)
     
     ErrMsgDsply = mMsg.RepliedWith
 
