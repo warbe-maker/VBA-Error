@@ -1,15 +1,13 @@
-22-04-27 17:35:40 Execution trace by 'Common VBA Execution Trace Service' (https://github.com/warbe-maker/Common-VBA-Execution-Trace-Service)
-22-04-27 17:35:40                 >> Export Changed (by Addin) for ErH.xlsm: 
-22-04-27 17:35:40 00,0000         |  >> mCompMan.ExportChangedComponents
-22-04-27 17:35:40 00,0457         |  |  >> mService.ExportChangedComponents
-22-04-27 17:35:40 00,0872         |  |  |  >> mCompMan.MaintainPropertiesOfHostedRawCommonComponents
-22-04-27 17:35:40 00,1176 00,0304 |  |  |  << mCompMan.MaintainPropertiesOfHostedRawCommonComponents
-22-04-27 17:35:40 00,1223         |  |  |  >> mExport.ChangedComponents
-22-04-27 17:35:41 01,0636         |  |  |  |  >> mService.RemoveTempRenamed
-22-04-27 17:35:41 01,0714 00,0078 |  |  |  |  << mService.RemoveTempRenamed
-22-04-27 17:35:41 01,0792 00,9569 |  |  |  << mExport.ChangedComponents
-22-04-27 17:35:41 01,0869 01,0412 |  |  << mService.ExportChangedComponents
-22-04-27 17:35:41 01,0962 01,0962 |  << mCompMan.ExportChangedComponents
-22-04-27 17:35:41 01,0962 01,0962 << Export Changed (by Addin) for ErH.xlsm: 
-22-04-27 17:35:41                 Impact on the overall performance (caused by the trace itself): 00,0092 seconds!
-22-04-27 17:35:41 Execution trace by 'Common VBA Execution Trace Service' (https://github.com/warbe-maker/Common-VBA-Execution-Trace-Service)
+22-04-28 16:25:01 Execution trace by 'Common VBA Execution Trace Service' (https://github.com/warbe-maker/Common-VBA-Execution-Trace-Service)
+22-04-28 16:25:01                 >> Update Outdated (by Addin) for ErH.xlsm: 
+22-04-28 16:25:01 00,0000         |  >> mCompMan.UpdateOutdatedCommonComponents
+22-04-28 16:25:01 00,0524         |  |  >> mCompMan.MaintainPropertiesOfHostedRawCommonComponents
+22-04-28 16:25:01 00,0742 00,0218 |  |  << mCompMan.MaintainPropertiesOfHostedRawCommonComponents
+22-04-28 16:25:01 00,0795         |  |  >> mUpdate.Outdated
+22-04-28 16:25:01 00,1151         |  |  |  >> mService.SaveWbk
+22-04-28 16:25:02 00,3553 00,2402 |  |  |  << mService.SaveWbk
+22-04-28 16:25:02 00,6101 00,5306 |  |  << mUpdate.Outdated
+22-04-28 16:25:02 00,6149 00,6149 |  << mCompMan.UpdateOutdatedCommonComponents
+22-04-28 16:25:02 00,6149 00,6149 << Update Outdated (by Addin) for ErH.xlsm: 
+22-04-28 16:25:02                 Impact on the overall performance (caused by the trace itself): 00,0048 seconds!
+22-04-28 16:25:02 Execution trace by 'Common VBA Execution Trace Service' (https://github.com/warbe-maker/Common-VBA-Execution-Trace-Service)

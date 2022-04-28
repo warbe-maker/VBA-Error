@@ -1,40 +1,8 @@
-22-04-27 17:32:59 Update Outdated (by Addin) for ErH.xlsm: 
-22-04-27 17:32:59 -----------------------------------------
-22-04-27 17:32:59 Standard-Module    mMsg .........: DoEvents delayed continuation for 00070 msec)
-22-04-27 17:33:00                                    Workbook saved (DoEvents delayed continuation for 00026 msec)
-22-04-27 17:33:00 UserForm           fMsg .........: Used Common Component up-to-date
-22-04-27 17:33:00 Standard-Module    mCompManClient: Used Common Component up-to-date
-22-04-27 17:33:00 Standard-Module    mMsg .........: Used Common Component up-to-date
-22-04-27 17:33:01 Standard-Module    mTrc .........: Used Common Component up-to-date
-22-04-27 17:33:41 ========================================
-22-04-27 17:33:41 Export Changed (by Addin) for ErH.xlsm: 
-22-04-27 17:33:41 ----------------------------------------
-22-04-27 17:33:42 UserForm           fMsg .........: Modified Used Common Component exported (due revert allert registered!)
-22-04-27 17:33:42 Standard-Module    mAnyModule ...: Unchanged component
-22-04-27 17:33:42 Standard-Module    mCompManClient: Unchanged Used Common Component
-22-04-27 17:33:42 Standard-Module    mErH .........: Hosted Raw Common Component code modified
-22-04-27 17:33:42                                    Code modified of Hosted Raw Common Component
-22-04-27 17:33:42                                    Exported, Revision Number increased, Export File copied to 'Common Components Folder'
-22-04-27 17:33:42 Standard-Module    mErHDemo .....: Unchanged component
-22-04-27 17:33:42 Standard-Module    mErHTest .....: Unchanged component
-22-04-27 17:33:42 Standard-Module    mMsg .........: Modified Used Common Component exported (due revert allert registered!)
-22-04-27 17:33:42 Standard-Module    mTrc .........: Modified Used Common Component exported (due revert allert registered!)
-22-04-27 17:33:42 Workbook           wbErrHndlrTest: Unchanged component
-22-04-27 17:33:42 Worksheet CodeName wsAbout ......: Unchanged component
-22-04-27 17:33:42 Worksheet CodeName wsTest .......: Unchanged component
-22-04-27 17:35:40 ========================================
-22-04-27 17:35:40 Export Changed (by Addin) for ErH.xlsm: 
-22-04-27 17:35:40 ----------------------------------------
-22-04-27 17:35:41 UserForm           fMsg .........: Unchanged Used Common Component
-22-04-27 17:35:41 Standard-Module    mAnyModule ...: Unchanged component
-22-04-27 17:35:41 Standard-Module    mCompManClient: Unchanged Used Common Component
-22-04-27 17:35:41 Standard-Module    mErH .........: Hosted Raw Common Component code modified
-22-04-27 17:35:41                                    Code modified of Hosted Raw Common Component
-22-04-27 17:35:41                                    Exported, Revision Number increased, Export File copied to 'Common Components Folder'
-22-04-27 17:35:41 Standard-Module    mErHDemo .....: Unchanged component
-22-04-27 17:35:41 Standard-Module    mErHTest .....: Unchanged component
-22-04-27 17:35:41 Standard-Module    mMsg .........: Unchanged Used Common Component
-22-04-27 17:35:41 Standard-Module    mTrc .........: Unchanged Used Common Component
-22-04-27 17:35:41 Workbook           wbErrHndlrTest: Unchanged component
-22-04-27 17:35:41 Worksheet CodeName wsAbout ......: Unchanged component
-22-04-27 17:35:41 Worksheet CodeName wsTest .......: Unchanged component
+22-04-28 16:25:01 Update Outdated (by Addin) for ErH.xlsm: 
+22-04-28 16:25:01 -----------------------------------------
+22-04-28 16:25:01 Standard-Module    mMsg .........: 16:25:01:830 DoEvents paused the execution for 00007 msecs in 'mService.SaveWbk'
+22-04-28 16:25:02                                    16:25:02:050 DoEvents paused the execution for 00004 msecs in 'mService.SaveWbk'
+22-04-28 16:25:02 UserForm           fMsg .........: Used Common Component up-to-date
+22-04-28 16:25:02 Standard-Module    mCompManClient: Used Common Component up-to-date
+22-04-28 16:25:02 Standard-Module    mMsg .........: Used Common Component up-to-date
+22-04-28 16:25:02 Standard-Module    mTrc .........: Used Common Component up-to-date
