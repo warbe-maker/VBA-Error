@@ -434,14 +434,11 @@ eh: MsgBox "Error in " & ErrSrc(PROC)
 End Function
 
 Private Sub ErrMsgButtons(ByRef err_buttons As Variant)
-    Dim cll As Collection
-
 #If Debugging = 1 Then
-    mMsg.Buttons cll, vbResumeOk
+    Set err_buttons = mMsg.Buttons(vbResumeOk)
 #Else
-    mMsg.Buttons cll, ErrMsgDefaultButton
+    Set err_buttons = mMsg.Buttons(ErrMsgDefaultButton)
 #End If
-    Set err_buttons = cll
 End Sub
 
 Private Function ErrMsgDsply( _

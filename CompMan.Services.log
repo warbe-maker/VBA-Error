@@ -1,22 +1,24 @@
-22-02-18 17:06:16 Update Outdated (by Addin) for ErH.xlsm: 
-22-02-18 17:06:16 -----------------------------------------
-22-02-18 17:06:17 UserForm           fMsg .........: Used Common Component up-to-date
-22-02-18 17:06:17 Standard-Module    mCompManClient: Used Common Component up-to-date
-22-02-18 17:06:17 Standard-Module    mMsg .........: Used Common Component up-to-date
-22-02-18 17:06:17 Standard-Module    mTrc .........: Used Common Component up-to-date
-22-02-18 17:49:30 ========================================
-22-02-18 17:49:30 Export Changed (by Addin) for ErH.xlsm: 
-22-02-18 17:49:30 ----------------------------------------
-22-02-18 17:49:31 Export-File obsolete (deleted because component no longer exists)
-22-02-18 17:49:31 UserForm           fMsg .........: Used Common Component code unchanged
-22-02-18 17:49:31 Standard-Module    mAnyModule ...: Other component unchanged
-22-02-18 17:49:32 Standard-Module    mCompManClient: Used Common Component code unchanged
-22-02-18 17:49:32 Standard-Module    mErHDemo .....: Other component code modification exported
-22-02-18 17:49:32                                    Modification exported
-22-02-18 17:49:32 Standard-Module    mErHTest .....: Other component code modification exported
-22-02-18 17:49:32                                    Modification exported
-22-02-18 17:49:32 Standard-Module    mMsg .........: Used Common Component code unchanged
-22-02-18 17:49:32 Standard-Module    mTrc .........: Used Common Component code unchanged
-22-02-18 17:49:32 Workbook           wbErrHndlrTest: Other component unchanged
-22-02-18 17:49:32 Worksheet CodeName wsAbout ......: Other component unchanged
-22-02-18 17:49:32 Worksheet CodeName wsTest .......: Other component unchanged
+22-05-02 21:03:39 Update Outdated (by Addin) for ErH.xlsm: 
+22-05-02 21:03:39 -----------------------------------------
+22-05-02 21:03:40 UserForm           fMsg .........: 21:03:40:600 DoEvents paused the execution for 00092 msecs in 'mService.SaveWbk'
+22-05-02 21:03:40                                    21:03:40:940 DoEvents paused the execution for 00005 msecs in 'mService.SaveWbk'
+22-05-02 21:03:41                                    Used Common Component up-to-date
+22-05-02 21:03:41 Standard-Module    mCompManClient: Used Common Component up-to-date
+22-05-02 21:03:41 Standard-Module    mMsg .........: Used Common Component up-to-date
+22-05-02 21:03:41 Standard-Module    mTrc .........: Used Common Component up-to-date
+22-05-02 21:04:06 ========================================
+22-05-02 21:04:06 Export Changed (by Addin) for ErH.xlsm: 
+22-05-02 21:04:06 ----------------------------------------
+22-05-02 21:04:07 UserForm           fMsg .........: Unchanged Used Common Component
+22-05-02 21:04:07 Standard-Module    mAnyModule ...: Unchanged component
+22-05-02 21:04:07 Standard-Module    mCompManClient: Modified Used Common Component exported (due revert allert registered!)
+22-05-02 21:04:07 Standard-Module    mErH .........: Hosted Raw Common Component code modified
+22-05-02 21:04:07                                    Code modified of Hosted Raw Common Component
+22-05-02 21:04:07                                    Exported, Revision Number increased, Export File copied to 'Common Components Folder'
+22-05-02 21:04:07 Standard-Module    mErHDemo .....: Unchanged component
+22-05-02 21:04:07 Standard-Module    mErHTest .....: Unchanged component
+22-05-02 21:04:07 Standard-Module    mMsg .........: Unchanged Used Common Component
+22-05-02 21:04:07 Standard-Module    mTrc .........: Modified Used Common Component exported (due revert allert registered!)
+22-05-02 21:04:07 Workbook           wbErrHndlrTest: Unchanged component
+22-05-02 21:04:08 Worksheet CodeName wsAbout ......: Unchanged component
+22-05-02 21:04:08 Worksheet CodeName wsTest .......: Unchanged component
