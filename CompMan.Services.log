@@ -1,0 +1,24 @@
+22-05-02 23:19:08 Update Outdated (by Addin) for ErH.xlsm: 
+22-05-02 23:19:08 -----------------------------------------
+22-05-02 23:19:08 Standard-Module    mTrc .........: 23:19:08:740 DoEvents paused the execution for 00079 msecs in 'mService.SaveWbk'
+22-05-02 23:19:09                                    23:19:09:300 DoEvents paused the execution for 00008 msecs in 'mService.SaveWbk'
+22-05-02 23:19:09 UserForm           fMsg .........: Used Common Component up-to-date
+22-05-02 23:19:09 Standard-Module    mCompManClient: Used Common Component up-to-date
+22-05-02 23:19:09 Standard-Module    mMsg .........: Used Common Component up-to-date
+22-05-02 23:19:09 Standard-Module    mTrc .........: Used Common Component up-to-date
+22-05-02 23:24:51 ========================================
+22-05-02 23:24:51 Export Changed (by Addin) for ErH.xlsm: 
+22-05-02 23:24:51 ----------------------------------------
+22-05-02 23:24:51 UserForm           fMsg .........: Unchanged Used Common Component
+22-05-02 23:24:51 Standard-Module    mAnyModule ...: Unchanged component
+22-05-02 23:24:51 Standard-Module    mCompManClient: Unchanged Used Common Component
+22-05-02 23:24:51 Standard-Module    mErH .........: Hosted Raw Common Component code modified
+22-05-02 23:24:51                                    Code modified of Hosted Raw Common Component
+22-05-02 23:24:51                                    Exported, Revision Number increased, Export File copied to 'Common Components Folder'
+22-05-02 23:24:51 Standard-Module    mErHDemo .....: Modified code exported
+22-05-02 23:24:51 Standard-Module    mErHTest .....: Unchanged component
+22-05-02 23:24:52 Standard-Module    mMsg .........: Unchanged Used Common Component
+22-05-02 23:24:52 Standard-Module    mTrc .........: Unchanged Used Common Component
+22-05-02 23:24:52 Workbook           wbErrHndlrTest: Unchanged component
+22-05-02 23:24:52 Worksheet CodeName wsAbout ......: Unchanged component
+22-05-02 23:24:52 Worksheet CodeName wsTest .......: Unchanged component
