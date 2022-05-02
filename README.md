@@ -229,12 +229,12 @@ At this point it should be clear that a path to the error depends on the followi
 2. An unambiguous procedure name provided with `BoP/EoP` statements and with the call of the error message function
 3. The use of this _Common VBA Error Services_ component
 
-Providing a path to the error can be done in two ways which are combined by the mErH module.
+A path to the error can be provided in two ways, of which both are combined by the mErH module for a best possible result.
 
 | Approach | Pro | Con |
 | -------- | --- | --- |
 | ***Bottom up***:<br>The path is assembled when the error is passed on up to the _Entry Procedure_. | This approach assembles a complete path which includes also procedures not having `BoP/EoP` statements provided the _Entry Procedure is known (has `BoP/EoP` statements).| The path will not be available when the error message is called immediately with the error raising procedure. This is the case either when the _Entry Procedure_ is unknown, i.e. no procedure with `BoP/EoP` statements had been invoked, or when the debugging option displays an extra button to _Resume the Error Line_ which means that even when the _Entry Procedure_ is known the message has to be displayed immediately to provide the choice.| 
-| ***Top down***:<br>A stack is maintained with each invoked procedure by their `BoP/EoP` statements. | The path will already be complete when the error raising procedure in invoked and thus available even when the extra Debugging option button is displayed. | The completeness of the path depends on the completeness of `BoP/EoP` statements.|
+| ***Top down***:<br>A stack is maintained with each invoked procedure by their `BoP/EoP` statements. | The path will already be complete when the error raising procedure is invoked and thus available even when the extra Debugging option button is displayed. | The completeness of the path depends on the completeness of `BoP/EoP` statements.|
 
 > ***Conclusion***: Procedures with an error handling (those with On error Goto eh) should also have `BoP/EoP` statements - quasi as a default). Providing potential _Entry Procedures_ with `BoP/EoP` statements should be obligatory.
 

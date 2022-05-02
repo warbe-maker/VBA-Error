@@ -11,6 +11,8 @@ Option Explicit
 ' See also Github repo:
 ' https://github.com/warbe-maker/Excel-VB-Components-Management-Services
 ' ----------------------------------------------------------------------
+Private Busy As Boolean ' prevent parallel execution of a service
+
 Private Function AppErr(ByVal app_err_no As Long) As Long
 ' ------------------------------------------------------------------------------
 ' Ensures that a programmed (i.e. an application) error numbers never conflicts
@@ -35,6 +37,15 @@ Public Sub CompManService(ByVal cm_service As String, _
     
     On Error GoTo eh
     Dim vDone As Variant
+    
+    If Busy Then
+        '~~ This should avaoid any trouble caused by DoEvents used throughout the execution of the service.
+        '~~ When the service is already busy and the Save icon is immedately clicked again the service
+        '~~ may run twice at the same time and may frak out.
+        Debug.Print "Terminated because a previous task is still busy!"
+        Exit Sub
+    End If
+    Busy = True
     
     On Error Resume Next
     vDone = Application.Run(COMPMAN_BY_ADDIN & cm_service, ThisWorkbook, hosted)
@@ -71,7 +82,8 @@ Public Sub CompManService(ByVal cm_service As String, _
         Application.StatusBar = vDone
     End If
 
-xt: Exit Sub
+xt: Busy = False
+    Exit Sub
 
 eh: Select Case ErrMsg(ErrSrc(PROC))
         Case vbResume:  Stop: Resume
@@ -241,5 +253,3 @@ Private Function IsString(ByVal v As Variant, _
         End If
     End If
 End Function
-
-
