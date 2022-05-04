@@ -14,6 +14,7 @@ Option Explicit
 '
 ' See: https://warbe-maker.github.io/vba/common/2022/02/15/Personal-and-public-Common-Components.html#conditional-compile-arguments
 ' ----------------------------------------------------------------------------
+Private sErrDesc As String
 
 Private Function AppErr(ByVal app_err_no As Long) As Long
 ' ------------------------------------------------------------------------------
@@ -42,31 +43,39 @@ Public Sub BoP(ByVal b_proc As String, ParamArray b_arguments() As Variant)
 End Sub
 
 Public Sub Demo_Application_Error()
-' -----------------------------------------------------------
-' This test procedure obligatory after any code modification.
-' The option to continue with the next test procedure (in
-' case this one runs within a regression test) is only
-' displayed when the Conditional Compile Argument Test = 1
-' The display of an execution trace along with this test
-' requires a Conditional Compile Argument ExecTrace = 1.
-' ------------------------------------------------------
+' ----------------------------------------------------------------------------
+' Demonstrates (and describes in the error message already prepared in this
+' procedure) the use of the AppErr service.
+' ----------------------------------------------------------------------------
     Const PROC = "Demo_Application_Error"
     
     On Error GoTo eh
     
     BoP ErrSrc(PROC)
+    sErrDesc = "This is a programmed i.e. in the sense of the ""Common VBA Error Services"" an ""Application Error""!" & _
+               "||" & _
+               """Err.Raise AppErr(1) ..."" has been used to raise this error. The function turned the positive " & _
+               "into a negative number by adding the VB constant 'vbObjectError' to assure the error number not " & _
+               "conflict with any VB Runtime error. " & _
+               "The ErrMsg identified the negative number as an ""Application Error"" and converted it back to the " & _
+               "orginal positive number by means of the AppErr() function." & vbLf & vbLf & _
+               "Also note that this information is part of the raised error message but concatenated with two " & _
+               "vertical bars indicating that it is an additional information regarding this error."
     Demo_Application_Error_a
 
 xt: EoP ErrSrc(PROC)
     Exit Sub
 
-eh: Select Case ErrMsg(err_source:=ErrSrc(PROC))
+eh: Select Case ErrMsg(ErrSrc(PROC))
         Case vbResume:  Stop: Resume
         Case Else:      GoTo xt
     End Select
 End Sub
 
 Private Sub Demo_Application_Error_a()
+' ----------------------------------------------------------------------------
+' Sub-Procedure for the AppErr demo.
+' ----------------------------------------------------------------------------
     Const PROC = "Demo_Application_Error_a"
     
     On Error GoTo eh
@@ -84,6 +93,9 @@ eh: Select Case ErrMsg(ErrSrc(PROC))
 End Sub
 
 Private Sub Demo_Application_Error_b()
+' ----------------------------------------------------------------------------
+' Sub-Procedure for the AppErr demo.
+' ----------------------------------------------------------------------------
     Const PROC = "Demo_Application_Error_b"
     
     On Error GoTo eh
@@ -101,21 +113,16 @@ eh: Select Case ErrMsg(ErrSrc(PROC))
 End Sub
 
 Private Sub Demo_Application_Error_c()
-' ------------------------------------------------
-' Note: The line number is added just for test to
-' demonstrate how it effects the error message.
-' ------------------------------------------------
+' ----------------------------------------------------------------------------
+' Sub-Procedure for the AppErr demo. Note that the line number is added just
+' for this test to demonstrate how it effects the error message.
+' ----------------------------------------------------------------------------
     Const PROC = "Demo_Application_Error_c"
     
     On Error GoTo eh
 
     BoP ErrSrc(PROC)
-181 Err.Raise AppErr(1), ErrSrc(PROC), _
-        "This is a programmed i.e. an ""Application Error""!" & CONCAT & _
-        "The function AppErr() has been used to turn the positive into a negative number by adding the VB constant 'vbObjectError' to assure an error number which does not conflict with a VB Runtime error. " & _
-        "The ErrMsg identified the negative number as an ""Application Error"" and converted it back to the orginal positive number by means of the AppErr() function." & vbLf & _
-        vbLf & _
-        "Also note that this information is part of the raised error message but concatenated with two vertical bars indicating that it is an additional information regarding this error."
+114 Err.Raise AppErr(1), ErrSrc(PROC), sErrDesc
 
 xt: EoP ErrSrc(PROC)
     Exit Sub
@@ -127,7 +134,7 @@ eh: Select Case ErrMsg(ErrSrc(PROC))
 End Sub
 
 Public Sub Demo_VB_Runtime_Error()
-' -----------------------------------------------
+' ----------------------------------------------------------------------------
 ' - With Conditional Compile Argument BopEop = 0:
 '   Display of the error with the error path only
 ' - With Conditional Compile Argument BopEop = 1:
@@ -136,7 +143,7 @@ Public Sub Demo_VB_Runtime_Error()
 '
 ' Requires:
 ' - Conditional Compile Argument ExecTrace = 1.
-' -----------------------------------------------
+' ----------------------------------------------------------------------------
     Const PROC = "Demo_VB_Runtime_Error"
     
     On Error GoTo eh
@@ -205,11 +212,11 @@ eh: Select Case ErrMsg(ErrSrc(PROC))
 End Sub
 
 Private Sub Demo_VB_Runtime_Error_d()
-' ------------------------------------------------
+' ----------------------------------------------------------------------------
 ' Note: The error line intentionally has no line
 ' number to demonstrate how it effects the error
 ' message.
-' ------------------------------------------------
+' ----------------------------------------------------------------------------
     Const PROC = "Demo_VB_Runtime_Error_d"
     
     On Error GoTo eh
@@ -228,98 +235,15 @@ eh: Select Case ErrMsg(ErrSrc(PROC))
 End Sub
 
 Public Sub Demo_No_Exit_Statement()
-' -----------------------------------
+' ----------------------------------------------------------------------------
 ' Exit statement missing
-' -----------------------------------
+' ----------------------------------------------------------------------------
     Const PROC = "Demo_No_Exit_Statement"
     
     On Error GoTo eh
     
 eh: Select Case ErrMsg(ErrSrc(PROC))
         Case vbResume:  Stop: Resume
-    End Select
-End Sub
-
-Public Sub Demo_Execution_Trace()
-' ------------------------------------------------------
-' White-box- and regression-test procedure obligatory
-' to be performed after any code modification.
-' Display of an execution trace along with this test
-' requires a conditional compile argument ExecTrace = 1.
-' ------------------------------------------------------
-    Const PROC = "Demo_Execution_Trace"
-    
-    On Error GoTo eh
-    mTrc.LogFile = Replace(ThisWorkbook.FullName, ThisWorkbook.Name, "DemoExecTrace.log")
-    mTrc.LogTitle = "Demo of an Execution Trace (Cond. Comp. Arg. 'ExecTrace = 1'"
-    
-    BoP ErrSrc(PROC)
-    Demo_Execution_Trace_a
-    
-xt: EoP ErrSrc(PROC)
-    mTrc.Dsply
-    Exit Sub
-
-eh: Select Case ErrMsg(ErrSrc(PROC))
-        Case vbResume:  Stop: Resume
-        Case Else:      GoTo xt
-    End Select
-End Sub
-
-Private Sub Demo_Execution_Trace_a()
-    Const PROC = "Demo_Execution_Trace_a"
-    
-    On Error GoTo eh
-    
-    BoP ErrSrc(PROC)
-    Demo_Execution_Trace_b
-    
-xt: EoP ErrSrc(PROC)
-    Exit Sub
-
-eh: Select Case ErrMsg(ErrSrc(PROC))
-        Case vbResume:  Stop: Resume
-        Case Else:      GoTo xt
-    End Select
-End Sub
-
-Private Sub Demo_Execution_Trace_b()
-    Const PROC = "Demo_Execution_Trace_b"
-    
-    On Error GoTo eh
-    
-    BoP ErrSrc(PROC)
-    
-    Demo_Execution_Trace_c
-    
-    Dim i As Long: Dim j As Long: j = 10000000
-    mTrc.BoC PROC & " empty loop 1 to " & j
-    For i = 1 To j
-    Next i
-    mTrc.EoC PROC & " empty loop 1 to " & j ' !!! the string must match with the BoC statement !!!
-    
-xt: EoP ErrSrc(PROC)
-    Exit Sub
-
-eh: Select Case ErrMsg(ErrSrc(PROC))
-        Case vbResume:  Stop: Resume
-        Case Else:      GoTo xt
-    End Select
-End Sub
-
-Private Sub Demo_Execution_Trace_c()
-    Const PROC = "Demo_Execution_Trace_c"
-    
-    On Error GoTo eh
-
-    BoP ErrSrc(PROC)
-
-xt: EoP ErrSrc(PROC)
-    Exit Sub
-
-eh: Select Case ErrMsg(ErrSrc(PROC))
-        Case vbResume:  Stop: Resume
-        Case Else:      GoTo xt
     End Select
 End Sub
 
@@ -331,7 +255,7 @@ End Sub
 Private Function Demo_ErH_NoErrorHandling_a( _
            ByVal op1 As Variant, _
            ByVal op2 As Variant) As Variant
-' ------------------------------------------------------------------
+' ----------------------------------------------------------------------------
 ' - Error message:              Mere VBA only
 '   - Error source:             No
 '   - Application error number: Not supported
@@ -341,13 +265,13 @@ Private Function Demo_ErH_NoErrorHandling_a( _
 ' - Variant value assertion:    No
 ' - Execution Trace:            No
 ' - Debugging/Test choice:      No
-' ------------------------------------------------------------------
+' ----------------------------------------------------------------------------
     Demo_ErH_NoErrorHandling_a = op1 / op2
 End Function
 
 Public Sub EoP(ByVal e_proc As String, _
       Optional ByVal e_inf As String = vbNullString)
-' ------------------------------------------------------------------------------
+' ----------------------------------------------------------------------------
 ' (E)nd-(o)f-(P)rocedure named (e_proc). Procedure to be copied as Private Sub
 ' into any module potentially either using the Common VBA Error Service and/or
 ' the Common VBA Execution Trace Service. Has no effect when Conditional Compile
@@ -362,7 +286,7 @@ End Sub
 
 Private Function Demo_ErH_BetterThanNothing_a(ByVal op1 As Variant, _
                                               ByVal op2 As Variant) As Variant
-' ----------------------------------------------------------------------
+' ----------------------------------------------------------------------------
 ' - Error message:              Yes, well or even better formated
 '   - Error source:             Yes
 '   - Application error number: Supported by the function AppErr() but not used in this demo
@@ -373,7 +297,7 @@ Private Function Demo_ErH_BetterThanNothing_a(ByVal op1 As Variant, _
 ' - Variant value assertion:    No
 ' - Execution Trace:            No
 ' - Debug/Test choice:          No
-' ---------------------------------------------------------------------
+' ----------------------------------------------------------------------------
     Const PROC = "Demo_ErH_BetterThanNothing"    ' error source
 
     On Error GoTo eh
@@ -393,7 +317,7 @@ Public Sub Demo_ErH_BetterThanNothing()
 End Sub
 
 Private Sub Demo_ErH_Elaborated_a()
-' ----------------------------------------------------------
+' ----------------------------------------------------------------------------
 ' - Error message:                    Yes (global common module)
 '   - Error source:                   Yes
 '   - Programmed error number:        Yes (1,2,... per procedure)
@@ -402,7 +326,7 @@ Private Sub Demo_ErH_Elaborated_a()
 '   - Path to the error (call stack): Yes
 ' - Execution Trace:                  Yes (with Conditional Compile Argument 'ExecTrace = !'
 ' - Debug/Test choice:                Yes (with Conditional Compile Argument 'DebugAndTest= 1'
-' -----------------------------------------------------------------------
+' ----------------------------------------------------------------------------
 Const PROC As String = "Demo_ErH_Elaborated_a"
 
     On Error GoTo eh
@@ -418,7 +342,7 @@ End Sub
 
 Private Function Demo_ErH_Elaborated_b(ByVal op1 As Variant, _
                                       ByVal op2 As Variant) As Variant
-' -------------------------------------------------------------------------
+' ----------------------------------------------------------------------------
 ' - Error message:                    Yes (global common module)
 '   - Error source:                   Yes
 '   - Programmed error number:        Yes, the function AppErr() ensures non VB conflicting
@@ -429,7 +353,7 @@ Private Function Demo_ErH_Elaborated_b(ByVal op1 As Variant, _
 ' - Variant value assertion:          Yes
 ' - Execution Trace:                  Yes (with Conditional Compile Argument 'ExecTrace = !'
 ' - Debug/Test choice:                Yes (with Conditional Compile Argument 'DebugAndTest = 1'
-' ---------------------------------------------------------------------------------------
+' ----------------------------------------------------------------------------
 Const PROC  As String = "Demo_ErH_Elaborated_b"
 
     On Error GoTo eh
@@ -452,6 +376,7 @@ eh: ErrMsg err_source:=ErrSrc(PROC)
 End Function
 
 Public Sub Demo_ErH_Elaborated()
+' ----------------------------------------------------------------------------
 ' - Error message:              Yes, well or even better formated
 '   - Error source:             Yes
 '   - Application error number: Supported by the function AppErr() but not used in this demo
@@ -468,7 +393,7 @@ Public Sub Demo_ErH_Elaborated()
 '                               automatically displays it in the immediate window when the
 '                               'Entry-Procedure' is reached.
 ' - Debug/Test choice:          Yes, demonstrated
-' -----------------------------------------------------------------------------------------
+' ----------------------------------------------------------------------------
 Const PROC  As String = "Demo_ErH_Elaborated"
     
     On Error GoTo eh
@@ -483,7 +408,7 @@ End Sub
 
 Private Function Demo_ErH_Reasonable_a(ByVal op1 As Variant, _
                                           ByVal op2 As Variant) As Variant
-' ------------------------------------------------------------------------
+' ----------------------------------------------------------------------------
 ' - Error message:              Yes, well or even better formated
 '   - Error source:             Yes
 '   - Application error number: Supported by the function AppErr() but not used in this demo
@@ -495,7 +420,7 @@ Private Function Demo_ErH_Reasonable_a(ByVal op1 As Variant, _
 ' - Variant value assertion:    No
 ' - Execution Trace:            No
 ' - Debug/Test choice:          No
-' ---------------------------------------------------------------------
+' ----------------------------------------------------------------------------
     Const PROC = "Demo_ErH_Reasonable_a"    ' error source
 
     On Error GoTo eh
@@ -516,7 +441,7 @@ Private Function ErrMsg(ByVal err_source As String, _
                Optional ByVal err_no As Long = 0, _
                Optional ByVal err_dscrptn As String = vbNullString, _
                Optional ByVal err_line As Long = 0) As Variant
-' ------------------------------------------------------------------------------
+' ----------------------------------------------------------------------------
 ' Universal error message display service. See:
 ' https://warbe-maker.github.io/vba/common/2022/02/15/Personal-and-public-Common-Components.html
 '
@@ -541,11 +466,11 @@ Private Function ErrMsg(ByVal err_source As String, _
 ' https://github.com/warbe-maker/Common-VBA-Error-Services
 '
 ' W. Rauschenberger Berlin, Feb 2022
-' ------------------------------------------------------------------------------' ------------------------------------------------------------------------------
+' ----------------------------------------------------------------------------
 #If ErHComp = 1 Then
     '~~ When Common VBA Error Services (mErH) is availabel in the VB-Project
     '~~ (which includes the mMsg component) the mErh.ErrMsg service is invoked.
-    ErrMsg = ErrMsg(err_source, err_no, err_dscrptn, err_line): GoTo xt
+    ErrMsg = mErH.ErrMsg(err_source, err_no, err_dscrptn, err_line): GoTo xt
 #ElseIf MsgComp = 1 Then
     '~~ When (only) the Common Message Service (mMsg, fMsg) is available in the
     '~~ VB-Project, mMsg.ErrMsg is invoked for the display of the error message.
@@ -611,10 +536,10 @@ xt:
 End Function
 
 Private Function ErrSrc(ByVal s As String) As String
-' ---------------------------------------------------
+' ----------------------------------------------------------------------------
 ' Prefix procedure name (s) by this module's name.
-' Attention: The characters > and < must not be used!
-' ---------------------------------------------------
+' Attention: Characters > and < must not be used!
+' ----------------------------------------------------------------------------
     ErrSrc = "mErHDemo." & s
 End Function
 
