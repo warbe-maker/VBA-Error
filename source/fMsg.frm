@@ -178,6 +178,7 @@ Private bDoneTitle              As Boolean
 Private bFormEvents             As Boolean
 Private bIndicateFrameCaptions  As Boolean
 Private bMonitorInitialized     As Boolean
+Private bModeLess               As Boolean
 Private bReplyWithIndex         As Boolean
 Private bSetUpDone              As Boolean
 Private bVisualizeForTest       As Boolean
@@ -187,8 +188,9 @@ Private cllMsgBttns             As New Collection
 Private cllSteps                As Collection
 Private cyTimerTicksBegin       As Currency
 Private cyTimerTicksEnd         As Currency
+Private dctApplicationRunArgs   As New Dictionary   ' Dictionary will be available with each instance of this UserForm
 Private dctAreas                As New Dictionary   ' Collection of the two primary/top frames
-Private dctBttns                As Dictionary       ' Collection of the collection of the designed reply buttons of a certain row
+Private dctBttns                As New Dictionary   ' Collection of the collection of the designed reply buttons of a certain row
 Private dctBttnsRow             As New Dictionary   ' Established/created Button Row's Frame
 Private dctBttnsRowBttns        As New Dictionary   ' Established/created Command Buttons in a specific BttnsRow
 Private dctMonoSpaced           As New Dictionary
@@ -198,7 +200,7 @@ Private dctMsectsLbl            As New Dictionary   ' Established/created Messag
 Private dctMsectsTbx            As New Dictionary   ' Established/created Message Sections TextBox
 Private dctMsectsTbxFrm         As New Dictionary   ' Established/created Message Sections TextBox Frame
 Private dctSectsLabel           As New Dictionary   ' MsectFrm specific label either provided via properties MsgLabel or Msg
-Private dctSectsMonoSpaced      As Dictionary   ' MsectFrm specific monospace option either provided via properties MsgMonospaced or Msg
+Private dctSectsMonoSpaced      As New Dictionary   ' MsectFrm specific monospace option either provided via properties MsgMonospaced or Msg
 Private dctSectsText            As New Dictionary
 Private frmBttnsArea            As MSForms.Frame
 Private frmBttnsFrm             As MSForms.Frame    ' Set with CollectDesignControls
@@ -240,10 +242,11 @@ Private VirtualScreenLeftPts    As Single
 Private VirtualScreenTopPts     As Single
 Private VirtualScreenWidthPts   As Single
 Private vMsgButtonDefault       As Variant          ' Index or caption of the default button
-Private vReplyValue             As Variant
+'Private vReplyValue             As Variant
 Private iSectionsPropSpaced     As Long             ' number of prop. spaced sections setup
 Private iSectionsMonoSpaced     As Long             ' number of mono-spaced sections setup
 
+Public Property Let ModeLess(ByVal b As Boolean): bModeLess = b:    End Property
 Private Sub UserForm_Initialize()
     Const PROC = "UserForm_Initialize"
     
@@ -609,7 +612,7 @@ Private Property Get PrcntgHeightMsgArea() As Single
     PrcntgHeightMsgArea = Round(frmMsectsArea.Height / (frmMsectsArea.Height + frmBttnsArea.Height), 2)
 End Property
 
-Public Property Get ReplyValue() As Variant:                ReplyValue = vReplyValue:                                   End Property
+'Public Property Get ReplyValue() As Variant:                ReplyValue = vReplyValue:                                   End Property
 
 Public Property Let ReplyWithIndex(ByVal b As Boolean):     bReplyWithIndex = b:                                        End Property
 
@@ -1067,22 +1070,24 @@ End Function
 
 Private Sub ButtonClicked(ByVal cmb As MSForms.CommandButton)
 ' ------------------------------------------------------------------------------
-' Return the value of the clicked reply button (button). When there is only one
-' applied reply button the form is unloaded with the click of it. Otherwise the
-' form is just hidden waiting for the caller to obtain the return value or
-' index which then unloads the form.
+' Provides the clicked button's (cmb) caption string or value for the caller
+' via mMsg.Replied and additionally via the ReplyValue Property. When there is
+' only one applied reply button the form is unloaded with the click. Otherwise the form is just hidden waiting for
+' the caller to obtain the return value via the ReplyValue Property which is
+' either the clicked button's (cmb) caption stringor index which then unloads the form.
 ' ------------------------------------------------------------------------------
     On Error Resume Next
-    If bReplyWithIndex Then
-        vReplyValue = ClickedButtonIndex(cmb)
-        mMsg.RepliedWith = ClickedButtonIndex(cmb)
+    If bModeLess Then
+        '~~ When the form is displayed "Modelss" there may be an Application.Run action provided
+        '~~ for the clicked button
+        ApplicationRunViaButton cmb.Caption
     Else
-        vReplyValue = AppliedButtonRetVal(cmb)  ' global variable of calling module mMsg
-        mMsg.RepliedWith = AppliedButtonRetVal(cmb)  ' global variable of calling module mMsg
+        '~~ When the form is displayed "Modal" the clicked button is returned and the form is unloaded
+        If bReplyWithIndex _
+        Then mMsg.RepliedWith = ClickedButtonIndex(cmb) _
+        Else mMsg.RepliedWith = AppliedButtonRetVal(cmb)  ' global variable of calling module mMsg
+        Unload Me
     End If
-    
-    DisplayDone = True ' in case the form has been displayed modeless this will indicate the end of the wait loop
-    Unload Me
     
 End Sub
 
@@ -2705,7 +2710,9 @@ Public Sub Setup()
     '~~ the vertical scrollbar visible
     AdjustTopPositions
     
-    Me.Width = Max(ContentWidth(BttnsArea.Parent), ContentWidth(MsectsArea.Parent)) + 15
+    If MsectsArea.Visible Then
+        Me.Width = Max(ContentWidth(BttnsArea.Parent), ContentWidth(MsectsArea.Parent)) + 15
+    End If
     Me.Height = Max(ContentHeight(BttnsArea.Parent), ContentHeight(MsectsArea.Parent)) + 35
     
     PositionOnScreen
@@ -2751,7 +2758,7 @@ Private Sub Setup1_Title(ByVal setup_title As String, _
         End With
         .Caption = setup_title
         Correction = .laMsgTitle.Width * 0.11 ' The correction is a percentage of the length of the title template Label control
-        siWidth = .laMsgTitle.Width + 40 + Correction
+        siWidth = .laMsgTitle.Width + 44 + Correction
         .Width = Min(setup_width_max, siWidth)
         .Width = Max(.Width, setup_width_min)
         TitleWidth = .Width
@@ -3478,4 +3485,80 @@ Private Function TimedDoEvents(ByVal tde_source As String) As String
     TimedDoEvents = s
     
 End Function
+
+Public Property Let ApplicationRunArgs(ByVal dct As Dictionary)
+    Set dctApplicationRunArgs = dct
+End Property
+
+Private Sub ApplicationRunViaButton(ByVal ar_button As String)
+' --------------------------------------------------------------------------
+' Performs an Application.Run for a button's caption.
+' Preconditions: - Application.Run arguments had been provided by the caller
+'                  via ApplicationRunArgsLetViaButton for the button
+'                  (ar_button)
+'                - The form has been displayed "Modeless"
+' --------------------------------------------------------------------------
+    Const PROC = "ApplicationRunViaButton"
+    
+    On Error GoTo eh
+    Dim cll         As Collection
+    Dim sService    As String
+    Dim Msg         As TypeMsg
+    Dim i           As Long
+    
+    For i = 0 To dctApplicationRunArgs.Count - 1
+        If StrComp(dctApplicationRunArgs.Keys()(i), ar_button, vbTextCompare) = True Then
+            Debug.Print "ar_button: '" & ar_button & "'"
+            Debug.Print "Keys(i)  : '" & dctApplicationRunArgs.Keys()(i) & "'"
+            Debug.Print "Exists:     " & dctApplicationRunArgs.Exists(ar_button)
+            Set cll = dctApplicationRunArgs.Items()(i)
+            sService = cll(1).Name & "!" & cll(2)
+            
+            Select Case cll.Count
+                Case 2: Application.Run sService                 ' service call without arguments
+                Case 3: Application.Run sService, cll(3)
+                Case 4: Application.Run sService, cll(3), cll(4)
+                Case 5: Application.Run sService, cll(3), cll(4), cll(5)
+                Case 6: Application.Run sService, cll(3), cll(4), cll(5), cll(6)
+                Case 7: Application.Run sService, cll(3), cll(4), cll(5), cll(6), cll(7)
+                Case 8: Application.Run sService, cll(3), cll(4), cll(5), cll(6), cll(7), cll(8)
+                Case 9: Application.Run sService, cll(3), cll(4), cll(5), cll(6), cll(7), cll(8), cll(9)
+                Case 10: Application.Run sService, cll(3), cll(4), cll(5), cll(6), cll(7), cll(8), cll(9), cll(10)
+                Case 11: Application.Run sService, cll(3), cll(4), cll(5), cll(6), cll(7), cll(8), cll(9), cll(10), cll(11)
+                Case 12: Application.Run sService, cll(3), cll(4), cll(5), cll(6), cll(7), cll(8), cll(9), cll(10), cll(11), cll(12)
+                Case 13: Application.Run sService, cll(3), cll(4), cll(5), cll(6), cll(7), cll(8), cll(9), cll(10), cll(11), cll(12), cll(13)
+                Case 14: Application.Run sService, cll(3), cll(4), cll(5), cll(6), cll(7), cll(8), cll(9), cll(10), cll(11), cll(12), cll(13), cll(14)
+                Case 15: Application.Run sService, cll(3), cll(4), cll(5), cll(6), cll(7), cll(8), cll(9), cll(10), cll(11), cll(12), cll(13), cll(14), cll(15)
+                Case 16: Application.Run sService, cll(3), cll(4), cll(5), cll(6), cll(7), cll(8), cll(9), cll(10), cll(11), cll(12), cll(13), cll(14), cll(15), cll(16)
+            End Select
+            GoTo xt
+        End If
+    Next i
+        
+    With Msg.Section(1).Text
+        .Text = "This button is useless when the form is displayed modeless," & vbLf & _
+                "unless it is provided by the caller with an action to perform " & vbLf & _
+                "- which is not the case!"
+        .FontColor = rgbRed
+        .FontBold = True
+        .MonoSpaced = True
+    End With
+    With Msg.Section(2)
+        With .Label
+            .Text = "What this means:"
+            .FontColor = rgbBlue
+        End With
+        .Text.Text = "In a modeless displayed form there should be no buttons other than those an 'Application.Run' service had been specified to be performed when clicked."
+    End With
+    
+    mMsg.Dsply dsply_title:="No 'Application.Run' information provided for this button!" _
+             , dsply_msg:=Msg
+    
+xt: Exit Sub
+
+eh: Select Case ErrMsg(ErrSrc(PROC))
+        Case vbResume:  Stop: Resume
+        Case Else:      GoTo xt
+    End Select
+End Sub
 

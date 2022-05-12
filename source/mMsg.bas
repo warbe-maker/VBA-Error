@@ -45,12 +45,12 @@ Alias "QueryPerformanceCounter" (cyTickCount As Currency) As Long
     Public Declare PtrSafe Sub Sleep Lib "kernel32" (ByVal ms As Long)
 #End If
 Private Declare PtrSafe Function GetSystemMetrics32 Lib "user32" Alias "GetSystemMetrics" (ByVal nIndex As Long) As Long
-Private Declare PtrSafe Function GetDC Lib "user32" (ByVal hwnd As Long) As Long
+Private Declare PtrSafe Function GetDC Lib "user32" (ByVal hWnd As Long) As Long
 Private Declare PtrSafe Function GetDeviceCaps Lib "gdi32" (ByVal hDC As Long, ByVal nIndex As Long) As Long
-Private Declare PtrSafe Function ReleaseDC Lib "user32" (ByVal hwnd As Long, ByVal hDC As Long) As Long
+Private Declare PtrSafe Function ReleaseDC Lib "user32" (ByVal hWnd As Long, ByVal hDC As Long) As Long
 Private Declare PtrSafe Function apiShellExecute Lib "shell32.dll" _
     Alias "ShellExecuteA" _
-    (ByVal hwnd As Long, _
+    (ByVal hWnd As Long, _
     ByVal lpOperation As String, _
     ByVal lpFile As String, _
     ByVal lpParameters As String, _
@@ -73,8 +73,8 @@ Private Const ERROR_BAD_FORMAT = 11&
 
 ' Declarations for making a UserForm resizable
 Private Declare PtrSafe Function GetForegroundWindow Lib "User32.dll" () As Long
-Private Declare PtrSafe Function GetWindowLong Lib "User32.dll" Alias "GetWindowLongA" (ByVal hwnd As Long, ByVal nIndex As Long) As Long
-Private Declare PtrSafe Function SetWindowLong Lib "User32.dll" Alias "SetWindowLongA" (ByVal hwnd As Long, ByVal nIndex As Long, ByVal dwNewLong As Long) As Long
+Private Declare PtrSafe Function GetWindowLong Lib "User32.dll" Alias "GetWindowLongA" (ByVal hWnd As Long, ByVal nIndex As Long) As Long
+Private Declare PtrSafe Function SetWindowLong Lib "User32.dll" Alias "SetWindowLongA" (ByVal hWnd As Long, ByVal nIndex As Long, ByVal dwNewLong As Long) As Long
 Private Const WS_THICKFRAME As Long = &H40000
 Private Const GWL_STYLE As Long = -16
 
@@ -133,22 +133,21 @@ Public Enum KindOfText  ' Used with the Get/Let Text Property
     enSectText
 End Enum
 
-Private bModeless       As Boolean
-Public DisplayDone      As Boolean
-Public RepliedWith      As Variant
+Private bModeLess           As Boolean
+Public RepliedWith          As Variant  ' provided by the UseForm when a button has been pressed/clicked
 
-Private fMonitor                As fMsg
-Private MsgText1                As TypeMsgText  ' common text element
-Private TextMonitorHeader       As TypeMsgText
-Private TextMonitorFooter       As TypeMsgText
-Private TextMonitorStep         As TypeMsgText
-Private TextMsg                 As TypeMsgText
-Private TextLabel               As TypeMsgText
-Private TextSection             As TypeMsg
+Private fMonitor            As fMsg
+Private MsgText1            As TypeMsgText  ' common text element
+Private TextMonitorHeader   As TypeMsgText
+Private TextMonitorFooter   As TypeMsgText
+Private TextMonitorStep     As TypeMsgText
+Private TextMsg             As TypeMsgText
+Private TextLabel           As TypeMsgText
+Private TextSection         As TypeMsg
 
-Public Property Get Modeless() As Boolean:          Modeless = bModeless:   End Property
+Public Property Get ModeLess() As Boolean:          ModeLess = bModeLess:   End Property
 
-Public Property Let Modeless(ByVal b As Boolean):   bModeless = b:          End Property
+Public Property Let ModeLess(ByVal b As Boolean):   bModeLess = b:          End Property
 
 Public Property Get ScreenHeight() As Single
 '    Debug.Print "Screen-Height: " & GetSystemMetrics32(SM_CYVIRTUALSCREEN) & " dpi"
@@ -210,9 +209,66 @@ Public Sub AssertWidthAndHeight(Optional ByRef width_min As Long = 0, _
     
 End Sub
 
+Public Sub ButtonAppRun(ByRef bar_dct As Dictionary, _
+                        ByVal bar_button As String, _
+                        ByVal bar_wb As Workbook, _
+                        ByVal bar_service_name As String, _
+                        ParamArray bar_arguments() As Variant)
+' --------------------------------------------------------------------------
+' Returns a Dictionary (bar_dct) with Application.Run information for the
+' button identified by its caption string (bar_button) added with the
+' button's caption as the key and all other arguments (bar_wb,
+' bar_service_name, bar_arguments) as Collection as item.
+'
+' Notes:
+' - Application.Run supports only positional arguments. When only some of
+'   the optional arguments are used only those after the last one may be
+'   omitted but not those in between. An error is raised when empty
+'   arguments are dedected.
+' - When Run information is provided for a button already existing in the
+'   Dictionary (bar_dct) it is replaced.
+' - When the message form is displayed "Modal", which is the default, any
+'   provided Application.Run information is ignored.
+' --------------------------------------------------------------------------
+    Const PROC = "ButtonAppRun"
+    
+    On Error GoTo eh
+    Dim v   As Variant
+    Dim cll As New Collection
+    
+    If bar_dct Is Nothing Then Set bar_dct = New Dictionary
+    
+    cll.Add bar_wb
+    cll.Add bar_service_name
+    For Each v In bar_arguments
+        If TypeName(v) = "Error" Then
+            Err.Raise Number:=AppErr(1) _
+                    , source:=ErrSrc(PROC) _
+                    , Description:="The ParamArray argument (bar_arguments) contains empty elements but empty elements " & _
+                                   "are not supported/possible!" & "||" & _
+                                   "Application.Run supports only positional but not named arguments. When only some of " & _
+                                   "the optional arguments of the called service are used only those after the last one " & _
+                                   "may be omitted but not those in between."
+        Else
+            cll.Add v
+        End If
+    Next v
+    If bar_dct.Exists(bar_button) Then bar_dct.Remove bar_button
+    bar_dct.Add bar_button, cll
+    Set cll = Nothing
+    
+xt: Exit Sub
+
+eh: Select Case ErrMsg(ErrSrc(PROC))
+        Case vbResume:  Stop: Resume
+        Case Else:      GoTo xt
+    End Select
+End Sub
+
 Public Function Box(ByVal Prompt As String, _
            Optional ByVal Buttons As Variant = vbOKOnly, _
            Optional ByVal Title As String = vbNullString, _
+           Optional ByVal box_buttons_app_run As Dictionary = Nothing, _
            Optional ByVal box_monospaced As Boolean = False, _
            Optional ByVal box_button_default = 1, _
            Optional ByVal box_return_index As Boolean = False, _
@@ -270,21 +326,23 @@ Public Function Box(ByVal Prompt As String, _
         .MsgWidthMax = box_width_max        ' percentage of screen width
         .MsgWidthMin = box_width_min        ' defaults to 400 pt. the absolute minimum is 200 pt
         .MsgButtonDefault = box_button_default
+        .ModeLess = box_modeless
+        If box_buttons_app_run Is Nothing Then Set box_buttons_app_run = New Dictionary
+        .ApplicationRunArgs = box_buttons_app_run
         '+------------------------------------------------------------------------+
         '|| Setup prior showing the form is much faster and avoids flickering.   ||
         '|| For testing purpose it may be appropriate to out-comment the Setup.  ||
         '+------------------------------------------------------------------------+
         .Setup
         If box_modeless Then
-            DisplayDone = False
             .Show vbModeless
             .PositionOnScreen box_pos
         Else
             .PositionOnScreen box_pos
             .Show vbModal
+            Box = mMsg.RepliedWith
         End If
     End With
-    Box = RepliedWith
 
 xt: Exit Function
 
@@ -525,6 +583,7 @@ End Sub
 Public Function Dsply(ByVal dsply_title As String, _
                       ByRef dsply_msg As TypeMsg, _
              Optional ByVal dsply_buttons As Variant = vbOKOnly, _
+             Optional ByVal dsply_buttons_app_run As Dictionary = Nothing, _
              Optional ByVal dsply_button_default = 1, _
              Optional ByVal dsply_button_reply_with_index As Boolean = False, _
              Optional ByVal dsply_modeless As Boolean = False, _
@@ -598,8 +657,15 @@ Public Function Dsply(ByVal dsply_title As String, _
             .Text(enSectText, i) = dsply_msg.Section(i).Text
         Next i
         
-        .MsgBttns = dsply_buttons
+        If TypeName(dsply_buttons) = "Collection" _
+        Then .MsgBttns = dsply_buttons _
+        Else .MsgBttns = mMsg.Buttons(dsply_buttons)
+        
         .MsgButtonDefault = dsply_button_default
+        .ModeLess = dsply_modeless
+        If dsply_buttons_app_run Is Nothing Then Set dsply_buttons_app_run = New Dictionary
+        .ApplicationRunArgs = dsply_buttons_app_run
+
         '+------------------------------------------------------------------------+
         '|| Setup prior showing the form is much faster and avoids flickering.   ||
         '|| For testing - indicated by VisualizerControls = True and             ||
@@ -607,7 +673,6 @@ Public Function Dsply(ByVal dsply_title As String, _
         '+------------------------------------------------------------------------+
         If Not .VisualizeForTest Then .Setup
         If dsply_modeless Then
-            DisplayDone = False
             .Show vbModeless
             .PositionOnScreen dsply_pos
         Else
@@ -615,7 +680,7 @@ Public Function Dsply(ByVal dsply_title As String, _
             .Show vbModal
         End If
     End With
-    Dsply = RepliedWith
+    Dsply = mMsg.RepliedWith
     
 xt:
 #If ExecTrace = 1 Then
@@ -739,18 +804,18 @@ Private Function ErrSrc(ByVal sProc As String) As String
 End Function
 
 Private Function GetPanesIndex(ByVal Rng As Range) As Integer
-    Dim sr As Long:          sr = ActiveWindow.SplitRow
+    Dim sR As Long:          sR = ActiveWindow.SplitRow
     Dim sc As Long:          sc = ActiveWindow.SplitColumn
     Dim r As Long:            r = Rng.row
     Dim c As Long:            c = Rng.Column
     Dim Index As Integer: Index = 1
 
     Select Case True
-    Case sr = 0 And sc = 0: Index = 1
-    Case sr = 0 And sc > 0 And c > sc: Index = 2
-    Case sr > 0 And sc = 0 And r > sr: Index = 2
-    Case sr > 0 And sc > 0 And r > sr: If c > sc Then Index = 4 Else Index = 3
-    Case sr > 0 And sc > 0 And c > sc: If r > sr Then Index = 4 Else Index = 2
+    Case sR = 0 And sc = 0: Index = 1
+    Case sR = 0 And sc > 0 And c > sc: Index = 2
+    Case sR > 0 And sc = 0 And r > sR: Index = 2
+    Case sR > 0 And sc > 0 And r > sR: If c > sc Then Index = 4 Else Index = 3
+    Case sR > 0 And sc > 0 And c > sc: If r > sR Then Index = 4 Else Index = 2
     End Select
 
     GetPanesIndex = Index
@@ -792,14 +857,14 @@ Public Sub MakeFormResizable()
 ' NOTE:  This code should be executed within the UserForm_Activate() event.
 ' ----------------------------------------------------------------------------
     Dim lStyle As Long
-    Dim hwnd As Long
+    Dim hWnd As Long
     Dim RetVal
   
-    hwnd = GetForegroundWindow
+    hWnd = GetForegroundWindow
     'Get the basic window style
-     lStyle = GetWindowLong(hwnd, GWL_STYLE) Or WS_THICKFRAME
+     lStyle = GetWindowLong(hWnd, GWL_STYLE) Or WS_THICKFRAME
     'Set the basic window styles
-     RetVal = SetWindowLong(hwnd, GWL_STYLE, lStyle)
+     RetVal = SetWindowLong(hWnd, GWL_STYLE, lStyle)
 
 End Sub
 
@@ -1012,7 +1077,7 @@ Public Function MsgInstance(ByVal fi_key As String, _
         '~~ When there is no evidence of an already existing instance a new one is established.
         '~~ In order not to interfere with any prior established instance a minimum wait time
         '~~ of 10 milliseconds is maintained.
-        MsecsElapsed = (Time() - cyStart) / CDec(TimeTicksFrequency)
+        MsecsElapsed = (TicksCount() - cyStart) / CDec(TicksFrequency)
         MsecsWait = 10 - MsecsElapsed
         If MsecsWait > 0 Then Sleep MsecsWait
         Set MsgInstance = New fMsg
@@ -1245,7 +1310,7 @@ xt: Exit Sub
 eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
 End Sub
 
-Private Function Time() As Currency:                getTickCount Time:                  End Function
+Private Function TicksCount() As Currency:      getTickCount TicksCount:        End Function
 
-Private Function TimeTicksFrequency() As Currency:  getFrequency TimeTicksFrequency:    End Function
+Private Function TicksFrequency() As Currency:  getFrequency TicksFrequency:    End Function
 
