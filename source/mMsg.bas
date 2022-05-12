@@ -746,8 +746,7 @@ Public Function ErrMsg(ByVal err_source As String, _
     End If
     
     '~~ Prepare Error Title
-    ErrTitle = ErrType & ErrNo & " in: '" & err_source & "'" & ErrAtLine
-    Debug.Print ErrTitle
+    ErrTitle = ErrType & " " & ErrNo & " in: '" & err_source & "'" & ErrAtLine
     
     '~~ Prepare the Error Reply Buttons
 #If Debugging = 1 Then
