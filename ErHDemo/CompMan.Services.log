@@ -1,0 +1,16 @@
+22-05-04 10:08:15 Update Outdated (by Addin) for ErHDemo.xlsm: 
+22-05-04 10:08:15 ---------------------------------------------
+22-05-04 10:08:16 Standard-Module    mCompManClient: 10:08:16:050 DoEvents paused the execution for 00069 msecs in 'mService.SaveWbk'
+22-05-04 10:08:16                                    10:08:16:440 DoEvents paused the execution for 00006 msecs in 'mService.SaveWbk'
+22-05-04 10:08:16 Standard-Module    mBasic .......: Used Common Component up-to-date
+22-05-04 10:08:16 Standard-Module    mCompManClient: Used Common Component up-to-date
+22-05-04 10:08:16 Standard-Module    mErH .........: Used Common Component up-to-date
+22-05-04 10:08:32 ============================================
+22-05-04 10:08:32 Export Changed (by Addin) for ErHDemo.xlsm: 
+22-05-04 10:08:32 --------------------------------------------
+22-05-04 10:08:32 Standard-Module    mBasic .......: Unchanged Used Common Component
+22-05-04 10:08:32 Standard-Module    mCompManClient: Unchanged Used Common Component
+22-05-04 10:08:33 Standard-Module    mErH .........: Unchanged Used Common Component
+22-05-04 10:08:33 Standard-Module    mErHDemo .....: Modified code exported
+22-05-04 10:08:33 Workbook           wbErHDemo ....: Modified code exported
+22-05-04 10:08:33 Worksheet CodeName wsErHDemo ....: Modified code exported

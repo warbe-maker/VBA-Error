@@ -11,14 +11,9 @@ Option Explicit
 ' See also Github repo:
 ' https://github.com/warbe-maker/Excel-VB-Components-Management-Services
 ' ----------------------------------------------------------------------
-Private Const COMPMAN_ADDIN     As String = "CompMan.xlam"
-Private Const COMPMAN_DEVLP     As String = "CompMan.xlsb"
-Private Const COMPMAN_BY_ADDIN  As String = "CompMan.xlam!mCompMan."
-Private Const COMPMAN_BY_DEVLP  As String = "CompMan.xlsb!mCompMan."
-
 Private Busy                As Boolean ' prevent parallel execution of a service
-Private ServicedByWbComp    As String
-Private RunService          As String
+Private Const COMPMAN_ADDIN As String = "CompMan.xlam"
+Private Const COMPMAN_DEVLP As String = "CompMan.xlsb"
 
 Private Function AppErr(ByVal app_err_no As Long) As Long
 ' ------------------------------------------------------------------------------
@@ -31,19 +26,16 @@ Private Function AppErr(ByVal app_err_no As Long) As Long
     If app_err_no >= 0 Then AppErr = app_err_no + vbObjectError Else AppErr = Abs(app_err_no - vbObjectError)
 End Function
 
-Public Sub CompManService(ByVal cms_service_name As String, _
-                          ByVal cms_hosted_common_components As String, _
-                          Optional ByVal cms_modeless As Boolean = False)
+Public Sub CompManService(ByVal cm_service As String, _
+                          ByVal hosted As String)
 ' ----------------------------------------------------------------------------
-' Execution of the CompMan service (cms_service_name) preferably via the
-' "CompMan Development Instance" as the servicing Workbook. Only when not
-' available/open the "CompMan AddIn Instance" (CompMan.xlam) becomes
-' the servicing Workbook - which maynot be open either or open but paused.
-' When the service is requested "component-by-component" (cms_modeless = True)
-' - which is only relevant for the update service - the update of outdated
-' components is performed item-by-item via a modeless displayed message.
+' Execution of the CompMan service (cm_service) preferably via the CompMan
+' Development instance when available (assuming it is for testing). Only when
+' not available the CompMan AddIn services (CompMan.xlam) are used.
 ' ----------------------------------------------------------------------------
     Const PROC = "CompManService"
+    Const COMPMAN_BY_ADDIN = "CompMan.xlam!mCompMan."
+    Const COMPMAN_BY_DEVLP = "CompMan.xlsb!mCompMan."
     
     On Error GoTo eh
     Dim vDone As Variant
@@ -57,12 +49,40 @@ Public Sub CompManService(ByVal cms_service_name As String, _
     End If
     Busy = True
     
-    RunService = cms_service_name
-    
-    If Not CompManServiceAvailable(cms_service_name, ServicedByWbComp) Then GoTo xt
-    
-    '~~ Either the Addin or the development instance (ServicedByWbComp) is ready to run the service
-    Application.Run ServicedByWbComp & cms_service_name, ThisWorkbook, cms_hosted_common_components, cms_modeless
+    On Error Resume Next
+    vDone = Application.Run(COMPMAN_BY_ADDIN & cm_service, ThisWorkbook, hosted)
+    If Err.Number = 1004 Then
+        '~~ The Addin is (currently) not available at all. Let's try with the CompMan.xlsb which might be open
+        On Error Resume Next
+        Application.Run COMPMAN_BY_DEVLP & cm_service, ThisWorkbook, hosted
+        If Err.Number = 1004 Then
+            Application.StatusBar = "'" & cm_service & "' neither available by  " & COMPMAN_ADDIN & "  nor by  " & COMPMAN_DEVLP
+            GoTo xt
+        End If
+    ElseIf Err.Number = 0 Then
+        Select Case vDone
+            Case AppErr(1)
+            '~~ CompMan is not configured prperly
+            Case AppErr(2)
+                '~~ Workbook not serviced because not in the configured serviced folder
+                GoTo xt
+            Case AppErr(3)
+                '~~ The requestes service was UpdateOutdatedUsedCommonComponents but
+                '~~ the servicing and the service Workbook are both CompMan.xlsb and
+                '~~ the Workbook cannot update itself. This error only happens when the
+                '~~ Addin is not available.
+            Case AppErr(4)
+                '~~ The Addin is available but is currently paused. It requires CompMan.xlsb
+                '~~ to Continue it. When CompMan.xlsb is open, the service will be provided however
+                On Error Resume Next
+                Application.Run COMPMAN_BY_DEVLP & cm_service, ThisWorkbook, hosted
+                If Err.Number = 1004 Then
+                    Application.StatusBar = "'" & cm_service & "' neither available by '" & COMPMAN_BY_ADDIN & "' nor by '" & COMPMAN_BY_DEVLP & "'!"
+                End If
+        End Select
+    ElseIf IsString(vDone) Then
+        Application.StatusBar = vDone
+    End If
 
 xt: Busy = False
     Exit Sub
@@ -73,51 +93,10 @@ eh: Select Case ErrMsg(ErrSrc(PROC))
     End Select
 End Sub
 
-Private Function CompManServiceAvailable(ByVal csa_service As String, _
-                                         ByRef csa_servicing_wb_comp As String) As Boolean
-' ----------------------------------------------------------------------------
-' Returns TRUE and the servicing Workbook/component (csa_servicing_wb_comp)
-' when the service (csa_service) is available for "ThisWorkbook". Because the
-' CompManClient does not have all the required information the check is
-' forwarded to the "RunTest" service of the potentially servicing Workbook
-' which is preferrably the development instance (when available/open) and
-' second the Addin instance when available (open) and not paused.
-' ----------------------------------------------------------------------------
-    Dim lResult As Long
-    
-    '~~ 1. Check the availability of a servicing Workbook
-    On Error Resume Next
-    lResult = Application.Run(COMPMAN_BY_DEVLP & "RunTest", csa_service, ThisWorkbook)
-    If Err.Number = 0 Then
-        ServicedByWbComp = COMPMAN_BY_DEVLP
-    ElseIf 1004 Then
-        On Error Resume Next
-        lResult = Application.Run(COMPMAN_BY_ADDIN & "RunTest", csa_service, ThisWorkbook)
-        If Err.Number = 0 Then
-            ServicedByWbComp = COMPMAN_BY_ADDIN
-        ElseIf 1004 Then
-            Application.StatusBar = "'" & csa_service & "' neither available by  " & COMPMAN_ADDIN & "  nor by  " & COMPMAN_DEVLP
-            GoTo xt
-        End If
-    End If
-    
-    '~~ 2. Check if the available servicing Workbook is able to provide the requested service
-    Select Case lResult
-        Case AppErr(1): Application.StatusBar = "The configuration of Compman is invalid!"
-        Case AppErr(2)  ' The serviced Workbook is located outside the serviced folder (silent service denial)
-        Case AppErr(4): Application.StatusBar = "The servicing Addin is currently paused!"
-        Case AppErr(3): Application.StatusBar = "The servicing 'CompMan Development Instance' is unable to update its own components!"
-        Case Else:      CompManServiceAvailable = True
-    End Select
-
-xt: Exit Function
-
-End Function
-
-Private Function ErrMsg(ByVal err_source As String, _
-               Optional ByVal err_no As Long = 0, _
-               Optional ByVal err_dscrptn As String = vbNullString, _
-               Optional ByVal err_line As Long = 0) As Variant
+Public Function ErrMsg(ByVal err_source As String, _
+              Optional ByVal err_no As Long = 0, _
+              Optional ByVal err_dscrptn As String = vbNullString, _
+              Optional ByVal err_line As Long = 0) As Variant
 ' ------------------------------------------------------------------------------
 ' Universal error message display service including a debugging option active
 ' when the Conditional Compile Argument 'Debugging = 1' and an optional

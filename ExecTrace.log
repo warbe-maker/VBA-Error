@@ -1,15 +1,3 @@
-22-02-18 17:24:30 Execution trace by 'Common VBA Execution Trace Service' (https://github.com/warbe-maker/Common-VBA-Execution-Trace-Service)
-22-02-18 17:24:30                 >> Begin execution trace 
-22-02-18 17:24:30 00,0000         |  >> mDemo.Demo_6_Execution_Trace
-22-02-18 17:24:30 00,0041         |  |  >> mDemo.Demo_6_Execution_Trace_DemoProc_6a
-22-02-18 17:24:30 00,0046         |  |  |  >> mDemo.Demo_6_Execution_Trace_DemoProc_6b
-22-02-18 17:24:30 00,0051         |  |  |  |  >> mDemo.Demo_6_Execution_Trace_DemoProc_6c
-22-02-18 17:24:30 00,0057 00,0006 |  |  |  |  << mDemo.Demo_6_Execution_Trace_DemoProc_6c
-22-02-18 17:24:30 00,0063         |  |  |  |  > Demo_6_Execution_Trace_DemoProc_6b empty loop 1 to 10000000
-22-02-18 17:24:30 00,0621 00,0558 |  |  |  |  < Demo_6_Execution_Trace_DemoProc_6b empty loop 1 to 10000000
-22-02-18 17:24:30 00,0627 00,0580 |  |  |  << mDemo.Demo_6_Execution_Trace_DemoProc_6b
-22-02-18 17:24:30 00,0632 00,0590 |  |  << mDemo.Demo_6_Execution_Trace_DemoProc_6a
-22-02-18 17:24:30 00,0636 00,0636 |  << mDemo.Demo_6_Execution_Trace
-22-02-18 17:24:30 00,0636 00,0636 << End execution trace 
-22-02-18 17:24:30                 Impact on the overall performance (caused by the trace itself): 00,0004 seconds!
-22-02-18 17:24:30 Execution trace by 'Common VBA Execution Trace Service' (https://github.com/warbe-maker/Common-VBA-Execution-Trace-Service)
+22-05-02 23:24:43 Execution trace by 'Common VBA Execution Trace Service' (https://github.com/warbe-maker/Common-VBA-Execution-Trace-Service)
+22-05-02 23:24:43                 >> Begin execution trace 
+22-05-02 23:24:43 00,0000         |  >> mErHDemo.Demo_ErH_Reasonable_a
