@@ -1,6 +1,6 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} fMsg 
-   ClientHeight    =   11595
+   ClientHeight    =   11598
    ClientLeft      =   150
    ClientTop       =   390
    ClientWidth     =   12390
@@ -3505,14 +3505,18 @@ Private Sub ApplicationRunViaButton(ByVal ar_button As String)
     Dim sService    As String
     Dim Msg         As TypeMsg
     Dim i           As Long
+    Dim sKey        As String
+    Dim sButton     As String
     
+    sButton = Replace(Replace(ar_button, vbCrLf, "|"), vbLf, "|")
+    Debug.Print "Button:   '" & sButton & "'"
     For i = 0 To dctApplicationRunArgs.Count - 1
-        If StrComp(dctApplicationRunArgs.Keys()(i), ar_button, vbTextCompare) = True Then
-            Debug.Print "ar_button: '" & ar_button & "'"
-            Debug.Print "Keys(i)  : '" & dctApplicationRunArgs.Keys()(i) & "'"
-            Debug.Print "Exists:     " & dctApplicationRunArgs.Exists(ar_button)
+        sKey = Replace(Replace(dctApplicationRunArgs.Keys()(i), vbCrLf, "|"), vbLf, "|")
+        If sKey = sButton Then
             Set cll = dctApplicationRunArgs.Items()(i)
             sService = cll(1).Name & "!" & cll(2)
+            Debug.Print "Key     : '" & sKey & "'"
+            Debug.Print "sService:   " & sService
             
             Select Case cll.Count
                 Case 2: Application.Run sService                 ' service call without arguments

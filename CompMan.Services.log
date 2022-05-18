@@ -1,24 +1,8 @@
-22-05-12 20:07:24 Update Outdated (by CompMan.xlsb) for ErH.xlsm: 
-22-05-12 20:07:24 ------------------------------------------------
-22-05-12 20:07:24 Standard-Module    mTrc .........: 20:07:24:270 DoEvents paused the execution for 00006 msecs in 'mService.SaveWbk'
-22-05-12 20:07:24                                    20:07:24:800 DoEvents paused the execution for 00006 msecs in 'mService.SaveWbk'
-22-05-12 20:07:24 UserForm           fMsg .........: Used Common Component up-to-date
-22-05-12 20:07:24 Standard-Module    mCompManClient: Used Common Component up-to-date
-22-05-12 20:07:24 Standard-Module    mMsg .........: Used Common Component up-to-date
-22-05-12 20:07:24 Standard-Module    mTrc .........: Used Common Component up-to-date
-22-05-12 20:07:34 ===============================================
-22-05-12 20:07:34 Export Changed (by CompMan.xlsb) for ErH.xlsm: 
-22-05-12 20:07:34 -----------------------------------------------
-22-05-12 20:07:34 ========================================================
-22-05-12 20:07:34 ExportChangedComponents (by CompMan.xlsb) for ErH.xlsm: 
-22-05-12 20:07:34 --------------------------------------------------------
-22-05-12 20:07:34 UserForm           fMsg .........: Unchanged Used Common Component
-22-05-12 20:07:34 Standard-Module    mAnyModule ...: Unchanged component
-22-05-12 20:07:34 Standard-Module    mCompManClient: Unchanged Used Common Component
-22-05-12 20:07:34 Standard-Module    mErHDemo .....: Unchanged component
-22-05-12 20:07:34 Standard-Module    mErHTest .....: Unchanged component
-22-05-12 20:07:34 Standard-Module    mMsg .........: Unchanged Used Common Component
-22-05-12 20:07:34 Standard-Module    mTrc .........: Unchanged Used Common Component
-22-05-12 20:07:34 Workbook           wbErrHndlrTest: Unchanged component
-22-05-12 20:07:35 Worksheet CodeName wsAbout ......: Unchanged component
-22-05-12 20:07:35 Worksheet CodeName wsTest .......: Unchanged component
+22-05-18 10:36:22 Update Outdated (by Addin) for ErH.xlsm: 
+22-05-18 10:36:22 -----------------------------------------
+22-05-18 10:36:22 Standard-Module    mCompManClient: 10:36:22:320 DoEvents paused the execution for 00102 msecs in 'mService.SaveWbk'
+22-05-18 10:36:22                                    10:36:22:970 DoEvents paused the execution for 00003 msecs in 'mService.SaveWbk'
+22-05-18 10:36:23 UserForm           fMsg .........: Used Common Component up-to-date
+22-05-18 10:36:23 Standard-Module    mCompManClient: Used Common Component up-to-date
+22-05-18 10:36:23 Standard-Module    mMsg .........: Used Common Component up-to-date
+22-05-18 10:36:23 Standard-Module    mTrc .........: Used Common Component up-to-date
