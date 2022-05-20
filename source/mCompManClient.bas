@@ -18,7 +18,6 @@ Const COMPMAN_ADDIN = "CompMan.xlam"
 Const COMPMAN_DEVLP = "CompMan.xlsb"
 
 Dim Busy        As Boolean ' prevent parallel execution of a service
-Dim WbServicing As String
 
 Private Function AppErr(ByVal app_err_no As Long) As Long
 ' ------------------------------------------------------------------------------
@@ -33,7 +32,7 @@ End Function
 
 Public Sub CompManService(ByVal cms_service_name As String, _
                           ByVal cms_hosted_common_components As String, _
-                          Optional ByVal cms_modeless As Boolean = True)
+                 Optional ByVal cms_unused As Boolean)
 ' ----------------------------------------------------------------------------
 ' Execution of the CompMan service (cms_service_name) preferably via the
 ' "CompMan Development Instance" as the servicing Workbook. Only when not
@@ -42,11 +41,13 @@ Public Sub CompManService(ByVal cms_service_name As String, _
 ' When the service is requested "component-by-component" (cms_modeless = True)
 ' - which is only relevant for the update service - the update of outdated
 ' components is performed item-by-item via a modeless displayed message.
+' Note: cms_unused is for backwards compatibility only
 ' ----------------------------------------------------------------------------
     Const PROC = "CompManService"
     
     On Error GoTo eh
-    Dim vDone As Variant
+    Dim vDone       As Variant
+    Dim sServicing  As String
     
     If Busy Then
         '~~ This should avaoid any trouble caused by DoEvents used throughout the execution of the service.
@@ -57,9 +58,11 @@ Public Sub CompManService(ByVal cms_service_name As String, _
     End If
     Busy = True
     
-    If CompManServiceAvailable(cms_service_name) _
-    Then Application.Run WbServicing & "!mCompMan." & cms_service_name, ThisWorkbook, cms_hosted_common_components, cms_modeless
-
+    sServicing = WbServicing(cms_service_name)
+    If sServicing <> vbNullString Then
+        Application.Run sServicing & "!mCompMan." & cms_service_name, ThisWorkbook, cms_hosted_common_components
+    End If
+    
 xt: Busy = False
     Exit Sub
 
@@ -69,14 +72,19 @@ eh: Select Case ErrMsg(ErrSrc(PROC))
     End Select
 End Sub
 
-Private Function CompManServiceAvailable(ByVal csa_service As String) As Boolean
+Private Function WbServicing(ByVal csa_service As String) As String
 ' ----------------------------------------------------------------------------
-' Returns TRUE and the servicing Workbook/component (csa_servicing_wb_comp)
-' when the service (csa_service) is available for "ThisWorkbook". Because the
-' CompManClient does not have all the required information the check is
-' forwarded to the "RunTest" service of the potentially servicing Workbook
-' which is preferrably the development instance (when available/open) and
-' second the Addin instance when available (open) and not paused.
+' Returns the name of the Workbook providing the requested service which may
+' be a vbNullString when the service cannot be provided.
+' Notes: - When the requested service is not "update" an available development
+'          instance is given priority over an also available Addin instance.
+'        - When the requested service is "update" and the serviced Workbook
+'          is the development instance the service is only available when the
+'          Addin instance is avaialble.
+'        - Even when a servicing Workbook (the Addin and or the development
+'          instance is available, CompMan may still not be configured
+'          correctly!
+' Uses: mCompMan.RunTest
 ' ----------------------------------------------------------------------------
     
     Dim Result              As Long
@@ -94,33 +102,45 @@ Private Function CompManServiceAvailable(ByVal csa_service As String) As Boolean
     ResultByDev = Application.Run(COMPMAN_DEVLP & "!mCompMan.RunTest", csa_service, ThisWorkbook)
     AvailableByDev = Err.Number = 0
     
-    Select Case True
-        Case AvailableByDev = True And Not csa_service Like "Update*"
-            WbServicing = COMPMAN_DEVLP ' Use of available dev instance is given priority
-            Result = ResultByDev
-            CompManServiceAvailable = True
-        Case AvailableByAddin = False And csa_service Like "Update*"
-            WbServicing = vbNullString
-            GoTo xt
-        Case AvailableByAddin = True And AvailableByDev = False
-            WbServicing = COMPMAN_ADDIN
-            Result = ResultByAddin
-            CompManServiceAvailable = True
-        Case AvailableByAddin = True And AvailableByDev = True And csa_service Like "Update*"
-            WbServicing = COMPMAN_ADDIN
-            Result = ResultByAddin
-            CompManServiceAvailable = True
-    End Select
-     
+    If Not csa_service Like "Update*" Then
+        '~~ When the requested service is not "update" an available development
+        '~~ instance is given priority over an also available Addin instance.
+        Select Case True
+            Case AvailableByDev
+                WbServicing = COMPMAN_DEVLP
+                Result = ResultByDev
+            Case Not AvailableByDev And AvailableByAddin
+                WbServicing = COMPMAN_ADDIN
+                Result = ResultByAddin
+        End Select
+    Else
+        '~~ When the requested service is "update" and the serviced Workbook
+        '~~ is the development instance the service is only available when the
+        '~~ Addin instance is avaialble.
+        Select Case True
+            Case AvailableByAddin And ThisWorkbook.Name = COMPMAN_DEVLP
+                WbServicing = COMPMAN_ADDIN
+                Result = ResultByAddin
+            Case AvailableByDev And ThisWorkbook.Name <> COMPMAN_DEVLP
+                WbServicing = COMPMAN_DEVLP
+                Result = ResultByDev
+            Case AvailableByAddin
+                WbServicing = COMPMAN_ADDIN
+                Result = ResultByAddin
+            Case Else
+                Application.StatusBar = "Update sercvice not available by Addin! (" & COMPMAN_DEVLP & " cannot update its own components)"
+       End Select
+    End If
+    
+    If WbServicing = vbNullString Then GoTo xt
+    
     '~~ 2. Check if the available servicing Workbook is able to provide the requested service
     Select Case Result
         Case AppErr(1)
-            Application.StatusBar = "The configuration of Compman is invalid!"
+            Application.StatusBar = "Compman is not confifured correctly!"
+            WbServicing = vbNullString
         Case AppErr(2)  ' The serviced Workbook is located outside the serviced folder (silent service denial)
-        Case AppErr(3)
-            If WbServicing = COMPMAN_DEVLP Then
-                Application.StatusBar = "The servicing 'CompMan Addin Instance' is currently paused!"
-            End If
+            WbServicing = vbNullString
     End Select
 
 xt: Exit Function

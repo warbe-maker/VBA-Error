@@ -3474,12 +3474,12 @@ Private Function TimedDoEvents(ByVal tde_source As String) As String
 ' ---------------------------------------------------------------------------
     Dim s As String
     
-    mBasic.TimerBegin
+    TimerBegin
     DoEvents
     s = Format(Now(), "hh:mm:ss") & ":" _
       & Right(Format(Timer, "0.000"), 3) _
       & " DoEvents paused the execution for " _
-      & Format(mBasic.TimerEnd, "00000") _
+      & Format(TimerEnd, "00000") _
       & " msecs in '" & tde_source & "'"
     Debug.Print s
     TimedDoEvents = s
