@@ -378,7 +378,7 @@ Private Function Demo_ErH_BetterThanNothing_a(ByVal op1 As Variant, _
 
     On Error GoTo eh
     
-46  ErH_BetterThanNothing1 = op1 / op2
+46  Demo_ErH_BetterThanNothing_a = op1 / op2
     Exit Function
 
 eh:
@@ -408,7 +408,7 @@ Const PROC As String = "Demo_ErH_Elaborated_a"
     On Error GoTo eh
     BoP ErrSrc(PROC)    ' Push procedure on call stack
     
-    ErH_Elaborated2 10, 0
+    Demo_ErH_Elaborated_b 10, 0
 
 xt: EoP ErrSrc(PROC)    ' Pull procedure from call stack
     Exit Sub
@@ -443,7 +443,7 @@ Const PROC  As String = "Demo_ErH_Elaborated_b"
 163 If op2 = 0 Then Err.Raise AppErr(3), ErrSrc(PROC), "The parameter (op2) is 0 which would cause a 'Division by zero' error!" & CONCAT & _
                                                 "This error has been detected by a programed assertion of correct values provided for the function call." & vbLf & _
                                                 "(this extra information is part of the error message but split by means of two vertical bars, which is only possible by programed (Err.Raise) error message "
-    ErH_Elaborated2 = op1 / op2
+    Demo_ErH_Elaborated_b = op1 / op2
 
 xt: EoP ErrSrc(PROC)    ' Pull procedure from call stack
     Exit Function
@@ -473,7 +473,7 @@ Const PROC  As String = "Demo_ErH_Elaborated"
     
     On Error GoTo eh
     BoP ErrSrc(PROC)
-    ErH_Elaborated1
+    Demo_ErH_Elaborated_a
     EoP ErrSrc(PROC)
 
 xt: Exit Sub
@@ -482,7 +482,7 @@ eh: ErrMsg err_source:=ErrSrc(PROC)
 End Sub
 
 Private Function Demo_ErH_Reasonable_a(ByVal op1 As Variant, _
-                                          ByVal op2 As Variant) As Variant
+                                       ByVal op2 As Variant) As Variant
 ' ------------------------------------------------------------------------
 ' - Error message:              Yes, well or even better formated
 '   - Error source:             Yes
@@ -500,7 +500,7 @@ Private Function Demo_ErH_Reasonable_a(ByVal op1 As Variant, _
 
     On Error GoTo eh
     BoP ErrSrc(PROC)
-46  ErH_Reasonable1 = op1 / op2
+46  Demo_ErH_Reasonable_b = op1 / op2
     EoP ErrSrc(PROC)
     Exit Function
 

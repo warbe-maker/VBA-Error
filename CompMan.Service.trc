@@ -1,12 +1,19 @@
-22-05-20 19:19:44 04,1101         |  >> mCompMan.UpdateOutdatedCommonComponents
-22-05-20 19:19:44 04,1108         |  |  >> mCompMan.MaintainPropertiesOfHostedRawCommonComponents
-22-05-20 19:19:44 04,1377 00,0269 |  |  << mCompMan.MaintainPropertiesOfHostedRawCommonComponents
-22-05-20 19:19:44 04,1432         |  |  >> mRenew.Outdated
-22-05-20 19:19:44 04,1783         |  |  |  >> mService.SaveWbk
-22-05-20 19:19:45 04,6497 00,4714 |  |  |  << mService.SaveWbk
-22-05-20 19:19:45 04,8446 00,7014 |  |  << mRenew.Outdated
-22-05-20 19:19:45 04,8617 00,7516 |  << mCompMan.UpdateOutdatedCommonComponents
-22-05-20 19:19:45 04,8865 04,8865 << mRenew.Run
-22-05-20 19:19:45 04,8865 04,8865 << Update Outdated (by Addin) for ErH.xlsm: 
-22-05-20 19:19:45                 Impact on the overall performance (caused by the trace itself): 00,0248 seconds!
-22-05-20 19:19:45 Execution trace by 'Common VBA Execution Trace Service' (https://github.com/warbe-maker/Common-VBA-Execution-Trace-Service)
+22-05-25 19:24:21 Execution trace by 'Common VBA Execution Trace Service' (https://github.com/warbe-maker/Common-VBA-Execution-Trace-Service)
+22-05-25 19:24:21                 >> Export Changed (by CompMan.xlsb) for ErH.xlsm: 
+22-05-25 19:24:21 00,0000         |  >> mCompMan.ExportChangedComponents
+22-05-25 19:24:21 00,0825         |  |  >> mService.ExportChangedComponents
+22-05-25 19:24:21 00,1178         |  |  |  >> mCompMan.MaintainPropertiesOfHostedRawCommonComponents
+22-05-25 19:24:21 00,1378 00,0200 |  |  |  << mCompMan.MaintainPropertiesOfHostedRawCommonComponents
+22-05-25 19:24:21 00,1444         |  |  |  >> mExport.ChangedComponents
+22-05-25 19:24:22 01,0955         |  |  |  |  >> mService.RemoveTempRenamed
+22-05-25 19:24:22 01,1032 00,0077 |  |  |  |  << mService.RemoveTempRenamed
+22-05-25 19:24:22 01,1081 00,9638 |  |  |  << mExport.ChangedComponents
+22-05-25 19:24:22 01,1131 01,0306 |  |  << mService.ExportChangedComponents
+22-05-25 19:24:22 01,1194 01,1194 |  << mCompMan.ExportChangedComponents
+22-05-25 19:24:22 01,1194 01,1194 << Export Changed (by CompMan.xlsb) for ErH.xlsm: 
+22-05-25 19:24:22                 Impact on the overall performance (caused by the trace itself): 00,0063 seconds!
+22-05-25 19:24:22 Execution trace by 'Common VBA Execution Trace Service' (https://github.com/warbe-maker/Common-VBA-Execution-Trace-Service)
+
+22-05-25 19:26:34 Execution trace by 'Common VBA Execution Trace Service' (https://github.com/warbe-maker/Common-VBA-Execution-Trace-Service)
+22-05-25 19:26:34                 >> Export Changed (by CompMan.xlsb) for ErH.xlsm: 
+22-05-25 19:26:34 00,0000         |  >> mCompMan.Synchronize

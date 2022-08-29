@@ -1,4 +1,21 @@
-22-05-20 19:19:44 Update Outdated (by Addin) for ErH.xlsm: 
-22-05-20 19:19:44 -----------------------------------------
-22-05-20 19:19:44 UserForm           fMsg .........: 19:19:44:870 DoEvents paused the execution for 00009 msecs in 'mService.SaveWbk'
-22-05-20 19:19:45                                    19:19:45:320 DoEvents paused the execution for 00006 msecs in 'mService.SaveWbk'
+22-05-25 19:22:57 Update Outdated (by CompMan.xlsb) for ErH.xlsm: 
+22-05-25 19:22:57 ------------------------------------------------
+22-05-25 19:24:21 ===============================================
+22-05-25 19:24:21 Export Changed (by CompMan.xlsb) for ErH.xlsm: 
+22-05-25 19:24:21 -----------------------------------------------
+22-05-25 19:24:21 ========================================================
+22-05-25 19:24:21 ExportChangedComponents (by CompMan.xlsb) for ErH.xlsm: 
+22-05-25 19:24:21 --------------------------------------------------------
+22-05-25 19:24:22 UserForm           fMsg .........: Unchanged Used Common Component
+22-05-25 19:24:22 Standard-Module    mAnyModule ...: Unchanged component
+22-05-25 19:24:22 Standard-Module    mCompManClient: Unchanged Used Common Component
+22-05-25 19:24:22 Standard-Module    mErH .........: Hosted Raw Common Component code modified
+22-05-25 19:24:22                                    Code modified of Hosted Raw Common Component
+22-05-25 19:24:22                                    Exported, Revision Number increased, Export File copied to 'Common Components Folder'
+22-05-25 19:24:22 Standard-Module    mErHDemo .....: Modified code exported
+22-05-25 19:24:22 Standard-Module    mErHTest .....: Unchanged component
+22-05-25 19:24:22 Standard-Module    mMsg .........: Unchanged Used Common Component
+22-05-25 19:24:22 Standard-Module    mTrc .........: Unchanged Used Common Component
+22-05-25 19:24:22 Workbook           wbErrHndlrTest: Modified code exported
+22-05-25 19:24:22 Worksheet CodeName wsAbout ......: Unchanged component
+22-05-25 19:24:22 Worksheet CodeName wsTest .......: Unchanged component
