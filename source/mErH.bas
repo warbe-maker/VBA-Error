@@ -499,7 +499,7 @@ Private Function ErrMsgDsply(ByVal err_source As String, _
                     "    If mErH.ErrMsg(ErrSrc(PROC) = vbResume Then Stop: Resume   makes debugging extremely quick and easy."
 #End If
     
-    '~~ Skip the display when this is a regression test with the error explicitely already asserted
+    '~~ Skip the display when this is a regression test with the error explicitly already asserted
     If bRegression And ErrIsAsserted(err_no_asserted) Then GoTo xt
                        
     '~~ Display the error message via the Common Component procedure mMsg.Dsply

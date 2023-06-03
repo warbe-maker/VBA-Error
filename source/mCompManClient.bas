@@ -2,29 +2,46 @@ Attribute VB_Name = "mCompManClient"
 Option Explicit
 ' ----------------------------------------------------------------------
 ' Standard Module mCompManClient
+' ==============================
+' CompMan client interface. To be imported into any Workbook for being
+' serviced by CompMan's: - "Export Changed Components"
+'                        - "Update Outdated Common Components"
+'                        - "Synchronize VB-Projects"
 '
-' Interface between a Workbook/VB-Project and the 'Component Management'
-' for providing the services:
-' - Export of changed components
-' - Update of outdated used 'Common Components' (by re-importing an
-'   up-to-date component's Export File whereby this corresponding 'raw'
-'   component is hosted in another, possibly dedicated Workbook).
-' - Synchronization of a 'Synchronization-Target-Workbook' with its
-'   up-to-date 'Synchronization-source-Workbook'
+' W. Rauschenberger, Berlin Apr 2023
 '
-' W. Rauschenberger, Berlin May 2022
-'
-' See also Github repo:
-' https://github.com/warbe-maker/Excel-VB-Components-Management-Services
+' See https://github.com/warbe-maker/Excel-VB-Components-Management-Services
 ' ----------------------------------------------------------------------
-Public Const SERVICE_UPDATE_OUTDATED    As String = "UpdateOutdatedCommonComponents"
-Public Const SERVICE_SYNCHRONIZE        As String = "Synchronize"
+' --- The below constants must not be changed to Private since they are used byCompMan
+Public Const COMPMAN_DEVLP              As String = "CompMan.xlsb"
+Public Const SRVC_EXPORT_ALL            As String = "ExportAll"
+Public Const SRVC_EXPORT_ALL_DSPLY      As String = "Export All Components"
+Public Const SRVC_EXPORT_CHANGED        As String = "ExportChangedComponents"
+Public Const SRVC_EXPORT_CHANGED_DSPLY  As String = "Export Changed Components"
+Public Const SRVC_SYNCHRONIZE           As String = "SynchronizeVBProjects"
+Public Const SRVC_SYNCHRONIZE_DSPLY     As String = "Synchronize VB-Projects"
+Public Const SRVC_UPDATE_OUTDATED       As String = "UpdateOutdatedCommonComponents"
+Public Const SRVC_UPDATE_OUTDATED_DSPLY As String = "Update Outdated Common Components"
+' --- The above constants must not be changed to Private since they are used byCompMan
 
 Private Const COMPMAN_ADDIN             As String = "CompMan.xlam"
-Private Const COMPMAN_DEVLP             As String = "CompMan.xlsb"
 Private Const vbResume                  As Long = 6 ' return value (equates to vbYes)
+Private Busy                            As Boolean ' prevent parallel execution of a service
 
-Dim Busy        As Boolean ' prevent parallel execution of a service
+Private Property Let DisplayedServiceStatus(ByVal s As String)
+    With Application
+        .StatusBar = vbNullString
+        .StatusBar = s
+    End With
+End Property
+
+Private Property Get IsDevInstance() As Boolean
+    IsDevInstance = ThisWorkbook.Name = mCompManClient.COMPMAN_DEVLP
+End Property
+
+Private Property Get IsAddinInstance() As Boolean
+    IsAddinInstance = ThisWorkbook.Name = COMPMAN_ADDIN
+End Property
 
 Private Function AppErr(ByVal app_err_no As Long) As Long
 ' ------------------------------------------------------------------------------
@@ -38,21 +55,24 @@ Private Function AppErr(ByVal app_err_no As Long) As Long
 End Function
 
 Public Sub CompManService(ByVal cms_name As String, _
-                 Optional ByVal cms_hosted_common_components As String = vbNullString, _
-                 Optional ByVal cms_unused As Boolean)
+                 Optional ByVal cms_hosted_common_components As String = vbNullString)
 ' ----------------------------------------------------------------------------
 ' Execution of the CompMan service (cms_name) preferably via the "CompMan
 ' Development Instance" as the servicing Workbook. Only when not available the
-' "CompMan AddIn Instance" (CompMan.xlam) becomes the servicing Workbook -
-' which maynot be open either or open but paused.
+' "CompMan AddIn Instance" (COMPMAN_ADDIN) becomes the servicing
+' Workbook - which maynot be open either or open but paused.
 ' Note: cms_unused is for backwards compatibility only
 ' ----------------------------------------------------------------------------
     Const PROC = "CompManService"
     
     On Error GoTo eh
-    Dim vDone       As Variant
-    Dim sServicing  As String
+    Dim sWbkServicingName   As String
     
+    If IsAddinInstance Then
+        Application.StatusBar = "None of CompMan's services is applicable for CompMan's Add-in instance!"
+        GoTo xt
+    End If
+
     '~~ Avoid any trouble caused by DoEvents used throughout the execution of any service
     '~~ when a service is already currently busy. This may be the case when Workbook-Save
     '~~ is clicked twice.
@@ -62,14 +82,21 @@ Public Sub CompManService(ByVal cms_name As String, _
     End If
     Busy = True
     
-    sServicing = WbServicing(cms_name)
-    If sServicing <> vbNullString Then
-        If cms_name = SERVICE_SYNCHRONIZE _
-        Then Application.Run sServicing & "!mCompMan." & cms_name, ThisWorkbook _
-        Else Application.Run sServicing & "!mCompMan." & cms_name, ThisWorkbook, cms_hosted_common_components
+    sWbkServicingName = WbkServicingName(cms_name)
+    If sWbkServicingName <> vbNullString Then
+        If cms_name = mCompManClient.SRVC_SYNCHRONIZE _
+        Then Application.Run sWbkServicingName & "!mCompMan." & mCompManClient.SRVC_SYNCHRONIZE, ThisWorkbook _
+        Else Application.Run sWbkServicingName & "!mCompMan." & cms_name, ThisWorkbook, cms_hosted_common_components
+    End If
+    If Not ThisWorkbook.Saved Then
+        Application.DisplayAlerts = False
+        Application.EnableEvents = False
+        ThisWorkbook.Save
+        Application.DisplayAlerts = True
     End If
     
 xt: Busy = False
+    Application.EnableEvents = True
     Exit Sub
 
 eh: Select Case ErrMsg(ErrSrc(PROC))
@@ -77,97 +104,6 @@ eh: Select Case ErrMsg(ErrSrc(PROC))
         Case Else:      GoTo xt
     End Select
 End Sub
-
-Private Function WbServicing(ByVal csa_service As String) As String
-' ----------------------------------------------------------------------------
-' Returns the name of the Workbook providing the requested service which may
-' be a vbNullString when the service cannot neither be provided by an open
-' CompMan development instance Workbook nor by an available CompMan Addin
-' instance.
-' Notes: - When the requested service is not "update" an available development
-'          instance is given priority over an also available Addin instance.
-'        - When the requested service is "update" and the serviced Workbook
-'          is the development instance the service is only available when the
-'          Addin instance is avaialble.
-'        - Even when a servicing Workbook (the Addin and or the development
-'          instance is available, CompMan may still not be configured
-'          correctly!
-' Uses: mCompMan.RunTest
-' ----------------------------------------------------------------------------
-    Const PROC              As String = "WbServicing"
-    
-    Dim Result              As Long
-    Dim ResultByAddin       As Long
-    Dim ResultByDev         As Long
-    Dim AvailableByAddin    As Boolean
-    Dim AvailableByDev      As Boolean
-    
-    '~~ 1. Check the availability of servicing Workbooks
-    On Error Resume Next
-    ResultByAddin = Application.Run(COMPMAN_ADDIN & "!mCompMan.RunTest", csa_service, ThisWorkbook)
-    AvailableByAddin = Err.Number = 0
-    
-    If AvailableByAddin And ResultByAddin <> AppErr(1) And ResultByAddin <> AppErr(2) Then
-        '~~ Only when CompMan configured correctly and complete for the requested service (not AppErr(1))
-        '~~ and the serviced Workbook has been opened from the service-obligatory folder (not AppErr(2))
-        '~~ another try with the development instance makes sense
-        On Error Resume Next
-        ResultByDev = Application.Run(COMPMAN_DEVLP & "!mCompMan.RunTest", csa_service, ThisWorkbook)
-        AvailableByDev = Err.Number = 0
-        
-        On Error GoTo eh
-        If Not csa_service = SERVICE_UPDATE_OUTDATED _
-           And Not csa_service = SERVICE_SYNCHRONIZE Then
-            '~~ When the requested service is neither update nor synchronize and the CompMan development
-            '~~ instance is available it is given priority over a possibly also available CompMan Addin instance.
-            Select Case True
-                Case AvailableByDev
-                    WbServicing = COMPMAN_DEVLP
-                    Result = ResultByDev
-                Case Not AvailableByDev And AvailableByAddin
-                    WbServicing = COMPMAN_ADDIN
-                    Result = ResultByAddin
-            End Select
-        Else
-            '~~ When the requested service is either update or synchronize and the serviced Workbook
-            '~~ is the CompMan development instance the service is only available when the
-            '~~ Addin instance is avaialble.
-            Select Case True
-                Case AvailableByAddin And ThisWorkbook.Name = COMPMAN_DEVLP
-                    WbServicing = COMPMAN_ADDIN
-                    Result = ResultByAddin
-                Case AvailableByDev And ThisWorkbook.Name <> COMPMAN_DEVLP
-                    WbServicing = COMPMAN_DEVLP
-                    Result = ResultByDev
-                Case AvailableByAddin
-                    WbServicing = COMPMAN_ADDIN
-                    Result = ResultByAddin
-                Case Else
-                    Application.StatusBar = "Update sercvice not available by Addin! (" & COMPMAN_DEVLP & " cannot update its own components)"
-           End Select
-        End If
-    End If
-    
-    If WbServicing <> vbNullString Then
-        '~~ When a servicing Workbook is available its result from RunTest must not be any of the following
-        '~~ Application error
-        Select Case Result
-            Case AppErr(1), AppErr(2)
-                WbServicing = vbNullString
-            Case AppErr(3)
-                Application.StatusBar = csa_service & " ( by " & WbServicing & ") for " & ThisWorkbook.Name & ": " & _
-                                        "Denied! (the corresponding 'Synchronization-Source-Workbook' has not been found in CompMan's 'Serviced-Folder'!"
-                WbServicing = vbNullString
-        End Select
-    End If
-
-xt: Exit Function
-
-eh: Select Case ErrMsg(ErrSrc(PROC))
-        Case vbResume:  Stop: Resume
-        Case Else:      GoTo xt
-    End Select
-End Function
 
 Private Function ErrMsg(ByVal err_source As String, _
                Optional ByVal err_no As Long = 0, _
@@ -331,3 +267,84 @@ Private Function IsString(ByVal v As Variant, _
         End If
     End If
 End Function
+
+Private Function WbkServicingName(ByVal csa_service As String) As String
+' ----------------------------------------------------------------------------
+' Returns the name of the Workbook providing the requested service which may
+' be a vbNullString when the service neither can be provided by an open
+' CompMan development instance Workbook nor by an available CompMan Add-in
+' instance.
+' Notes: - When the requested service is not "update" an available development
+'          instance is given priority over an also available Add-in instance.
+'        - When the requested service is "update" and the serviced Workbook
+'          is the development instance the service is only available when the
+'          Add-in instance is avaialble.
+'        - Even when a servicing Workbook (the Add-in and or the development
+'          instance is available, CompMan may still not be configured
+'          correctly!
+' Uses: mCompMan.RunTest
+' ----------------------------------------------------------------------------
+    Const PROC = "WbkServicingName"
+    
+    Dim ServicedByAddinResult           As Long
+    Dim ServicedByWrkbkResult           As Long
+    Dim ServiceAvailableByAddin         As Boolean
+    Dim ServiceAvailableByCompMan       As Boolean
+    Dim ResultRequiredAddinNotAvailable As Long
+    Dim ResultConfigInvalid             As Long
+    Dim ResultOutsideCfgFolder          As Long
+    Dim ResultRequiredDevInstncNotOpen  As Long
+    
+    ResultConfigInvalid = AppErr(1)              ' Configuration for the service is invalid
+    ResultOutsideCfgFolder = AppErr(2)           ' Outside the for the service required folder
+    ResultRequiredAddinNotAvailable = AppErr(3)  ' Required Addin for DevInstance update paused or not open
+    ResultRequiredDevInstncNotOpen = AppErr(4) '
+    
+    '~~ Availability check CompMan Add-in
+    On Error Resume Next
+    ServicedByAddinResult = Application.Run(COMPMAN_ADDIN & "!mCompMan.RunTest", csa_service, ThisWorkbook)
+    ServiceAvailableByAddin = Err.Number = 0
+    '~~ Availability check CompMan Workbook
+    On Error Resume Next
+    ServicedByWrkbkResult = Application.Run(COMPMAN_DEVLP & "!mCompMan.RunTest", csa_service, ThisWorkbook)
+    ServiceAvailableByCompMan = Err.Number = 0
+    
+    Select Case True
+        '~~ Display/indicate why the service cannot be provided
+        Case ServicedByWrkbkResult = ResultConfigInvalid
+            Select Case csa_service
+                Case SRVC_SYNCHRONIZE:      DisplayedServiceStatus = vbNullString ' "'" & SRVC_SYNCHRONIZE_DSPLY & "' service denied (no Sync-Target- and or Sync-Archive-Folder configured)!"
+                Case SRVC_UPDATE_OUTDATED:  DisplayedServiceStatus = "The enabled/requested '" & SRVC_UPDATE_OUTDATED_DSPLY & "' service had been denied due to an invalid or missing configuration (see Config Worksheet)!"
+                Case SRVC_EXPORT_CHANGED:   DisplayedServiceStatus = "The enabled/requested'" & SRVC_EXPORT_CHANGED_DSPLY & "' service had been denied due to an invalid or missing configuration (see Config Worksheet)!"
+            End Select
+        Case ServicedByWrkbkResult = ResultOutsideCfgFolder
+            Select Case csa_service
+                Case SRVC_SYNCHRONIZE:      Debug.Print "The enabled/requested '" & SRVC_SYNCHRONIZE_DSPLY & "' service had silently been denied! (Workbook has not been opened from within the configured 'Sync-Target-Folder')"
+                Case SRVC_UPDATE_OUTDATED:  Debug.Print "The enabled/requested '" & SRVC_EXPORT_CHANGED_DSPLY & "' service had silently been denied! (Workbook has not been opened from within the configured 'Dev-and-Test-Folder')"
+                Case SRVC_EXPORT_CHANGED:   Debug.Print "The enabled/requested '" & SRVC_UPDATE_OUTDATED_DSPLY & "' service had silently been denied! (Workbook has not been opened from within the configured 'Dev-and-Test-Folder')"
+            End Select
+        Case ServicedByWrkbkResult = ResultRequiredAddinNotAvailable
+            DisplayedServiceStatus = "The required Add-in is not available for the 'Update' service for the Development-Instance!"
+        Case ServicedByWrkbkResult = ResultRequiredDevInstncNotOpen
+            DisplayedServiceStatus = mCompManClient.COMPMAN_DEVLP & " is the Workbook reqired for the " & SRVC_SYNCHRONIZE & " but it is not open!"
+        
+        '~~ When neither of the above is True the servicing Workbook instance is decided
+        Case IsDevInstance And csa_service = SRVC_UPDATE_OUTDATED And ServiceAvailableByAddin:  WbkServicingName = COMPMAN_ADDIN
+        Case Not IsDevInstance And ServiceAvailableByCompMan:                                   WbkServicingName = COMPMAN_DEVLP
+        Case Not IsDevInstance And Not ServiceAvailableByCompMan And ServiceAvailableByAddin:   WbkServicingName = COMPMAN_ADDIN
+        Case Not ServiceAvailableByCompMan And ServiceAvailableByAddin:                         WbkServicingName = COMPMAN_ADDIN
+        Case ServiceAvailableByCompMan And Not ServiceAvailableByAddin:                         WbkServicingName = COMPMAN_DEVLP
+        Case ServiceAvailableByCompMan And ServiceAvailableByAddin:                             WbkServicingName = COMPMAN_DEVLP
+        Case Else
+            '~~ Silent service denial
+            Debug.Print "CompMan services are not available, neither by open Workbook nor by CompMan Add-in!"
+    End Select
+        
+xt: Exit Function
+
+eh: Select Case ErrMsg(ErrSrc(PROC))
+        Case vbResume:  Stop: Resume
+        Case Else:      GoTo xt
+    End Select
+End Function
+
