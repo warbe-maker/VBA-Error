@@ -1,9 +1,8 @@
 Attribute VB_Name = "mErHDemo"
 Option Explicit
 ' ----------------------------------------------------------------------------
-' Standard Module mErHDemo
-' Demonstrations around the Common VBA Error Services including examples
-' without.
+' Standard Module mErHDemo: Demonstrations around the Common VBA Error
+' ========================= Services including examples without.
 '
 ' Uses the following procedures for keeping the use of the Common VBA Error
 ' Services, the Common VBA Message Service, and the Common VBA Execution
@@ -30,19 +29,20 @@ Private Sub BoP(ByVal b_proc As String, ParamArray b_arguments() As Variant)
 ' ------------------------------------------------------------------------------
 ' Common 'Begin of Procedure' interface for the 'Common VBA Error Services' and
 ' the 'Common VBA Execution Trace Service' (only in case the first one is not
-' installed/activated). The services, when installed, are activated by the
-' | Cond. Comp. Arg.             | Installed component |
-' |------------------------------|---------------------|
-' | XcTrc_mTrc = 1          | mTrc                |
-' | XcTrc_clsTrc = 1        | clsTrc              |
-' | ErHComp = 1                  | mErH                |
-' I.e. both components are independant from each other!
-' Note: This procedure is obligatory for any VB-Component using either the
-'       the 'Common VBA Error Services' and/or the 'Common VBA Execution Trace
-'       Service'.
+' installed/activated).
+' Note 1: The services, when installed, are activated by the
+'         | Cond. Comp. Arg.        | Installed component |
+'         |-------------------------|---------------------|
+'         | ErHComp = 1             | mErH                |
+'         | XcTrc_mTrc = 1          | mTrc                |
+'         | XcTrc_clsTrc = 1        | clsTrc              |
+'         I.e. both components are independant from each other!
+' Note 2: This procedure is obligatory for any VB-Component using either the
+'         the 'Common VBA Error Services' and/or the 'Common VBA Execution
+'         Trace Service'.
 ' ------------------------------------------------------------------------------
     Dim s As String
-    If UBound(b_arguments) >= 0 Then s = Join(b_arguments, ",")
+    If Not IsMissing(b_arguments) Then s = Join(b_arguments, ";")
 
 #If ErHComp = 1 Then
     '~~ The error handling also hands over to the mTrc/clsTrc component when
@@ -268,11 +268,11 @@ Public Sub Demo_Execution_Trace()
     On Error GoTo eh
     
 #If XcTrc_mTrc = 1 Then
-    mTrc.LogFileFullName = Replace(ThisWorkbook.FullName, ThisWorkbook.Name, "DemoExecTrace.log")
-    mTrc.LogTitle = "Demo of an Execution Trace (Cond. Comp. Arg. 'ExecTraceMymTrc = 1'"
+    mTrc.FileFullName = Replace(ThisWorkbook.FullName, ThisWorkbook.Name, "DemoExecTrace.log")
+    mTrc.Title = "Demo of an Execution Trace (Cond. Comp. Arg. 'ExecTraceMymTrc = 1'"
 #ElseIf XcTrc_clsTrc Then
-    Trc.LogFileFullName = Replace(ThisWorkbook.FullName, ThisWorkbook.Name, "DemoExecTrace.log")
-    Trc.LogTitle = "Demo of an Execution Trace (Cond. Comp. Arg. 'XcTrc_clsTrc = 1'"
+    Trc.FileFullName = Replace(ThisWorkbook.FullName, ThisWorkbook.Name, "DemoExecTrace.log")
+    Trc.Title = "Demo of an Execution Trace (Cond. Comp. Arg. 'XcTrc_clsTrc = 1'"
 #End If
 
     BoP ErrSrc(PROC)
@@ -373,11 +373,11 @@ Private Sub EoP(ByVal e_proc As String, Optional ByVal e_inf As String = vbNullS
 ' the 'Common VBA Execution Trace Service' (only in case the first one is not
 ' installed/activated).
 ' Note 1: The services, when installed, are activated by the
-'         | Cond. Comp. Arg.             | Installed component |
-'         |------------------------------|---------------------|
+'         | Cond. Comp. Arg.        | Installed component |
+'         |-------------------------|---------------------|
+'         | ErHComp = 1             | mErH                |
 '         | XcTrc_mTrc = 1          | mTrc                |
 '         | XcTrc_clsTrc = 1        | clsTrc              |
-'         | ErHComp = 1                  | mErH                |
 '         I.e. both components are independant from each other!
 ' Note 2: This procedure is obligatory for any VB-Component using either the
 '         the 'Common VBA Error Services' and/or the 'Common VBA Execution

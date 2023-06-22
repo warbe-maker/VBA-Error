@@ -1,9 +1,8 @@
 Attribute VB_Name = "mErHDemo"
 Option Explicit
 ' ----------------------------------------------------------------------------
-' Standard Module mErHDemo
-' Demonstrations around the Common VBA Error Services including examples
-' without.
+' Standard Module mErHDemo: Demonstrations around the Common VBA Error
+' ========================= Services including examples without.
 '
 ' Uses the following procedures for keeping the use of the Common VBA Error
 ' Services, the Common VBA Message Service, and the Common VBA Execution
@@ -27,17 +26,18 @@ Private Function AppErr(ByVal app_err_no As Long) As Long
     If app_err_no >= 0 Then AppErr = app_err_no + vbObjectError Else AppErr = Abs(app_err_no - vbObjectError)
 End Function
 
-Public Sub BoP(ByVal b_proc As String, ParamArray b_arguments() As Variant)
+Private Sub BoP(ByVal b_proc As String, _
+       Optional ByVal b_args As String = vbNullString)
 ' ------------------------------------------------------------------------------
-' (B)egin-(o)f-(P)rocedure named (b_proc). Procedure to be copied as Private
-' into any module potentially either using the Common VBA Error Service and/or
-' the Common VBA Execution Trace Service. Has no effect when Conditional Compile
-' Arguments are 0 or not set at all.
+' Common 'Begin of Procedure' interface serving the 'Common VBA Error Services'
+' and - if not installed/activated the 'Common VBA Execution Trace Service'.
+' Obligatory for any VB-Component using either of the two.
 ' ------------------------------------------------------------------------------
-    Dim s As String: If UBound(b_arguments) >= 0 Then s = Join(b_arguments, ",")
-#If ErHComp = 1 Then
+#If ErHComp = 1 Then          ' serves the mTrc/clsTrc when installed and active
     mErH.BoP b_proc, s
-#ElseIf ExecTrace = 1 Then
+#ElseIf XcTrc_clsTrc = 1 Then ' when only clsTrc is installed and active
+    Trc.BoP b_proc, s
+#ElseIf XcTrc_mTrc = 1 Then   ' when only mTrc is installed and activate
     mTrc.BoP b_proc, s
 #End If
 End Sub
@@ -441,40 +441,36 @@ Private Function ErrMsg(ByVal err_source As String, _
                Optional ByVal err_no As Long = 0, _
                Optional ByVal err_dscrptn As String = vbNullString, _
                Optional ByVal err_line As Long = 0) As Variant
-' ----------------------------------------------------------------------------
-' Universal error message display service. See:
-' https://warbe-maker.github.io/vba/common/2022/02/15/Personal-and-public-Common-Components.html
-'
-' - Displays a debugging option button when the Conditional Compile Argument
-'   'Debugging = 1'
-' - Displays an optional additional "About the error:" section when a string is
-'   concatenated with the error message by two vertical bars (||)
-' - Invokes ErrMsg when the Conditional Compile Argument ErHComp = !
-' - Invokes mMsg.ErrMsg when the Conditional Compile Argument MsgComp = ! (and
-'   the mErH module is not installed / MsgComp not set)
-' - Displays the error message by means of VBA.MsgBox when neither of the two
-'   components is installed
+' ------------------------------------------------------------------------------
+' Universal error message display service which displays:
+' - a debugging option button (Conditional Compile Argument 'Debugging = 1')
+' - an optional additional "About:" section when the err_dscrptn has an
+'   additional string concatenated by two vertical bars (||)
+' - the error message by means of the Common VBA Message Service (fMsg/mMsg)
+'   Common Component
+'   mMsg (Conditional Compile Argument "MsgComp = 1") is installed.
 '
 ' Uses:
-' - AppErr For programmed application errors (Err.Raise AppErr(n), ....) to
-'          turn them into negative and in the error message back into a
-'          positive number.
-' - ErrSrc To provide an unambiguous procedure name by prefixing is with the
-'          module name.
+' - AppErr  For programmed application errors (Err.Raise AppErr(n), ....)
+'           to turn them into a negative and in the error message back into
+'           its origin positive number.
+' - ErrSrc  To provide an unambiguous procedure name by prefixing is with
+'           the module name.
 '
-' See:
-' https://github.com/warbe-maker/Common-VBA-Error-Services
+' W. Rauschenberger Berlin, Apr 2023
 '
-' W. Rauschenberger Berlin, Feb 2022
-' ----------------------------------------------------------------------------
+' See: https://github.com/warbe-maker/VBA-Error
+' ------------------------------------------------------------------------------
 #If ErHComp = 1 Then
     '~~ When Common VBA Error Services (mErH) is availabel in the VB-Project
     '~~ (which includes the mMsg component) the mErh.ErrMsg service is invoked.
     ErrMsg = mErH.ErrMsg(err_source, err_no, err_dscrptn, err_line): GoTo xt
+    GoTo xt
 #ElseIf MsgComp = 1 Then
     '~~ When (only) the Common Message Service (mMsg, fMsg) is available in the
     '~~ VB-Project, mMsg.ErrMsg is invoked for the display of the error message.
     ErrMsg = mMsg.ErrMsg(err_source, err_no, err_dscrptn, err_line): GoTo xt
+    GoTo xt
 #End If
     '~~ When neither of the Common Component is available in the VB-Project
     '~~ the error message is displayed by means of the VBA.MsgBox
@@ -525,7 +521,7 @@ Private Function ErrMsg(ByVal err_source As String, _
     ErrText = "Error: " & vbLf & ErrDesc & vbLf & vbLf & "Source: " & vbLf & err_source & ErrAtLine
     If ErrAbout <> vbNullString Then ErrText = ErrText & vbLf & vbLf & "About: " & vbLf & ErrAbout
     
-#If Debugging Then
+#If Debugging = 1 Then
     ErrBttns = vbYesNo
     ErrText = ErrText & vbLf & vbLf & "Debugging:" & vbLf & "Yes    = Resume Error Line" & vbLf & "No     = Terminate"
 #Else

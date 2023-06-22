@@ -1,7 +1,8 @@
 Attribute VB_Name = "mErHTest"
 Option Explicit
 ' ----------------------------------------------------------------------------
-' Standard Module mErHTest
+' Standard Module mErHTest:
+' =========================
 '
 ' Uses the following procedures for keeping the use of the Common VBA Error
 ' Services, the Common VBA Message Service, and the Common VBA Execution
@@ -29,19 +30,20 @@ Private Sub BoP(ByVal b_proc As String, ParamArray b_arguments() As Variant)
 ' ------------------------------------------------------------------------------
 ' Common 'Begin of Procedure' interface for the 'Common VBA Error Services' and
 ' the 'Common VBA Execution Trace Service' (only in case the first one is not
-' installed/activated). The services, when installed, are activated by the
-' | Cond. Comp. Arg.        | Installed component |
-' |-------------------------|---------------------|
-' | XcTrc_mTrc = 1          | mTrc                |
-' | XcTrc_clsTrc = 1        | clsTrc              |
-' | ErHComp = 1             | mErH                |
-' I.e. both components are independant from each other!
-' Note: This procedure is obligatory for any VB-Component using either the
-'       the 'Common VBA Error Services' and/or the 'Common VBA Execution Trace
-'       Service'.
+' installed/activated).
+' Note 1: The services, when installed, are activated by the
+'         | Cond. Comp. Arg.        | Installed component |
+'         |-------------------------|---------------------|
+'         | ErHComp = 1             | mErH                |
+'         | XcTrc_mTrc = 1          | mTrc                |
+'         | XcTrc_clsTrc = 1        | clsTrc              |
+'         I.e. both components are independant from each other!
+' Note 2: This procedure is obligatory for any VB-Component using either the
+'         the 'Common VBA Error Services' and/or the 'Common VBA Execution
+'         Trace Service'.
 ' ------------------------------------------------------------------------------
     Dim s As String
-    If UBound(b_arguments) >= 0 Then s = Join(b_arguments, ",")
+    If Not IsMissing(b_arguments) Then s = Join(b_arguments, ";")
 
 #If ErHComp = 1 Then
     '~~ The error handling also hands over to the mTrc/clsTrc component when
@@ -65,9 +67,9 @@ Private Sub EoP(ByVal e_proc As String, Optional ByVal e_inf As String = vbNullS
 ' Note 1: The services, when installed, are activated by the
 '         | Cond. Comp. Arg.        | Installed component |
 '         |-------------------------|---------------------|
+'         | ErHComp = 1             | mErH                |
 '         | XcTrc_mTrc = 1          | mTrc                |
 '         | XcTrc_clsTrc = 1        | clsTrc              |
-'         | ErHComp = 1             | mErH                |
 '         I.e. both components are independant from each other!
 ' Note 2: This procedure is obligatory for any VB-Component using either the
 '         the 'Common VBA Error Services' and/or the 'Common VBA Execution
@@ -227,64 +229,26 @@ Private Function ErrSrc(ByVal s As String) As String
     ErrSrc = "mErHTest." & s
 End Function
 
-Private Function RegressionInfo() As String
-' ----------------------------------------------------
-' Adds s to the Err.Description as an additional info.
-' ----------------------------------------------------
-    RegressionInfo = Err.Description
-    If Not mErH.Regression Then Exit Function
-    
-    If InStr(RegressionInfo, CONCAT) <> 0 _
-    Then RegressionInfo = RegressionInfo & vbLf & vbLf & "Please notice that  this is a  r e g r e s s i o n  t e s t ! Click any but the ""Terminate"" button to continue with the test in case another one follows." _
-    Else RegressionInfo = RegressionInfo & CONCAT & "Please notice that  this is a  r e g r e s s i o n  t e s t !  Click any but the ""Terminate"" button to continue with the test in case another one follows."
-
-End Function
-
-Private Sub RegressionKeepLog()
-    Dim sFile As String
-
-#If ExecTrace = 1 Then
-#If MsgComp = 1 Or ErHComp = 1 Then
-    '~~ avoid the error message when the Cond. Comp. Arg. 'MsgComp = 0'!
-    mTrc.Dsply
-#End If
-    '~~ Keep the regression test result
-    With New FileSystemObject
-        sFile = .GetParentFolderName(mTrc.LogFile) & "\RegressionTest.log"
-        If .FileExists(sFile) Then .DeleteFile (sFile)
-        .GetFile(mTrc.LogFile).Name = "RegressionTest.log"
-    End With
-    mTrc.Terminate
-#End If
-
-End Sub
-
 Public Sub Test_0_Regression()
 ' -----------------------------------------------------------------------------
-' 1. This regression test requires the Cond. Comp. Arg. "Test = 1"
-'    to run un-attended
+' 1. This regression test requires the Cond. Comp. Arg.:
+'    Debugging = 1 : ErHComp = 1 : MsgComp = 1 : XcTrc_mTrc = 1
 ' 2. The BoP/EoP statements in this regression test procedure produce one final
-'    execution trace provided the Cond. Comp. Arg. "ExecTrace = 1".
-' 3. Error conditions tested provide the asserted error number which bypasses
-'    the display of the error message - which is documented in the execution
-'    trace however. By avoiding a user action required when the error is
-'    displayed allows a fully automated regression test.
-' 4. In case any tests fails: The Cond. Comp. Arg. "Debugging = 1"
-'    allows to identify the code line which causes the error through an extra
-'    "Debug: Resume error code line" button displayed with the error message
-'    and processed when clicked as "Stop: Resume" when the button is clicked.
+'    execution trace.
+' 3. Explicitly teste error conditions are bypassed by mErH.Regression = True
+'    and the error asserted by mErH.Asserted ....
+' 4. In case any tests fails the Debugging option supports 'resume error line'
 ' ------------------------------------------------------------------------------
     Const PROC = "Test_0_Regression"
     
     On Error GoTo eh
     
-    '~~ Initialization of a new Trace Log File for this Regression test
-    '~~ ! must be done prior the first BoP !
+    '~~ Initializations (must be done prior the first BoP!)
+    mTrc.FileName = "RegressionTest.ExecTrace.log"
+    mTrc.Title = "Regression Test mErH"
+    mTrc.NewFile
     
-    mTrc.LogFileFullName = Replace(ThisWorkbook.FullName, ThisWorkbook.Name, "Regression Test.log")
-    mTrc.LogTitle = "Regression Test module mErH"
-    
-    mErH.Regression = True
+    mErH.Regression = True ' to bypass Asserted errors
       
     BoP ErrSrc(PROC)
     Test_1_Application_Error
@@ -371,7 +335,7 @@ Private Sub Test_1_Application_Error_TestProc_2c()
     On Error GoTo eh
 
     BoP ErrSrc(PROC)
-    mErH.Asserted AppErr(1)
+    mErH.Asserted AppErr(1) ' has only an effect when mErh.Regression = True
     
 181 Err.Raise AppErr(1), ErrSrc(PROC), _
         "This is a programmed i.e. an ""Application Error""!" & CONCAT & _

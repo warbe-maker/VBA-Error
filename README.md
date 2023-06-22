@@ -14,97 +14,123 @@ Provided are:
   
   > This error services are used with all my _[Common VBA Components][7]_ in all my VB-Projects which are all prepared to function completely autonomously (download, import, use) but at the same time to integrate with my personal 'standard' VB-Project design. See [Conflicts with personal and public _Common Components_][5] for more details.
 
+### Services
+| Service      |Kind&nbsp;[^1]| Description |
+|--------------|:------------:|-------------|
+|_Asserted_    | S            | Only used with regression testing (Regression = True) to avoid the display of errors specifically tested. When Regression = False the _Asserted_ service is ignored and any error is displayed.|
+|_BoP_         | S            | Indicates the <u>**B**</u>egin <u>**o**</u>f a <u>**P**</u>rocedure and is used to maintain the call stack.<br>**Attention:** When the service is about to be used by the _Common VBA Execution Trace Service_ as well this service is exclusively to be called via an [BoC Interface](#boceoc-interface) which is to be copied in each component when used. |
+|_EoP_         | S            | Indicates the <u>**E**</u>nd <u>**o**</u>f a <u>**P**</u>rocedure and is used to maintain the call stack. Triggers the display of the Execution Trace when the end of the 'Entry-Procedure' is reached.<br>**Attention:** |
+|_ErrMsg_      | F            | Displays an error message either with the procedure the error had been raised (when no _BoP_ statement had ever been executed) or displays it passed on the _[Entry Procedure](#the-entry-procedure)_ (which is the first procedure with a _BoP_ statement thereby assembling  _[the-path- to-the-error](#the-path-to-the-error)_ displayed when the _[Entry Procedure](#the-entry-procedure)_ is reached.|
+|_Regression_  | P w          | When TRUE the _ErrMsg_ only displays errors which are not regarded 'Asserted'.
+
+
+[^1]: S=Sub, F=Function, P=Property (r=read/Get, w=write/Let)
+
 ## Installation
-- Download [_mErH.bas_][1] and [mMsg.bas][4] and import them to your VB-Project  
-- Download [fMsg.frm][2] and [fMsg.frx][3] and import _fMsg.frm_ to your VB-Project
-- Set the _Conditional Compile Argument_ `ErHComp = 1`
+1. Download [_mErH.bas_][1]
+2. Import _mErH_
+3. Activate the error services by the _Conditional Compile Argument_ `ErHComp = 1`
+4. Activate the [Debugging option](#activating-the-debugging-option-for-the-resume-error-line-button) by the  _Conditional Compile Argument_ `Debugging = 1`
+
+## Optional installation of the _Common VBA Message Service_
+Not required but significantly improves the display of errors - thereby providing a message display service with less limits. 
+1. Download [mMsg.bas][4], [fMsg.frm][2], and [fMsg.frx][3]
+2. Import _mMsg_, _fMsg.frm_ to your VB-Project
+3. Activate the message service by the _Conditional Compile Argument_ `MsgComp = 1`
 
 ## Usage
-For a complete demonstration of how a Workbook/VB-Project uses these services download [StraightToTheErrorLine.xlsm][8]
+### Service interfaces
+> It is **essential** that BoP/EoP services are always called **paired** with identical arguments!
 
-### Preparing the module
-The following will be copied into every module which uses the services
+Copy the two procedures into any component using the error services.
 ```vb
-Private Function AppErr(ByVal app_err_no As Long) As Long
-' ------------------------------------------------------------------------------
-' Ensures that a programmed 'Application' error number not conflicts with the
-' number of a 'VB Runtime Error' or any other system error.
-' - Returns a given positive 'Application Error' number (app_err_no) into a
-'   negative by adding the system constant vbObjectError
-' - Returns the original 'Application Error' number when called with a negative
-'   error number.
-' ------------------------------------------------------------------------------
-    If app_err_no >= 0 Then AppErr = app_err_no + vbObjectError Else AppErr = Abs(app_err_no - vbObjectError)
-End Function
-
 Private Sub BoP(ByVal b_proc As String, ParamArray b_arguments() As Variant)
 ' ------------------------------------------------------------------------------
-' (B)egin-(o)f-(P)rocedure named (b_proc). Procedure to be copied as Private
-' into any module potentially either using the Common VBA Error Service and/or
-' the Common VBA Execution Trace Service. Has no effect when Conditional Compile
-' Arguments are 0 or not set at all.
+' Common 'Begin of Procedure' interface serving the 'Common VBA Error Services'
+' and the 'Common VBA Execution Trace Service'. To be copied into any component
+' using the BoP service - either through the 'Common VBA Error Services' and/or
+' the 'Common VBA Execution Trace Service'.
 ' ------------------------------------------------------------------------------
-    Dim s As String: If UBound(b_arguments) >= 0 Then s = Join(b_arguments, ",")
+    Dim s As String: If Not IsMissing(b_arguments) Then s = Join(b_arguments, ";")
 #If ErHComp = 1 Then
+    '~~ The error handling will also hand over to the Common VBA Execution Trace
+    '~~ provided one is installed (mTrc/clsTrc) and activated.
     mErH.BoP b_proc, s
-#ElseIf ExecTrace = 1 Then
+#ElseIf XcTrc_clsTrc = 1 Then
+    '~~ mErH is not installed but the mTrc is
+    Trc.BoP b_proc, s
+#ElseIf XcTrc_mTrc = 1 Then
+    '~~ mErH neither mTrc is installed but clsTrc is
     mTrc.BoP b_proc, s
 #End If
 End Sub
 
-Private Sub EoP(ByVal e_proc As String, _
-       Optional ByVal e_inf As String = vbNullString)
+Private Sub EoP(ByVal e_proc As String, Optional ByVal e_inf As String = vbNullString)
 ' ------------------------------------------------------------------------------
-' (E)nd-(o)f-(P)rocedure named (e_proc). Procedure to be copied as Private Sub
-' into any module potentially either using the Common VBA Error Service and/or
-' the Common VBA Execution Trace Service. Has no effect when Conditional Compile
-' Arguments are 0 or not set at all.
+' Common 'End of Procedure' interface serving the 'Common VBA Error Services'
+' and the 'Common VBA Execution Trace Service'. To be copied into any component
+' using the EoP service - either through the 'Common VBA Error Services' and/or
+' the 'Common VBA Execution Trace Service'.
 ' ------------------------------------------------------------------------------
 #If ErHComp = 1 Then
+    '~~ The error handling will also hand over to the Common VBA Execution Trace
+    '~~ provided one is installed (mTrc/clsTrc) and activated.
     mErH.EoP e_proc
-#ElseIf ExecTrace = 1 Then
+#ElseIf XcTrc_clsTrc = 1 Then
+    Trc.EoP e_proc, e_inf
+#ElseIf XcTrc_mTrc = 1 Then
     mTrc.EoP e_proc, e_inf
 #End If
 End Sub
+```
+### Other procedures
+Copy the following into any component which uses the error services. The ErrMsg procedure provides a comprehensive error message when the [Debugging option](#activating-the-debugging-option-for-the-resume-error-line-button) is activated even without having the _mErH_ nor the _fMsg/mMsg_ components are installed/activated.
+```vb
+Private Function AppErr(ByVal app_err_no As Long) As Long
+' ------------------------------------------------------------------------------
+' Ensures that a programmed 'Application' error number not conflicts with the
+' number of a 'VB Runtime Error' or any other system error. Returns a given 
+' positive 'Application Error' number (app_err_no) as a negative by adding the
+' system constant vbObjectError. Returns the original 'Application Error' 
+' number when called with a negative error number.
+' ------------------------------------------------------------------------------
+    If app_err_no >= 0 Then AppErr = app_err_no + vbObjectError Else AppErr = Abs(app_err_no - vbObjectError)
+End Function
 
 Private Function ErrMsg(ByVal err_source As String, _
                Optional ByVal err_no As Long = 0, _
                Optional ByVal err_dscrptn As String = vbNullString, _
                Optional ByVal err_line As Long = 0) As Variant
 ' ------------------------------------------------------------------------------
-' Universal error message display service. See:
-' https://warbe-maker.github.io/vba/common/2022/02/15/Personal-and-public-Common-Components.html
-'
-' - Displays a debugging option button when the Conditional Compile Argument
-'   'Debugging = 1'
-' - Displays an optional additional "About the error:" section when a string is
-'   concatenated with the error message by two vertical bars (||)
-' - Invokes mErH.ErrMsg when the Conditional Compile Argument ErHComp = !
-' - Invokes mMsg.ErrMsg when the Conditional Compile Argument MsgComp = ! (and
-'   the mErH module is not installed / MsgComp not set)
-' - Displays the error message by means of VBA.MsgBox when neither of the two
-'   components is installed
+' Universal error message display service which displays:
+' - a debugging option button (Conditional Compile Argument 'Debugging = 1')
+' - an optional additional "About:" section when the err_dscrptn has an
+'   additional string concatenated by two vertical bars (||)
+' - the error message by means of the Common VBA Message Service (fMsg/mMsg)
+'   Common Component
+'   mMsg (Conditional Compile Argument "MsgComp = 1") is installed.
 '
 ' Uses:
-' - AppErr For programmed application errors (Err.Raise AppErr(n), ....) to
-'          turn them into negative and in the error message back into a
-'          positive number.
-' - ErrSrc To provide an unambiguous procedure name by prefixing is with the
-'          module name.
+' - AppErr  For programmed application errors (Err.Raise AppErr(n), ....)
+'           to turn them into a negative and in the error message back into
+'           its origin positive number.
+' - ErrSrc  To provide an unambiguous procedure name by prefixing is with
+'           the module name.
 '
-' See:
-' https://github.com/warbe-maker/Common-VBA-Error-Services
+' W. Rauschenberger Berlin, Apr 2023
 '
-' W. Rauschenberger Berlin, Feb 2022
+' See: https://github.com/warbe-maker/VBA-Error
 ' ------------------------------------------------------------------------------
 #If ErHComp = 1 Then
-    '~~ When Common VBA Error Services (mErH) is available in the VB-Project
+    '~~ When Common VBA Error Services (mErH) is availabel in the VB-Project
     '~~ (which includes the mMsg component) the mErh.ErrMsg service is invoked.
     ErrMsg = mErH.ErrMsg(err_source, err_no, err_dscrptn, err_line): GoTo xt
+    GoTo xt
 #ElseIf MsgComp = 1 Then
     '~~ When (only) the Common Message Service (mMsg, fMsg) is available in the
     '~~ VB-Project, mMsg.ErrMsg is invoked for the display of the error message.
     ErrMsg = mMsg.ErrMsg(err_source, err_no, err_dscrptn, err_line): GoTo xt
+    GoTo xt
 #End If
     '~~ When neither of the Common Component is available in the VB-Project
     '~~ the error message is displayed by means of the VBA.MsgBox
@@ -155,23 +181,24 @@ Private Function ErrMsg(ByVal err_source As String, _
     ErrText = "Error: " & vbLf & ErrDesc & vbLf & vbLf & "Source: " & vbLf & err_source & ErrAtLine
     If ErrAbout <> vbNullString Then ErrText = ErrText & vbLf & vbLf & "About: " & vbLf & ErrAbout
     
-#If Debugging Then
+#If Debugging = 1 Then
     ErrBttns = vbYesNo
     ErrText = ErrText & vbLf & vbLf & "Debugging:" & vbLf & "Yes    = Resume Error Line" & vbLf & "No     = Terminate"
 #Else
     ErrBttns = vbCritical
 #End If
     ErrMsg = MsgBox(Title:=ErrTitle, Prompt:=ErrText, Buttons:=ErrBttns)
+xt: End Function
 
-xt:
 End Function
 
 Private Function ErrSrc(ByVal sProc As String) As String
-    ErrSrc = "mBasic." & sProc
+    ErrSrc = "<the component's name>." & sProc
 End Function
 ```
-### Preparing the procedure(s)
-Procedures will follow the scheme outlined by the following examples (also see the [StraightToTheErrorLine.xlsm][8] Workbook for a demonstration. 
+
+### Using the error service in any procedure
+The following is the recommended coding scheme by which finding an error becomes as easy and quick as possible - provided the [Debugging option](#activating-the-debugging-option-for-the-resume-error-line-button) is activated for the 'resume the code line which causes the error' support.  
 ```vb
 Private Sub TestProc()
     Const PROC = "TestProc"
@@ -189,7 +216,10 @@ eh: Select Case ErrMsg(ErrSrc(PROC))
         Case Else:      GoTo xt
     End Select
 End Sub
+```
 
+The above may be tested with:
+```vb
 Private Sub TestTestProc()
     Const PROC = "TestTestProc"
     
@@ -197,7 +227,7 @@ Private Sub TestTestProc()
     Dim wb As Workbook
     
     BoP ErrSrc(PROC)
-    Debug.Print wb.Name ' will raise a VB Runtime error no 91
+    Debug.Print wb.Name ' will raise a VB-Runtime error no 91
 
 xt: EoP ErrSrc(PROC)
     Exit Sub
@@ -210,45 +240,44 @@ End Sub
 ```
 When an error is displayed and the _Resume Error Line_ button is pressed the following two F8 key strokes end up at the error line. When it is again executed without any change the same error message will pop-up again of course. 
 
-### Activating the _Resume Error Line_ button
+### Activating the Debugging option for the _Resume Error Line_ button
 Set the _Conditional Compile Argument_ `Debuggig = 1` (may of course be set to 0 when the VB-Project becomes productive)
+
+### The _Entry Procedure_
+The 'registration' of the _Entry Procedure_ is crucial for the error display service. The _Entry Procedure_ is the one which calls other procedures but itself is not called by a procedure - but by an event or via Application.Run instead for example. When these procedures have a _BoP/EoP_ service call the the _[path-to-the-error](#the-path-to-the-error)_ may be complete provided the [Debugging option](#activating-the-debugging-option-for-the-resume-error-line-button) is not activated.  
+
+### The path to the error
+This _Common VBA Error Services_ support the display of a _path-to-the-error_ by two approaches which are combined for a best possible result.
+
+| Approach | Description | Pro | Con |
+|----------|-------------|-----|-----|
+| ***Bottom up***| The path is assembled when the error is passed on up to the _[Entry Procedure](#the-entry-procedure)_. | This approach assembles a complete path which includes also procedures not having `BoP/EoP` statements provided the _Entry Procedure_ is known (has `BoP/EoP` statements).| The path will not be available when the error message is called immediately with the error raising procedure. This is the case either when the _Entry Procedure_ is unknown, i.e. no procedure with `BoP/EoP` statements had been invoked, or when the [Debugging option](#activating-the-debugging-option-for-the-resume-error-line-button) displays an extra button to _Resume the Error Line_ which means that even when the _Entry Procedure_ is known the message has to be displayed immediately to provide the choice.| 
+| ***Top down***| An call stack is maintained with each `BoP/EoP` service call. | The _path-to-the-error_ is as complete as supported by the `BoP/EoP` service calls all the way down to the error raising procedure even when the 'Debugging' option forced the error being displayed immediately within the procedure the error occurreded (which is the way to allow resuming the error line).| The completeness/extent of the path- to-the-error depends on the `BoP/EoP` statements.|
+
+> ***Conclusion***: Procedures with an error handling (those with On error Goto eh) should also have `BoP/EoP` statements - quasi as a default). Providing potential_[Entry Procedure](#the-entry-procedure)_ with `BoP/EoP` statements should be obligatory.
 
 ### Regression test issues
 I use the following two services for the Regression tests set up with all my _[Common VBA Components][7].
 
 #### _Asserted_ error(s) service
-Specifying those error numbers which are regarded asserted bypasses the display of the corresponding error message when the _Regression_ property is set to True.
-Note: When the asserted error is a programmed _Application Error_ (for example `Err.Raise AppErr(1), ErrSrc(PROC), "error description"`) the Asserted error also is AppErr(1)
+Used with regression testing. Errors which a are regarded asserted because explicitly tested are not displayed in order not to interrupt the test procedure. Effective only when the [_Regression_](#regression-test-activation) property is set to True.
+Example: When the tested error is a programmed _Application Error_ (raised by: `Err.Raise AppErr(1), ErrSrc(PROC), "error description"`) the error is asserted by `mErH.Asserted AppErr(1)`.
 
 ### _Regression_ test activation
-When at the beginning of a series of test procedures `mErH.Regression` is set to `True` the display of _[Asserted](#asserted-error-service)_ errors will be suspended thereby supporting an 'unattended regression test (performing a series of procedures using `Debug.Assert` to assert test results).
+When at the beginning of a series of test procedures `mErH.Regression` is set to `True` the display of _[Asserted](#asserted-errors-service)_ errors will be suspended thereby supporting an uninterrupted regression test.
 
-## The path to the error
-At this point it should be clear that a path to the error depends on the following:
-1. Procedures with an error handling (the more procedures having one the better)
-2. An unambiguous procedure name provided with `BoP/EoP` statements and with the call of the error message function
-3. The use of this _Common VBA Error Services_ component
-
-A path to the error can be provided in two ways, of which both are combined by the mErH module for a best possible result.
-
-| Approach | Pro | Con |
-| -------- | --- | --- |
-| ***Bottom up***:<br>The path is assembled when the error is passed on up to the _Entry Procedure_. | This approach assembles a complete path which includes also procedures not having `BoP/EoP` statements provided the _Entry Procedure is known (has `BoP/EoP` statements).| The path will not be available when the error message is called immediately with the error raising procedure. This is the case either when the _Entry Procedure_ is unknown, i.e. no procedure with `BoP/EoP` statements had been invoked, or when the debugging option displays an extra button to _Resume the Error Line_ which means that even when the _Entry Procedure_ is known the message has to be displayed immediately to provide the choice.| 
-| ***Top down***:<br>A stack is maintained with each invoked procedure by their `BoP/EoP` statements. | The path will already be complete when the error raising procedure is invoked and thus available even when the extra Debugging option button is displayed. | The completeness of the path depends on the completeness of `BoP/EoP` statements.|
-
-> ***Conclusion***: Procedures with an error handling (those with On error Goto eh) should also have `BoP/EoP` statements - quasi as a default). Providing potential _Entry Procedures_ with `BoP/EoP` statements should be obligatory.
-
-
+### Download from public GitHub repo
+It may appear pretty strange when downloading first from a public GitHub repo but is is quite straight forward as the below image shows.  
+![](Assets/DownloadFromGitHubRepo.png)
 
 ## Contribution, development, test, maintenance
 Any contribution of any kind will be welcome. The dedicated _Common VBA Component Workbook_ **[ErH.xlsm][6]** is used for development, maintenance, and last but not least for the testing.
 
 
-[1]:https://gitcdn.link/cdn/warbe-maker/Common-VBA-Error-Services/master/source/mErH.bas
-[2]:https://gitcdn.link/cdn/warbe-maker/Common-VBA-Error-Services/master/source/fMsg.frm
-[3]:https://gitcdn.link/cdn/warbe-maker/Common-VBA-Error-Services/master/source/fMsg.frx
-[4]:https://gitcdn.link/cdn/warbe-maker/Common-VBA-Error-Services/master/source/mMsg.bas
+[1]:https://github.com/warbe-maker/VBA-Error/blob/master/source/mErH.bas
+[2]:https://github.com/warbe-maker/VBA-Error/blob/master/source/fMsg.frm
+[3]:https://github.com/warbe-maker/VBA-Error/blob/master/source/fMsg.frx
+[4]:https://github.com/warbe-maker/VBA-Error/blob/master/source/mMsg.bas
 [5]:https://warbe-maker.github.io/vba/common/2022/02/15/Personal-and-public-Common-Components.html
-[6]:https://gitcdn.link/cdn/warbe-maker/Common-VBA-Error-Services/master/source/ErH.xlsm
+[6]:https://github.com/warbe-maker/VBA-Error/blob/master/source/ErH.xlsm
 [7]:https://warbe-maker.github.io/vba/common/2021/02/19/Common-VBA-Components.html
-[8]:https://gitcdn.link/cdn/warbe-maker/Straight-to-the-error-line-demo/master/StraightToTheErrorLine.xlsm
