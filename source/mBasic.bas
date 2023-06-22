@@ -698,7 +698,7 @@ Public Sub EoP(ByVal e_proc As String, _
 #If ErHComp = 1 Then          ' serves the mTrc/clsTrc when installed and active
     mErH.EoP e_proc, e_args
 #ElseIf XcTrc_clsTrc = 1 Then ' when only clsTrc is installed and active
-    Trc.RoP e_proc, e_args
+    Trc.EoP e_proc, e_args
 #ElseIf XcTrc_mTrc = 1 Then   ' when only mTrc is installed and activate
     mTrc.EoP e_proc, e_args
 #End If
