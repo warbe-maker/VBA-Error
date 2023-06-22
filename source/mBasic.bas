@@ -166,9 +166,6 @@ Private cyTimerTicksBegin       As Currency
 Private cyTimerTicksEnd         As Currency
 Private TimerSystemFrequency    As Currency
 
-'Public Property Get MsgReply() As Variant:                  MsgReply = vMsgReply:                                       End Property
-'Public Property Let MsgReply(ByVal v As Variant):           vMsgReply = v:                                              End Property
-
 Private Property Get SysFrequency() As Currency
     If TimerSystemFrequency = 0 Then getFrequency TimerSystemFrequency
     SysFrequency = TimerSystemFrequency
@@ -216,11 +213,12 @@ End Function
 Public Function AppErr(ByVal app_err_no As Long) As Long
 ' ----------------------------------------------------------------------------
 ' Ensures that a programmed 'Application' error number not conflicts with the
-' number of a 'VB Runtime Error' or any other system error.
-' - Returns a given positive 'Application Error' number (app_err_no) into a
-'   negative by adding the system constant vbObjectError
-' - Returns the original 'Application Error' number when called with a negative
-'   error number.
+' number of a 'VB Runtime Error' or any other system error. Returns a given
+' positive 'Application Error' number (app_err_no) as a negative by adding the
+' system constant vbObjectError. Returns the original 'Application Error'
+' number when called with a negative error number.
+' Obligatory copy Private for any VB-Component using the service but not
+' having the mBasic common component installed.
 ' ----------------------------------------------------------------------------
     If app_err_no >= 0 Then AppErr = app_err_no + vbObjectError Else AppErr = Abs(app_err_no - vbObjectError)
 End Function
@@ -592,57 +590,35 @@ eh: Select Case ErrMsg(ErrSrc(PROC))
     End Select
 End Function
 
-Private Sub BoC(ByVal b_id As String, ParamArray b_arguments() As Variant)
+Public Sub BoC(ByVal b_id As String, _
+      Optional ByVal b_args As String = vbNullString)
 ' ------------------------------------------------------------------------------
-' Common '(B)egin-(o)f-(C)ode' interface for the Common VBA Execution Trace
-' service.
-' - To be copied into any module which makes use of this trace service.
-' - When the used Conditional Compile Argument is 0 or not set at all.
-' - Important! The begin id (b_id) has to be identical with the paired EoC
-'              statement.
+' Common 'Bnd-of-Code' interface for the Common VBA Execution Trace Service.
+' Obligatory copy Private for any VB-Component using the service but not having
+' the mBasic common component installed.
 ' ------------------------------------------------------------------------------
-    Dim s As String
-    If Not IsMissing(b_arguments) Then s = Join(b_arguments, ",")
-
-#If XcTrc_mTrc = 1 Then
-    mTrc.BoC b_id, s
-#ElseIf XcTrc_clsTrc = 1 Then
-    Trc.BoC b_id, s
+#If XcTrc_mTrc = 1 Then         ' when mTrc is installed and active
+    mTrc.BoC b_id, b_args
+#ElseIf XcTrc_clsTrc = 1 Then   ' when clsTrc is installed and active
+    Trc.BoC b_id, b_args
 #End If
-
 End Sub
 
-Private Sub BoP(ByVal b_proc As String, ParamArray b_arguments() As Variant)
+Public Sub BoP(ByVal b_proc As String, _
+      Optional ByVal b_args As String = vbNullString)
 ' ------------------------------------------------------------------------------
-' Common 'Begin of Procedure' interface for the 'Common VBA Error Services' and
-' the 'Common VBA Execution Trace Service' (only in case the first one is not
-' installed/activated).
-' Note 1: The services, when installed, are activated by the
-'         | Cond. Comp. Arg.        | Installed component |
-'         |-------------------------|---------------------|
-'         | ErHComp = 1             | mErH                |
-'         | XcTrc_mTrc = 1          | mTrc                |
-'         | XcTrc_clsTrc = 1        | clsTrc              |
-'         I.e. both components are independant from each other!
-' Note 2: This procedure is obligatory for any VB-Component using either the
-'         the 'Common VBA Error Services' and/or the 'Common VBA Execution
-'         Trace Service'.
+' Common 'Begin of Procedure' interface serving the 'Common VBA Error Services'
+' and - if not installed/activated the 'Common VBA Execution Trace Service'.
+' Obligatory copy Private for any VB-Component using the service but not having
+' the mBasic common component installed.
 ' ------------------------------------------------------------------------------
-    Dim s As String
-    If Not IsMissing(b_arguments) Then s = Join(b_arguments, ";")
-
-#If ErHComp = 1 Then
-    '~~ The error handling also hands over to the mTrc/clsTrc component when
-    '~~ either of the two is installed.
-    mErH.BoP b_proc, s
-#ElseIf XcTrc_clsTrc = 1 Then
-    '~~ mErH is not installed but the mTrc is
-    Trc.BoP b_proc, s
-#ElseIf XcTrc_mTrc = 1 Then
-    '~~ mErH neither mTrc is installed but clsTrc is
-    mTrc.BoP b_proc, s
+#If ErHComp = 1 Then          ' serves the mTrc/clsTrc when installed and active
+    mErH.BoP b_proc, b_args
+#ElseIf XcTrc_clsTrc = 1 Then ' when only clsTrc is installed and active
+    Trc.BoP b_proc, b_args
+#ElseIf XcTrc_mTrc = 1 Then   ' when only mTrc is installed and activate
+    mTrc.BoP b_proc, b_args
 #End If
-
 End Sub
 
 Public Function Center(ByVal s1 As String, _
@@ -697,76 +673,57 @@ Public Function ElementOfIndex(ByVal a As Variant, _
     
 End Function
 
-Private Sub EoC(ByVal e_id As String, ParamArray e_arguments() As Variant)
+Public Sub EoC(ByVal e_id As String, _
+      Optional ByVal e_args As String = vbNullString)
 ' ------------------------------------------------------------------------------
-' Common '(E)nd-(o)f-(C)ode' interface for the Common VBA Execution Trace
-' service.
-' - To be copied into any module which makes use of this trace service.
-' - When the used Conditional Compile Argument is 0 or not set at all.
-' - Important! The end id (b_id) has to be identical with the paired EoC
-'              statement.
+' Common 'End-of-Code' interface for the Common VBA Execution Trace Service.
+' Obligatory copy Private for any VB-Component using the service but not having
+' the mBasic common component installed.
 ' ------------------------------------------------------------------------------
-    Dim s As String
-    If Not IsMissing(e_arguments) Then s = Join(e_arguments, ",")
-
-#If XcTrc_mTrc = 1 Then
-    mTrc.EoC e_id, s
-#ElseIf XcTrc_clsTrc = 1 Then
-    Trc.EoC e_id, s
+#If XcTrc_mTrc = 1 Then         ' when mTrc is installed and active
+    mTrc.EoC e_id, e_args
+#ElseIf XcTrc_clsTrc = 1 Then   ' when clsTrc is installed and active
+    Trc.EoC e_id, e_args
 #End If
-
 End Sub
 
-Private Sub EoP(ByVal e_proc As String, Optional ByVal e_inf As String = vbNullString)
+Public Sub EoP(ByVal e_proc As String, _
+      Optional ByVal e_args As String = vbNullString)
 ' ------------------------------------------------------------------------------
-' Common 'End of Procedure' interface for the 'Common VBA Error Services' and
-' the 'Common VBA Execution Trace Service' (only in case the first one is not
-' installed/activated).
-' Note 1: The services, when installed, are activated by the
-'         | Cond. Comp. Arg.        | Installed component |
-'         |-------------------------|---------------------|
-'         | ErHComp = 1             | mErH                |
-'         | XcTrc_mTrc = 1          | mTrc                |
-'         | XcTrc_clsTrc = 1        | clsTrc              |
-'         I.e. both components are independant from each other!
-' Note 2: This procedure is obligatory for any VB-Component using either the
-'         the 'Common VBA Error Services' and/or the 'Common VBA Execution
-'         Trace Service'.
+' Common 'Begin of Procedure' interface serving the 'Common VBA Error Services'
+' and - if not installed/activated the 'Common VBA Execution Trace Service'.
+' Obligatory copy Private for any VB-Component using the service but not having
+' the mBasic common component installed.
 ' ------------------------------------------------------------------------------
-#If ErHComp = 1 Then
-    '~~ The error handling also hands over to the mTrc component when 'ExecTrace = 1'
-    '~~ so the Else is only for the case the mTrc is installed but the merH is not.
-    mErH.EoP e_proc
-#ElseIf XcTrc_clsTrc = 1 Then
-    Trc.EoP e_proc, e_inf
-#ElseIf XcTrc_mTrc = 1 Then
-    mTrc.EoP e_proc, e_inf
+#If ErHComp = 1 Then          ' serves the mTrc/clsTrc when installed and active
+    mErH.EoP e_proc, e_args
+#ElseIf XcTrc_clsTrc = 1 Then ' when only clsTrc is installed and active
+    Trc.RoP e_proc, e_args
+#ElseIf XcTrc_mTrc = 1 Then   ' when only mTrc is installed and activate
+    mTrc.EoP e_proc, e_args
 #End If
-
 End Sub
 
-Private Function ErrMsg(ByVal err_source As String, _
-               Optional ByVal err_no As Long = 0, _
-               Optional ByVal err_dscrptn As String = vbNullString, _
-               Optional ByVal err_line As Long = 0) As Variant
+Public Function ErrMsg(ByVal err_source As String, _
+              Optional ByVal err_no As Long = 0, _
+              Optional ByVal err_dscrptn As String = vbNullString, _
+              Optional ByVal err_line As Long = 0) As Variant
 ' ------------------------------------------------------------------------------
-' Universal error message display service which displays:
-' - a debugging option button (Conditional Compile Argument 'Debugging = 1')
-' - an optional additional "About:" section when the err_dscrptn has an
-'   additional string concatenated by two vertical bars (||)
-' - the error message by means of the Common VBA Message Service (fMsg/mMsg)
-'   Common Component
-'   mMsg (Conditional Compile Argument "MsgComp = 1") is installed.
+' Universal error message display service. Obligatory copy Private for any
+' VB-Component using the common error service but not having the mBasic common
+' component installed.
+' Displays: - a debugging option button when the Cond. Comp. Arg. 'Debugging = 1'
+'           - an optional additional "About:" section when the err_dscrptn has
+'             an additional string concatenated by two vertical bars (||)
+'           - the error message by means of the Common VBA Message Service
+'             (fMsg/mMsg) when installed and active (Cond. Comp. Arg.
+'             `MsgComp = 1`)
 '
-' Uses:
-' - AppErr  For programmed application errors (Err.Raise AppErr(n), ....)
-'           to turn them into a negative and in the error message back into
-'           its origin positive number.
-' - ErrSrc  To provide an unambiguous procedure name by prefixing is with
-'           the module name.
+' Uses: AppErr  For programmed application errors (Err.Raise AppErr(n), ....)
+'               to turn them into a negative and in the error message back into
+'               its origin positive number.
 '
-' W. Rauschenberger Berlin, Apr 2023
-'
+' W. Rauschenberger Berlin, June 2023
 ' See: https://github.com/warbe-maker/VBA-Error
 ' ------------------------------------------------------------------------------
 #If ErHComp = 1 Then

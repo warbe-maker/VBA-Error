@@ -188,7 +188,7 @@ Public Sub BoP(ByVal b_id As String, _
     End If
     StackPush ProcStack, b_id
 #If XcTrc_clsTrc = 1 Then   ' when clsTrc is installed and active
-    Trc.BoP_ErH bop_id, b_args
+    Trc.BoP_ErH b_id, b_args
 #ElseIf XcTrc_mTrc = 1 Then ' when mTrc is installed and active
     mTrc.BoP_ErH b_id, b_args
 #End If
