@@ -298,6 +298,36 @@ The below code is an example approach which provides the maximum regarding debug
 | Execution Trace          | No       | _[mErH][1]_ in combination with the _[clsTrc][9]/_[mTrc][8]_ provides an execution trace 'by the way'.|
 | Debugging                | fixed    | Optional through the more elaborated _ErrMsg_ function by using a Cond. Comp. Argument `Debbuging = 1` to display or not display the button.|
 ```vb
+Private Sub Demo_ErH_BetterThanNothing()
+' ----------------------------------------------------------------------------
+' See: https://github.com/warbe-maker/VBA-Error#exploring-the-matter
+' ----------------------------------------------------------------------------
+    Demo_ErH_BetterThanNothing_a 10, 0
+    MsgBox "Error ignored and thus continued!"
+End Sub
+
+Private Sub Demo_ErH_BetterThanNothing_a(ByVal d_a As Long, _
+                                         ByVal d_b As Long)
+' ----------------------------------------------------------------------------
+' See: https://github.com/warbe-maker/VBA-Error#exploring-the-matter
+' ----------------------------------------------------------------------------
+    On Error GoTo eh
+    
+    Debug.Assert d_a / d_b
+
+xt: Exit Sub
+
+eh: Select Case MsgBox(Title:="An error occoured!" _
+                    , Prompt:="Error " & Err.Number & ": " & Err.Description & vbLf & vbLf & _
+                              "Retry  = Proceed to the error line option" & vbLf & _
+                              "Ignore = Proceed to the end of the error causing procdure." & vbLf & _
+                              "Abort  = No action" _
+                    , Buttons:=vbAbortRetryIgnore)
+        Case vbRetry:   Stop: Resume
+        Case vbIgnore
+        Case vbAbort: GoTo xt
+    End Select
+End Sub
 
 ```
 
