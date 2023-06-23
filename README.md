@@ -1,10 +1,8 @@
 ## Common VBA Error Services
-The section [Exploring the matter](#exploring-the-matter) shows a possible approach with neither this Common VBA Error Service Component nor any other installed, with a plea &nbsp; &nbsp;**f o r** &nbsp;&nbsp; it. Those already convinced just continue reading.
+> The section [Exploring the matter](#exploring-the-matter) shows a possible approach with neither this _Common VBA Error Services_ Component nor any other installed, with a plea &nbsp; &nbsp;**f o r** &nbsp;&nbsp; it. It is supposed to somehow bootstrap the whole matter towards a professional solution. Skip the section and continue reading straight when already convinced to go all the way.
 
 All services are invoked through procedures copied into each module (see [Preparing the module](#preparing-the-module) and [Preparing procedures](#preparing-procedures). As a result an error message will look as follows:<br>
 ![](Assets/StraightToTheErrorLineOptimum.png)
-
-The specifically nice designed error message however, will require and additional _[Common VBA Message Component](#using-the-optional-fmsgmmsg-components-for-a-better-designed-error-message)_ which provides an alternative for the `VBA.MsgBox`. 
 
 Provided are:
   - **Type of the error** (distinction of Application Error, VB Runtime error, and Database error)
@@ -274,7 +272,7 @@ Example: When the tested error is a programmed _Application Error_ (raised by: `
 When at the beginning of a series of test procedures `mErH.Regression = True` the display of _'[asserted](#asserted-errors-service)'_ errors will be suspended thereby supporting an uninterrupted regression test.
 
 ### Using the optional _fMsg/mMsg_ components for a better designed error message
-When the two components are installed and activated they are automatically used to display the error message not only significantly better designed but also more clear for how to use the _Debugging option_. If desired follow the below steps.
+When the two components are installed and activated they are automatically used by the _[ErrMsg](#a-more-elaborated-errmsg-function)_ function to display the error message not only significantly better designed but also more clear for how to use the _Debugging option_. If desired follow the below steps.
 1. Download _[fMsg.frm][2]_, _[fMsg.frx][3]_, _[mMsg.bas][4]_
 2. Import into your VB-Project ***fMsg.frm*** and ***mMsg.bas***
 3. Activate them by the Cond. Comp. Arg. `MsgComp = 1`
