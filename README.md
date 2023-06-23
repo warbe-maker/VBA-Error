@@ -1,6 +1,10 @@
 ## Common VBA Error Services
+The section [Exploring the matter](#exploring-the-matter) shows a possible approach with neither this Common VBA Error Service Component nor any other installed, with a plea &nbsp; &nbsp;**f o r** &nbsp;&nbsp; it. Those already convinced just continue reading.
+
 All services are invoked through procedures copied into each module (see [Preparing the module](#preparing-the-module) and [Preparing procedures](#preparing-procedures). As a result an error message will look as follows:<br>
 ![](Assets/StraightToTheErrorLineOptimum.png)
+
+The specifically nice designed error message however, will require and additional _[Common VBA Message Component](#using-the-optional-fmsgmmsg-components-for-a-better-designed-error-message)_ which provides an alternative for the `VBA.MsgBox`. 
 
 Provided are:
   - **Type of the error** (distinction of Application Error, VB Runtime error, and Database error)
@@ -17,14 +21,11 @@ Provided are:
 ### Services
 | Service      |Kind&nbsp;[^1]| Description |
 |--------------|:------------:|-------------|
-|_Asserted_    | S            | Only used with regression testing (Regression = True) to avoid the display of errors specifically tested. When Regression = False the _Asserted_ service is ignored and any error is displayed.|
+|_Asserted_    | S            | Only used with regression testing (`mErH.Regression = True`) to avoid the display of errors specifically tested. When Regression = False the _Asserted_ service is ignored and any error is displayed.|
 |_BoP_         | S            | Indicates the <u>**B**</u>egin <u>**o**</u>f a <u>**P**</u>rocedure and is used to maintain the call stack.<br>**Attention:** When the service is about to be used by the _Common VBA Execution Trace Service_ as well this service is exclusively to be called via an [BoC Interface](#boceoc-interface) which is to be copied in each component when used. |
 |_EoP_         | S            | Indicates the <u>**E**</u>nd <u>**o**</u>f a <u>**P**</u>rocedure and is used to maintain the call stack. Triggers the display of the Execution Trace when the end of the 'Entry-Procedure' is reached.<br>**Attention:** |
 |_ErrMsg_      | F            | Displays an error message either with the procedure the error had been raised (when no _BoP_ statement had ever been executed) or displays it passed on the _[Entry Procedure](#the-entry-procedure)_ (which is the first procedure with a _BoP_ statement thereby assembling  _[the-path- to-the-error](#the-path-to-the-error)_ displayed when the _[Entry Procedure](#the-entry-procedure)_ is reached.|
 |_Regression_  | P w          | When TRUE the _ErrMsg_ only displays errors which are not regarded 'Asserted'.
-
-
-[^1]: S=Sub, F=Function, P=Property (r=read/Get, w=write/Let)
 
 ## Installation
 1. Download [_mErH.bas_][1]
@@ -84,19 +85,9 @@ Private Sub EoP(ByVal e_proc As String, Optional ByVal e_inf As String = vbNullS
 End Sub
 ```
 ### Other procedures
-Copy the following into any component which uses the error services. The ErrMsg procedure provides a comprehensive error message when the [Debugging option](#activating-the-debugging-option-for-the-resume-error-line-button) is activated even without having the _mErH_ nor the _fMsg/mMsg_ components are installed/activated.
+#### A more elaborated _ErrMsg_ function
+Copy the following code into any component which uses it for displaying the error message. It not only provides a more comprehensive error message but also comes with the option to have an even better approach/result additional components like _mErH_, _fMsg/mMsg_, or _mTrc_ are not installed and activated [^2].
 ```vb
-Private Function AppErr(ByVal app_err_no As Long) As Long
-' ------------------------------------------------------------------------------
-' Ensures that a programmed 'Application' error number not conflicts with the
-' number of a 'VB Runtime Error' or any other system error. Returns a given 
-' positive 'Application Error' number (app_err_no) as a negative by adding the
-' system constant vbObjectError. Returns the original 'Application Error' 
-' number when called with a negative error number.
-' ------------------------------------------------------------------------------
-    If app_err_no >= 0 Then AppErr = app_err_no + vbObjectError Else AppErr = Abs(app_err_no - vbObjectError)
-End Function
-
 Private Function ErrMsg(ByVal err_source As String, _
                Optional ByVal err_no As Long = 0, _
                Optional ByVal err_dscrptn As String = vbNullString, _
@@ -191,9 +182,25 @@ Private Function ErrMsg(ByVal err_source As String, _
 xt: End Function
 
 End Function
+```
 
+### The _ErrSrc_ function for distinct procedure names
+```vb
 Private Function ErrSrc(ByVal sProc As String) As String
     ErrSrc = "<the component's name>." & sProc
+End Function
+```
+#### The _AppErr_ function for distinct 'Application-Error-Numbers'
+```vb
+Private Function AppErr(ByVal app_err_no As Long) As Long
+' ------------------------------------------------------------------------------
+' Ensures that a programmed 'Application' error number not conflicts with the
+' number of a 'VB Runtime Error' or any other system error. Returns a given 
+' positive 'Application Error' number (app_err_no) as a negative by adding the
+' system constant vbObjectError. Returns the original 'Application Error' 
+' number when called with a negative error number.
+' ------------------------------------------------------------------------------
+    If app_err_no >= 0 Then AppErr = app_err_no + vbObjectError Else AppErr = Abs(app_err_no - vbObjectError)
 End Function
 ```
 
@@ -252,9 +259,9 @@ This _Common VBA Error Services_ support the display of a _path-to-the-error_ by
 | Approach | Description | Pro | Con |
 |----------|-------------|-----|-----|
 | ***Bottom up***| The path is assembled when the error is passed on up to the _[Entry Procedure](#the-entry-procedure)_. | This approach assembles a complete path which includes also procedures not having `BoP/EoP` statements provided the _Entry Procedure_ is known (has `BoP/EoP` statements).| The path will not be available when the error message is called immediately with the error raising procedure. This is the case either when the _Entry Procedure_ is unknown, i.e. no procedure with `BoP/EoP` statements had been invoked, or when the [Debugging option](#activating-the-debugging-option-for-the-resume-error-line-button) displays an extra button to _Resume the Error Line_ which means that even when the _Entry Procedure_ is known the message has to be displayed immediately to provide the choice.| 
-| ***Top down***| An call stack is maintained with each `BoP/EoP` service call. | The _path-to-the-error_ is as complete as supported by the `BoP/EoP` service calls all the way down to the error raising procedure even when the 'Debugging' option forced the error being displayed immediately within the procedure the error occurreded (which is the way to allow resuming the error line).| The completeness/extent of the path- to-the-error depends on the `BoP/EoP` statements.|
+| ***Top down***| An call stack is maintained with each `BoP/EoP` service call. | The _path-to-the-error_ is as complete as supported by the `BoP/EoP` service calls all the way down to the error raising procedure even when the 'Debugging' option forced the error being displayed immediately within the procedure the error ocurred (which is the way to allow resuming the error line).| The completeness/extent of the path- to-the-error depends on the `BoP/EoP` statements.|
 
-> ***Conclusion***: Procedures with an error handling (those with On error Goto eh) should also have `BoP/EoP` statements - quasi as a default). Providing potential_[Entry Procedure](#the-entry-procedure)_ with `BoP/EoP` statements should be obligatory.
+> ***Conclusion***: Procedures with an error handling (those with `On Error Goto eh`) should also have `BoP/EoP` statements - quasi as a default). Providing potential_[Entry Procedure](#the-entry-procedure)_ with `BoP/EoP` statements should be obligatory.
 
 ### Regression test issues
 I use the following two services for the Regression tests set up with all my _[Common VBA Components][7].
@@ -264,20 +271,50 @@ Used with regression testing. Errors which a are regarded asserted because expli
 Example: When the tested error is a programmed _Application Error_ (raised by: `Err.Raise AppErr(1), ErrSrc(PROC), "error description"`) the error is asserted by `mErH.Asserted AppErr(1)`.
 
 ### _Regression_ test activation
-When at the beginning of a series of test procedures `mErH.Regression` is set to `True` the display of _[Asserted](#asserted-errors-service)_ errors will be suspended thereby supporting an uninterrupted regression test.
+When at the beginning of a series of test procedures `mErH.Regression = True` the display of _'[asserted](#asserted-errors-service)'_ errors will be suspended thereby supporting an uninterrupted regression test.
+
+### Using the optional _fMsg/mMsg_ components for a better designed error message
+When the two components are installed and activated they are automatically used to display the error message not only significantly better designed but also more clear for how to use the _Debugging option_. If desired follow the below steps.
+1. Download _[fMsg.frm][2]_, _[fMsg.frx][3]_, _[mMsg.bas][4]_
+2. Import into your VB-Project ***fMsg.frm*** and ***mMsg.bas***
+3. Activate them by the Cond. Comp. Arg. `MsgComp = 1`
 
 ### Download from public GitHub repo
 It may appear pretty strange when downloading first from a public GitHub repo but is is quite straight forward as the below image shows.  
 ![](Assets/DownloadFromGitHubRepo.png)
 
+## Exploring the matter
+The below code is an example approach which provides the maximum regarding debugging with a minimum of effort and means - with the following properties, together with a plea for possible improvements [^3]
+
+| Property                 | Provided | Comment         |
+|--------------------------|:--------:|-----------------|
+| Error message            | Yes      | When _[fMsg/mMsg](#using-the-optional-fmsgmmsg-components-for-a-better-designed-error-message)_ is installed and activated the error message is significantly better designed, easy to read and use for debugging. |
+| Error source             | No       | Requires the declaration of a constant in each procedure and the _[ErrSrc](#the-errsrc-function-for-distinct-procedure-names)_ function in each module to prefix it with the component's name.|
+| Application error number | No       | The more elaborated _[ErrMsg](#a-more-elaborated-errmsg-function)_ function uses the _[AppErr](#the-apperr-function-for-distinct-application-error-numbers)_ function to distinguish between kind of errors. |
+| (proceed to) Error line  | Yes      | By using the _fMsg/mMsg_ components buttons may be named precisely for what they mean |
+| Info about error         | No       | Possible through a more elaborated _[ErrMsg](#a-more-elaborated-errmsg-function)_ function |
+| Path to the error        | No       | _[mErH][1]_ maintains a call stack and a back-up collection of the passed procedures on the way down to the error to collect the path |
+| Pre-asserted errors      | No       | _[mErH][1]_ provides a 'Regression-Test' option which suppresses the display of 'asserted', i.e. explicitly tested, errors |
+| Execution Trace          | No       | _[mErH][1]_ in combination with the _[clsTrc][9]/_[mTrc][8]_ provides an execution trace 'by the way'.|
+| Debugging                | fixed    | Optional through the more elaborated _ErrMsg_ function by using a Cond. Comp. Argument `Debbuging = 1` to display or not display the button.|
+```vb
+
+```
+
 ## Contribution, development, test, maintenance
 Any contribution of any kind will be welcome. The dedicated _Common VBA Component Workbook_ **[ErH.xlsm][6]** is used for development, maintenance, and last but not least for the testing.
 
+[^1]: S=Sub, F=Function, P=Property (r=read/Get, w=write/Let)
+[^2]: All (my) Common Components make use of this function in order to keep it completely autonomous for whomever installs them. I.e. they are not depending on any other components. An approach to provide them 'public' while using them exactly as they are for/within my own 'professional' VB-Project development.  
+[^3]: All components provide an in-built README service which displays the component's corresponding README in the public GiHub repo.
+
 
 [1]:https://github.com/warbe-maker/VBA-Error/blob/master/source/mErH.bas
-[2]:https://github.com/warbe-maker/VBA-Error/blob/master/source/fMsg.frm
-[3]:https://github.com/warbe-maker/VBA-Error/blob/master/source/fMsg.frx
-[4]:https://github.com/warbe-maker/VBA-Error/blob/master/source/mMsg.bas
+[2]:https://github.com/warbe-maker/VBA-Message/blob/master/source/fMsg.frm
+[3]:https://github.com/warbe-maker/VBA-Message/blob/master/source/fMsg.frx
+[4]:https://github.com/warbe-maker/VBA-Message/blob/master/source/mMsg.bas
 [5]:https://warbe-maker.github.io/vba/common/2022/02/15/Personal-and-public-Common-Components.html
 [6]:https://github.com/warbe-maker/VBA-Error/blob/master/source/ErH.xlsm
 [7]:https://warbe-maker.github.io/vba/common/2021/02/19/Common-VBA-Components.html
+[8]:https://github.com/warbe-maker/VBA-Trace/blob/master/source/mTrc.bas
+[9]:https://github.com/warbe-maker/VBA-Trace/blob/master/source/clsTrc.bas

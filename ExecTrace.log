@@ -1,0 +1,53 @@
+23-06-23 16:40:42 Elapsed Length  Execution trace by 'Common VBA Execution Trace Service (mTrc)' (https://github.com/warbe-maker/VBA-Trace)
+23-06-23 16:40:42 seconds seconds >> Begin execution trace 
+23-06-23 16:40:42 00,0000         |  >> mErHDemo.Demo_Application_Error
+23-06-23 16:40:42 00,0052         |  |  >> mErHDemo.Demo_Application_Error_a
+23-06-23 16:40:42 00,0057         |  |  |  >> mErHDemo.Demo_Application_Error_b
+23-06-23 16:40:42 00,0060         |  |  |  |  >> mErHDemo.Demo_Application_Error_c
+===========================================================================================================================================
+23-06-23 16:51:16 Elapsed Length  Execution trace by 'Common VBA Execution Trace Service (mTrc)' (https://github.com/warbe-maker/VBA-Trace)
+23-06-23 16:51:17 seconds seconds >> Begin execution trace 
+23-06-23 16:51:17 00,0000         |  >> mErHDemo.Demo_ErH_Reasonable_a
+23-06-23 16:51:24 07,8553 07,8553 |  << mErHDemo.Demo_ErH_Reasonable_a (VB-Runtime Error 11 at line 46)
+23-06-23 16:51:24 07,8553 07,8553 << End execution trace 
+23-06-23 16:51:24                 Execution trace by 'Common VBA Execution Trace Service (mTrc)' (https://github.com/warbe-maker/VBA-Trace)
+23-06-23 16:51:24                 Impact on the overall performance (caused by the trace itself): 36,4 milliseconds!
+===========================================================================================================================================
+23-06-23 16:53:26 Elapsed Length  Execution trace by 'Common VBA Execution Trace Service (mTrc)' (https://github.com/warbe-maker/VBA-Trace)
+23-06-23 16:53:26 seconds seconds >> Begin execution trace 
+23-06-23 16:53:26 00,0000         |  >> mErHDemo.emo_ErH_Reasonable
+23-06-23 16:53:26 00,0008         |  |  >> mErHDemo.Demo_ErH_Reasonable_a
+23-06-23 16:53:38 12,2924 12,2916 |  |  << mErHDemo.Demo_ErH_Reasonable_a (VB-Runtime Error 11 at line 46)
+23-06-23 16:53:38 00,0013 00,0013 |  << mErHDemo.emo_ErH_Reasonable
+23-06-23 16:53:38 00,0013 00,0013 << End execution trace 
+23-06-23 16:53:38                 Execution trace by 'Common VBA Execution Trace Service (mTrc)' (https://github.com/warbe-maker/VBA-Trace)
+23-06-23 16:53:38                 Impact on the overall performance (caused by the trace itself): 0,3 milliseconds!
+===========================================================================================================================================
+23-06-23 16:53:52 Elapsed Length  Execution trace by 'Common VBA Execution Trace Service (mTrc)' (https://github.com/warbe-maker/VBA-Trace)
+23-06-23 16:53:52 seconds seconds >> Begin execution trace 
+23-06-23 16:53:52 00,0000         |  >> mErHDemo.emo_ErH_Reasonable
+23-06-23 16:53:52 00,0008         |  |  >> mErHDemo.Demo_ErH_Reasonable_a
+23-06-23 16:53:55 03,1117 03,1108 |  |  << mErHDemo.Demo_ErH_Reasonable_a (VB-Runtime Error 11 at line 46)
+23-06-23 16:53:55 00,0014 00,0014 |  << mErHDemo.emo_ErH_Reasonable
+23-06-23 16:53:55 00,0014 00,0014 << End execution trace 
+23-06-23 16:53:55                 Execution trace by 'Common VBA Execution Trace Service (mTrc)' (https://github.com/warbe-maker/VBA-Trace)
+23-06-23 16:53:55                 Impact on the overall performance (caused by the trace itself): 0,3 milliseconds!
+===========================================================================================================================================
+23-06-23 16:56:46 Elapsed Length  Execution trace by 'Common VBA Execution Trace Service (mTrc)' (https://github.com/warbe-maker/VBA-Trace)
+23-06-23 16:56:46 seconds seconds >> Begin execution trace 
+23-06-23 16:56:46 00,0000         |  >> mErHDemo.emo_ErH_Reasonable
+23-06-23 16:56:46 00,0009         |  |  >> mErHDemo.Demo_ErH_Reasonable_a
+23-06-23 16:56:48 02,2055 02,2046 |  |  << mErHDemo.Demo_ErH_Reasonable_a (VB-Runtime Error 11 at line 46)
+===========================================================================================================================================
+23-06-23 17:01:00 Elapsed Length  Execution trace by 'Common VBA Execution Trace Service (mTrc)' (https://github.com/warbe-maker/VBA-Trace)
+23-06-23 17:01:00 seconds seconds >> Begin execution trace 
+23-06-23 17:01:00 00,0000         |  >> mErHDemo.Demo_ErH_Reasonable
+23-06-23 17:01:00 00,0007         |  |  >> mErHDemo.Demo_ErH_Reasonable_a
+23-06-23 17:01:04 04,2962 04,2956 |  |  << mErHDemo.Demo_ErH_Reasonable_a (VB-Runtime Error 11 at line 46)
+===========================================================================================================================================
+23-06-23 17:03:34 Elapsed Length  Execution trace by 'Common VBA Execution Trace Service (mTrc)' (https://github.com/warbe-maker/VBA-Trace)
+23-06-23 17:03:34 seconds seconds >> Begin execution trace 
+23-06-23 17:03:34 00,0000         |  >> mErHDemo.Demo_ErH_Reasonable
+23-06-23 17:03:34 00,0060         |  |  >> mErHDemo.Demo_ErH_Reasonable_a
+23-06-23 17:03:34 00,0070         |  |  |  >> mErHDemo.Demo_ErH_Reasonable_a
+23-06-23 17:03:41 07,3072 07,3002 |  |  |  << mErHDemo.Demo_ErH_Reasonable_a (VB-Runtime Error 11 at line 46)
