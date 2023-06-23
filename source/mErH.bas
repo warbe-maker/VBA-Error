@@ -118,10 +118,13 @@ End Function
 
 Public Sub README(Optional ByVal r_bookmark As String = vbNullString)
     
-    If r_bookmark = vbNullString _
-    Then ShellRun GITHUB_REPO_URL _
-    Else ShellRun GITHUB_REPO_URL & "#" & r_bookmark
-        
+    If r_bookmark = vbNullString Then
+        mBasic.ShellRun GITHUB_REPO_URL
+    Else
+        r_bookmark = Replace("#" & r_bookmark, "##", "#") ' add # if missing
+        mBasic.ShellRun GITHUB_REPO_URL & r_bookmark
+    End If
+
 End Sub
 
 Public Function ShellRun(ByVal sr_string As String, _
@@ -501,9 +504,12 @@ Private Function ErrMsgDsply(ByVal err_source As String, _
     Dim SctnText    As TypeMsgText
     
 #If XcTrc_clsTrc = 1 Then
+    '~~ When this component is used with clsTrc installed and activated (Cond. Comp.Arg. `XcTrc_clsTrc = 1`
+    '~~ the using VB-Project must have `Public Trc As clsTrc` and `Set Trc = New clsTrc` codelines in
+    '~~ one of its components! If not the below code line will cause an error.
     Trc.Pause
 #ElseIf XcTrc_mTrc = 1 Then
-        mTrc.Pause ' prevent useless timing values by exempting the display and wait time for the reply
+    mTrc.Pause ' prevent useless timing values by exempting the display and wait time for the reply
 #End If
     ErrMsgMatter err_source:=err_source _
                , err_no:=err_number _

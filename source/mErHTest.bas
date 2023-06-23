@@ -9,6 +9,9 @@ Option Explicit
 ' W. Rauschenberger Berlin, June 2023
 ' See: "https://github.com/warbe-maker/VBA-Error"
 ' ----------------------------------------------------------------------------
+#If XcTrc_clsTrc = 1 Then
+    Public Trc As New clsTrc
+#End If
 
 Private Function AppErr(ByVal app_err_no As Long) As Long
 ' ------------------------------------------------------------------------------
@@ -28,11 +31,17 @@ End Function
 Public Sub Test_0_Regression()
 ' -----------------------------------------------------------------------------
 ' 1. This regression test requires the Cond. Comp. Arg.:
-'    Debugging = 1 : ErHComp = 1 : MsgComp = 1 : XcTrc_mTrc = 1
+'    `Debugging = 1 : ErHComp = 1 : MsgComp = 1`
+'    and `XcTrc_clsTrc = 0 : XcTrc_mTrc = 1`
+'    or  `XcTrc_clsTrc = 1 : XcTrc_mTrc = 0`
+'    I.e. it can use both variants of the Execution Trace component.
+'
 ' 2. The BoP/EoP statements in this regression test procedure produce one final
 '    execution trace.
-' 3. Explicitly teste error conditions are bypassed by mErH.Regression = True
+'
+' 3. Explicitly tested error conditions are bypassed by mErH.Regression = True
 '    and the error asserted by mErH.Asserted ....
+'
 ' 4. In case any tests fails the Debugging option supports 'resume error line'
 ' ------------------------------------------------------------------------------
     Const PROC = "Test_0_Regression"
@@ -40,9 +49,18 @@ Public Sub Test_0_Regression()
     On Error GoTo eh
     
     '~~ Initializations (must be done prior the first BoP!)
+#If XcTrc_mTrc = 1 Then
     mTrc.FileName = "RegressionTest.ExecTrace.log"
     mTrc.Title = "Regression Test mErH"
     mTrc.NewFile
+#ElseIf XcTrc_clsTrc = 1 Then
+    Set Trc = New clsTrc
+    With Trc
+        .FileName = "RegressionTest.ExecTrace.log"
+        .Title = "Regression Test mErH"
+        .NewFile
+    End With
+#End If
     
     mErH.Regression = True ' to bypass Asserted errors
       
@@ -52,7 +70,12 @@ Public Sub Test_0_Regression()
     
 xt: mBasic.EoP ErrSrc(PROC)
     mErH.Regression = False
+    
+#If XcTc_mTrc = 1 Then
     mTrc.Dsply
+#ElseIf XcTrc_clsTrc = 1 Then
+    Trc.Dsply
+#End If
     Exit Sub
     
 eh: Select Case mBasic.ErrMsg(ErrSrc(PROC))
