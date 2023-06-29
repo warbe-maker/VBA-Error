@@ -3,8 +3,7 @@ Option Explicit
 ' ----------------------------------------------------------------------------
 ' Standard Module mBasic: Declarations, procedures, methods and function
 ' ======================= likely to be required in any VB-Project, optionally
-' just being copied.
-'
+'                         just being copied.
 ' Note: All services run completely autonomous, i.e. do not require any other
 '       installed module. However, when the Common VBA Message Services
 '       (fMsg/mMsg) and or the Common VBA Error Services (mErH) are installed
@@ -13,9 +12,16 @@ Option Explicit
 '
 ' Public Procedures, Functions, Services:
 ' ---------------------------------------
+' AppErr            Converts a positive error number into a negative to
+'                   ensures an error number not conflicting with a VB
+'                   run time error or any other system error number.
+'                   Returns the origin positive error number when called
+'                   with the negative Application Error number. 3)
 ' AppIsInstalled    Returns TRUE when a named exec is found in the system path.
-' ArrayCompare      Compares two one-dimensional arrays. Returns an array
-'                   with all different items.
+' ArrayCompare      Returns a Dictionary with the provided number of items
+'                   (defaults to all) which differ between two one dimensional
+'                   arrays. When no difference is encountered the returned
+'                   Dictionary is empty (Count = 0).
 ' ArrayIsAllocated  Returns TRUE when the provided array has at least one item
 ' ArrayNoOfDims     Returns the number of dimensions of an array.
 ' ArrayRemoveItem   Removes an array's item by its index or element number.
@@ -25,8 +31,15 @@ Option Explicit
 ' Center            Returns a string centered within a string with a certain
 '                   length.
 ' CleanTrim         Clears a string from any unprinable characters.
+' BoP/EoP           1), 2)
+' BoC/EoC           1), 2)
+' ErrMsg            Displays a common error message
+'                   a) by means of the VB MsgBox
+'                   b) by fMsg/mMsg and mErH when installed and activated by
+'                      the corresp. Comd. Comp.Args., 1), 2)
 ' README            Displays the Common Component's README in the public
 '                   GitHub repo.
+' KeySort           Returns a given Dictionary sorted by key.
 ' ShellRun          Opens a folder, an email-app, a url, an Access instance,
 '                   etc.
 ' TimedDoEvents     Performs a DoEvent by taking the elapsed time printed in
@@ -36,27 +49,14 @@ Option Explicit
 '
 ' Private procedures (for being copied into any module:
 ' -----------------------------------------------------
-' AppErr            Converts a positive error number into a negative to
-'                   ensures an error number not conflicting with a VB
-'                   run time error or any other system error number.
-'                   Returns the origin positive error number when called
-'                   with the negative Application Error number. 3)
-' BoP/EoP           1), 2)
-' BoC/EoC           1), 2)
-' ErrMsg            Displays a common error message
-'                   a) by means of the VB MsgBox
-'                   b) by fMsg/mMsg and mErH when installed and activated by
-'                      the corresp. Comd. Comp.Args., 1), 2)
 ' ErrSrc            Unambigous identification of a procedure - used with
 '                   BoP, EoP, and ErrMsg
 '
 ' Requires Reference to:
+' ----------------------
 ' Microsoft Scripting Runtime
-' Microsoft Visual Basic Application Extensibility .."
+' Microsoft Visual Basic Application Extensibility ..
 '
-' May use:             fMsg, mMsg, mErH (via ErrMsg)
-'
-' ----------------------------------------------------------------------------
 ' 1) Provides a comprehensive and well designed display of an error message,
 '    provided Common VBA Error Services (mErH) and the Common VBA Message
 '    Service (fMsg/mMsg) is installed and the Conditional Compile Arguments
@@ -70,8 +70,8 @@ Option Explicit
 '    be copied into any component to use the mErH and the mTrc/clsTrc module.
 ' 3) To be copied as Private procedure into any component which raises
 '    Application Errors by means of Err.Raise.
-' 4) https://github.com/warbe-maker/Common-VBA-Error-Services
-' 5) https://github.com/warbe-maker/Common-VBA-Execution-Trace-Service
+' 4) https://github.com/warbe-maker/VBA-Error
+' 5) https://github.com/warbe-maker/VBA-Trace
 '
 ' W. Rauschenberger, Berlin Feb. 2022
 ' See https://github.com/warbe-maker/VBA-Basics (displayed with README proc)
@@ -89,6 +89,7 @@ Public Const DSPACE     As String = " "
 Public Const DEXCL      As String = "!"
 Public Const DQUOTE     As String = """"    ' one " character
 
+Private Const GITHUB_REPO_URL = "https://github.com/warbe-maker/VBA-Basics"
 ' Common xl constants grouped ----------------------------
 Public Enum YesNo   ' ------------------------------------
     xlYes = 1       ' System constants (identical values)
@@ -166,10 +167,64 @@ Private cyTimerTicksBegin       As Currency
 Private cyTimerTicksEnd         As Currency
 Private TimerSystemFrequency    As Currency
 
-Private Property Get SysFrequency() As Currency
-    If TimerSystemFrequency = 0 Then getFrequency TimerSystemFrequency
+Public Property Get SysFrequency(Optional ByVal s_f As Currency = 0) As Currency
+    If s_f = 0 Then s_f = TimerSystemFrequency
+    If s_f = 0 Then getFrequency TimerSystemFrequency
     SysFrequency = TimerSystemFrequency
 End Property
+
+Public Function KeySort(ByRef s_dct As Dictionary) As Dictionary
+' ------------------------------------------------------------------------------
+' Returns the items in a Dictionary (s_dct) sorted by key.
+' ------------------------------------------------------------------------------
+    Const PROC  As String = "KeySort"
+    
+    On Error GoTo eh
+    Dim dct     As New Dictionary
+    Dim vKey    As Variant
+    Dim arr()   As Variant
+    Dim Temp    As Variant
+    Dim Txt     As String
+    Dim i       As Long
+    Dim j       As Long
+    
+    If s_dct Is Nothing Then GoTo xt
+    If s_dct.Count = 0 Then GoTo xt
+    
+    With s_dct
+        ReDim arr(0 To .Count - 1)
+        For i = 0 To .Count - 1
+            arr(i) = .Keys(i)
+        Next i
+    End With
+    
+    '~~ Bubble sort
+    For i = LBound(arr) To UBound(arr) - 1
+        For j = i + 1 To UBound(arr)
+            If arr(i) > arr(j) Then
+                Temp = arr(j)
+                arr(j) = arr(i)
+                arr(i) = Temp
+            End If
+        Next j
+    Next i
+        
+    '~~ Transfer based on sorted keys
+    For i = LBound(arr) To UBound(arr)
+        vKey = arr(i)
+        dct.Add Key:=vKey, Item:=s_dct.Item(vKey)
+    Next i
+    
+xt: Set s_dct = dct
+    Set KeySort = dct
+    Set dct = Nothing
+    Exit Function
+
+eh: Select Case ErrMsg(ErrSrc(PROC))
+        Case vbResume:  Stop: Resume
+        Case Else:      GoTo xt
+    End Select
+End Function
 
 Private Property Get TimerSecsElapsed() As Currency:        TimerSecsElapsed = TimerTicksElapsed / SysFrequency:        End Property
 
@@ -756,34 +811,30 @@ Public Function ErrMsg(ByVal err_source As String, _
     If err_source = vbNullString Then err_source = Err.source
     If err_dscrptn = vbNullString Then err_dscrptn = Err.Description
     If err_dscrptn = vbNullString Then err_dscrptn = "--- No error description available ---"
-    
-    '~~ Consider extra information is provided with the error description
+    '~~ About
+    ErrDesc = err_dscrptn
     If InStr(err_dscrptn, "||") <> 0 Then
         ErrDesc = Split(err_dscrptn, "||")(0)
         ErrAbout = Split(err_dscrptn, "||")(1)
+    End If
+    '~~ Type of error
+    If err_no < 0 Then
+        ErrType = "Application Error ": ErrNo = AppErr(err_no)
     Else
-        ErrDesc = err_dscrptn
+        ErrType = "VB Runtime Error ":  ErrNo = err_no
+        If err_dscrptn Like "*DAO*" _
+        Or err_dscrptn Like "*ODBC*" _
+        Or err_dscrptn Like "*Oracle*" _
+        Then ErrType = "Database Error "
     End If
     
-    '~~ Determine the type of error
-    Select Case err_no
-        Case Is < 0
-            ErrNo = AppErr(err_no)
-            ErrType = "Application Error "
-        Case Else
-            ErrNo = err_no
-            If err_dscrptn Like "*DAO*" _
-            Or err_dscrptn Like "*ODBC*" _
-            Or err_dscrptn Like "*Oracle*" _
-            Then ErrType = "Database Error " _
-            Else ErrType = "VB Runtime Error "
-    End Select
-    
-    If err_source <> vbNullString Then ErrSrc = " in: """ & err_source & """"   ' assemble ErrSrc from available information"
-    If err_line <> 0 Then ErrAtLine = " at line " & err_line                    ' assemble ErrAtLine from available information
-    ErrTitle = Replace(ErrType & ErrNo & ErrSrc & ErrAtLine, "  ", " ")         ' assemble ErrTitle from available information
-       
-    ErrText = "Error: " & vbLf & ErrDesc & vbLf & vbLf & "Source: " & vbLf & err_source & ErrAtLine
+    '~~ Title
+    If err_source <> vbNullString Then ErrSrc = " in: """ & err_source & """"
+    If err_line <> 0 Then ErrAtLine = " at line " & err_line
+    ErrTitle = Replace(ErrType & ErrNo & ErrSrc & ErrAtLine, "  ", " ")
+    '~~ Description
+    ErrText = "Error: " & vbLf & ErrDesc
+    '~~ About
     If ErrAbout <> vbNullString Then ErrText = ErrText & vbLf & vbLf & "About: " & vbLf & ErrAbout
     
 #If Debugging = 1 Then
@@ -911,17 +962,26 @@ Public Function ProgramIsInstalled(ByVal sProgram As String) As Boolean
         ProgramIsInstalled = InStr(Environ$(18), sProgram) <> 0
 End Function
 
-Public Sub README(Optional ByVal r_bookmark As String = vbNullString)
-    Const BASE_URL = "https://github.com/warbe-maker/VBA-Basics/blob/master/README.md"
+Public Sub README(Optional ByVal r_url As String = vbNullString, _
+                  Optional ByVal r_bookmark As String = vbNullString)
+' ----------------------------------------------------------------------------
+' Displays the given url (r_url) with the given bookmark (r_bookmark) in the
+' computer's default browser. When no url is provided it defaults to this
+' component's README url in the public GitHub repo.
+' ----------------------------------------------------------------------------
+    If r_url = vbNullString _
+    Then r_url = "https://github.com/warbe-maker/VBA-Basics"
     
-    If r_bookmark = vbNullString _
-    Then ShellRun BASE_URL _
-    Else ShellRun BASE_URL & "#" & r_bookmark
+    If r_bookmark = vbNullString Then
+        mBasic.ShellRun r_url
+    Else
+        r_bookmark = Replace("#" & r_bookmark, "##", "#") ' add # if missing
+        mBasic.ShellRun r_url & r_bookmark
+    End If
         
 End Sub
 
-Public Function SelectFolder( _
-                Optional ByVal sTitle As String = "Select a Folder") As String
+Public Function SelectFolder(Optional ByVal sTitle As String = "Select a Folder") As String
 ' ----------------------------------------------------------------------------
 ' Returns the selected folder or a vbNullString if none had been selected.
 ' ----------------------------------------------------------------------------
@@ -1149,40 +1209,51 @@ eh: Select Case ErrMsg(ErrSrc(PROC))
     End Select
 End Function
 
-Public Function TimedDoEvents(ByVal tde_source As String) As String
+Public Function TimedDoEvents(Optional t_source As String = vbNullString, _
+                              Optional t_debug_print As Boolean = False) As String
 ' ---------------------------------------------------------------------------
-' For the execution of a DoEvents statement. Provides the information in
-' which procedure it had been executed and the msecs delay it has caused.
+' Returns the elapsed time in seconds of DoEvents statement.
 '
-' Note: DoEvents every now and then is able to solve timing problems. When
-'       looking at the description of its effect this often appears
-'       miraculous. However, when it helps ... . But DoEvents allow keyboard
-'       interaction while a process executes. In case of a loop - and when
-'       the DoEvents lies within it, this may be a godsend. But it as well
-'       may cause unpredictable results. This little procedure at least
-'       documents in the Immediate window when (with milliseconds) and where
-'       it had been executed.
+' Background: DoEvents every now and then are concidered to solve problems.
+'             However, when looking at the description of DoEvents its effect
+'             may appears miraculous. However, stil when it helps is should
+'             be known that DoEvents allow keyboard interaction while a
+'             process executes. In case of a loop with embedded DoEvents,
+'             this may be a godsend. But it as well may cause unpredictable
+'             results. This little procedure at least documents in VBE's
+'             immediate window the resulting performace delay in milliseconds.
 ' ---------------------------------------------------------------------------
-    Dim s As String
+    Const TIMER_FORMAT = "0.00000"
+    Dim cBegin      As Currency
+    Dim cEnd        As Currency
+    Dim cElapsed    As Currency
     
-    mBasic.TimerBegin
+    mBasic.TimerBegin cBegin
     DoEvents
-    s = Format(Now(), "hh:mm:ss") & ":" _
-      & Right(Format(Timer, "0.000"), 3) _
-      & " DoEvents paused the execution for " _
-      & Format(mBasic.TimerEnd, "00000") _
-      & " msecs in '" & tde_source & "'"
-'    Debug.Print s
-    TimedDoEvents = s
+    mBasic.TimerEnd cBegin, cEnd, cElapsed, TIMER_FORMAT
+    If t_source <> vbNullString Then t_source = " (" & Trim(t_source) & ")"
+    TimedDoEvents = Format((cElapsed / SysFrequency) * 1000, TIMER_FORMAT) & " seconds " & t_source
+    If t_debug_print Then Debug.Print TimedDoEvents
     
 End Function
 
-Public Sub TimerBegin()
-    cyTimerTicksBegin = TimerSysCurrentTicks
+Public Sub TimerBegin(ByRef t_begin As Currency)
+    t_begin = TimerSysCurrentTicks
 End Sub
 
-Public Function TimerEnd() As Currency
-    cyTimerTicksEnd = TimerSysCurrentTicks
-    TimerEnd = TimerSecsElapsed * 1000
+Public Function TimerEnd(ByVal t_begin As Currency, _
+                Optional ByRef t_end As Currency, _
+                Optional ByRef t_elapsed As Currency, _
+                Optional ByVal t_format As String = "hh:mm:ss.0000") As String
+' ---------------------------------------------------------------------------
+' Returns, based on provided begin-ticks (t_begin)
+' - the end-ticks (t_end)
+' - the elapsed ticks (t_elapsed)
+' - the elapsed time in the provided format (t_format)
+' ---------------------------------------------------------------------------
+    t_end = TimerSysCurrentTicks
+    t_elapsed = ((t_end - t_begin) / SysFrequency) * 1000
+    TimerEnd = Format(t_elapsed, t_format)
+    
 End Function
 

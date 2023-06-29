@@ -1,33 +1,191 @@
-23-06-22-09:21:46  Update Outdated Common Components (by Add-in) for ErHDemo.xlsm 
-23-06-22-09:21:46 --------------------------------------------------------------
-23-06-22-09:21:46  Standard-Module mBasic .........: Used Common Component
-23-06-22-09:21:46  Standard-Module mCompManClient .: Used Common Component
-23-06-22-09:21:46  Standard-Module mErH ...........: Used Common Component
-23-06-22-09:21:49  Standard-Module mBasic .........: Outdated used Common Component updated by re-import of D:\Ablage\Excel VBA\DevAndTest\Common-Components\mBasic.bas
-23-06-22-09:21:51  Standard-Module mCompManClient .: Outdated used Common Component updated by re-import of D:\Ablage\Excel VBA\DevAndTest\Common-Components\mCompManClient.bas
-23-06-22-09:21:54  Standard-Module mErH ...........: Outdated used Common Component updated by re-import of D:\Ablage\Excel VBA\DevAndTest\Common-Components\mErH.bas
-23-06-22-09:24:09 ========================================================================
-23-06-22-09:24:09          Export Changed Components (by Add-in) for ErHDemo.xlsm         
-23-06-22-09:24:09 ------------------------------------------------------------------------
-23-06-22-09:24:09  UserForm        fMsg ...........: Unchanged hosted raw Common Component
-23-06-22-09:24:09  Standard-Module mBasic .........: Modified used Common Component!!!!! (because this is not the hosting Workbook a "due revert allert" has been registered!)
-23-06-22-09:24:09                                    Modified used Common Component e x p o r t e d !
-23-06-22-09:24:09  Standard-Module mCompManClient .: Modified used Common Component!!!!! (because this is not the hosting Workbook a "due revert allert" has been registered!)
-23-06-22-09:24:09                                    Modified used Common Component e x p o r t e d !
-23-06-22-09:24:09  Standard-Module mErH ...........: Modified used Common Component!!!!! (because this is not the hosting Workbook a "due revert allert" has been registered!)
-23-06-22-09:24:09                                    Modified used Common Component e x p o r t e d !
-23-06-22-09:24:09  Standard-Module mErHDemo .......: Modified VBComponent e x p o r t e d !
-23-06-22-09:24:09  Standard-Module mMsg ...........: Unchanged hosted raw Common Component
-23-06-22-09:24:09  Workbook        wbErHDemo ......: Unchanged VBComponent
-23-06-22-09:24:09  Worksheet       wsErHDemo ......: Unchanged VBComponent
-23-06-22-10:36:39 ========================================================================
-23-06-22-10:36:39          Export Changed Components (by Add-in) for ErHDemo.xlsm         
-23-06-22-10:36:39 ------------------------------------------------------------------------
-23-06-22-10:36:39  UserForm        fMsg ...........: Unchanged hosted raw Common Component
-23-06-22-10:36:39  Standard-Module mBasic .........: Unchanged used Common Component
-23-06-22-10:36:39  Standard-Module mCompManClient .: Unchanged used Common Component
-23-06-22-10:36:39  Standard-Module mErH ...........: Unchanged used Common Component
-23-06-22-10:36:39  Standard-Module mErHDemo .......: Modified VBComponent e x p o r t e d !
-23-06-22-10:36:39  Standard-Module mMsg ...........: Unchanged hosted raw Common Component
-23-06-22-10:36:39  Workbook        wbErHDemo ......: Unchanged VBComponent
-23-06-22-10:36:39  Worksheet       wsErHDemo ......: Unchanged VBComponent
+23-06-28-13:19:06          Export Changed Components (by Add-in) for ErHDemo.xlsm         
+23-06-28-13:19:06 ------------------------------------------------------------------------
+23-06-28-13:19:06  UserForm        fMsg ...........: Unchanged hosted raw Common Component
+23-06-28-13:19:06  Standard-Module mBasic .........: Unchanged used Common Component
+23-06-28-13:19:06  Standard-Module mCompManClient .: Unchanged used Common Component
+23-06-28-13:19:07  Standard-Module mErH ...........: Unchanged used Common Component
+23-06-28-13:19:07  Standard-Module mErHDemo .......: Unchanged VBComponent
+23-06-28-13:19:07  Standard-Module mMsg ...........: Unchanged hosted raw Common Component
+23-06-28-13:19:07  Workbook        wbErHDemo ......: Unchanged VBComponent
+23-06-28-13:19:07  Worksheet       wsErHDemo ......: Unchanged VBComponent
+23-06-28-13:19:11 =====================================================================================================================================================
+23-06-28-13:19:11                                            Update Outdated Common Components (by Add-in) for ErHDemo.xlsm                                            
+23-06-28-13:19:11 -----------------------------------------------------------------------------------------------------------------------------------------------------
+23-06-28-13:19:11  Standard-Module mBasic .........: Outdated used Common Component updated by re-import of D:\Ablage\Excel VBA\DevAndTest\Common-Components\mBasic.bas
+23-06-28-13:19:13  Standard-Module mCompManClient .: Outdated used Common Component updated by re-import of D:\Ablage\Excel VBA\DevAndTest\Common-Components\mCompManClient.bas
+23-06-28-13:19:15  Standard-Module mErH ...........: Outdated used Common Component updated by re-import of D:\Ablage\Excel VBA\DevAndTest\Common-Components\mErH.bas
+23-06-28-17:12:40 ============================================================================
+23-06-28-17:12:40         Export Changed Components (by CompMan.xlsb) for ErHDemo.xlsm        
+23-06-28-17:12:40 ----------------------------------------------------------------------------
+23-06-28-17:12:40  UserForm        fMsg ...........: Hosted Raw Common Component code modified
+23-06-28-17:12:45                                    Modified hosted Common Component e x p o r t e d !
+23-06-28-17:12:45                                    Modified hosted Common Component's Revision Number increased from 2023-06-28.001 to 2023-06-28.001
+23-06-28-17:12:45                                    Modified hosted Common Component's Export-File copied to D:\Ablage\Excel VBA\DevAndTest\Common-Components
+23-06-28-17:12:45  Standard-Module mBasic .........: Modified used Common Component!!!!! (because this is not the hosting Workbook a "due revert allert" has been registered!)
+23-06-28-17:12:45                                    Modified used Common Component e x p o r t e d !
+23-06-28-17:12:45  Standard-Module mCompManClient .: Modified used Common Component!!!!! (because this is not the hosting Workbook a "due revert allert" has been registered!)
+23-06-28-17:12:45                                    Modified used Common Component e x p o r t e d !
+23-06-28-17:12:45  Standard-Module mErH ...........: Modified used Common Component!!!!! (because this is not the hosting Workbook a "due revert allert" has been registered!)
+23-06-28-17:12:45                                    Modified used Common Component e x p o r t e d !
+23-06-28-17:12:45  Standard-Module mErHDemo .......: Modified VBComponent e x p o r t e d !
+23-06-28-17:12:45  Standard-Module mMsg ...........: Hosted Raw Common Component code modified
+23-06-28-17:12:45                                    Modified hosted Common Component e x p o r t e d !
+23-06-28-17:12:45                                    Modified hosted Common Component's Revision Number increased from 2023-06-28.001 to 2023-06-28.001
+23-06-28-17:12:45                                    Modified hosted Common Component's Export-File copied to D:\Ablage\Excel VBA\DevAndTest\Common-Components
+23-06-28-17:12:45  Workbook        wbErHDemo ......: Unchanged VBComponent
+23-06-28-17:12:45  Worksheet       wsErHDemo ......: Unchanged VBComponent
+23-06-29-16:13:01 ========================================================================
+23-06-29-16:13:01       Export Changed Components (by CompMan.xlsb) for ErHDemo.xlsm      
+23-06-29-16:13:01 ------------------------------------------------------------------------
+23-06-29-16:13:01  UserForm        fMsg ...........: Unchanged hosted raw Common Component
+23-06-29-16:13:01  Standard-Module mBasic .........: Unchanged used Common Component
+23-06-29-16:13:01  Standard-Module mCompManClient .: Unchanged used Common Component
+23-06-29-16:13:01  Standard-Module mErH ...........: Modified used Common Component!!!!! (because this is not the hosting Workbook a "due revert allert" has been registered!)
+23-06-29-16:13:01                                    Modified used Common Component e x p o r t e d !
+23-06-29-16:13:01  Standard-Module mErHDemo .......: Modified VBComponent e x p o r t e d !
+23-06-29-16:13:01  Standard-Module mMsg ...........: Hosted Raw Common Component code modified
+23-06-29-16:13:01                                    Modified hosted Common Component e x p o r t e d !
+23-06-29-16:13:01                                    Modified hosted Common Component's Revision Number increased from 2023-06-28.001 to 2023-06-29.001
+23-06-29-16:13:01                                    Modified hosted Common Component's Export-File copied to D:\Ablage\Excel VBA\DevAndTest\Common-Components
+23-06-29-16:13:01  Workbook        wbErHDemo ......: Unchanged VBComponent
+23-06-29-16:13:01  Worksheet       wsErHDemo ......: Unchanged VBComponent
+23-06-29-16:13:17 ========================================================================
+23-06-29-16:13:17       Export Changed Components (by CompMan.xlsb) for ErHDemo.xlsm      
+23-06-29-16:13:17 ------------------------------------------------------------------------
+23-06-29-16:13:17  UserForm        fMsg ...........: Unchanged hosted raw Common Component
+23-06-29-16:13:17  Standard-Module mBasic .........: Unchanged used Common Component
+23-06-29-16:13:17  Standard-Module mCompManClient .: Unchanged used Common Component
+23-06-29-16:13:17  Standard-Module mErH ...........: Unchanged used Common Component
+23-06-29-16:13:17  Standard-Module mErHDemo .......: Unchanged VBComponent
+23-06-29-16:13:17  Standard-Module mMsg ...........: Unchanged hosted raw Common Component
+23-06-29-16:13:17  Workbook        wbErHDemo ......: Unchanged VBComponent
+23-06-29-16:13:17  Worksheet       wsErHDemo ......: Unchanged VBComponent
+23-06-29-16:16:05 =====================================================================================================================================================
+23-06-29-16:16:05                                         Update Outdated Common Components (by CompMan.xlsb) for ErHDemo.xlsm                                         
+23-06-29-16:16:05 -----------------------------------------------------------------------------------------------------------------------------------------------------
+23-06-29-16:16:05  Standard-Module mBasic .........: Outdated used Common Component updated by re-import of D:\Ablage\Excel VBA\DevAndTest\Common-Components\mBasic.bas
+23-06-29-16:16:08  Standard-Module mCompManClient .: Outdated used Common Component updated by re-import of D:\Ablage\Excel VBA\DevAndTest\Common-Components\mCompManClient.bas
+23-06-29-16:16:10  Standard-Module mErH ...........: Outdated used Common Component updated by re-import of D:\Ablage\Excel VBA\DevAndTest\Common-Components\mErH.bas
+23-06-29-16:20:45 ========================================================================
+23-06-29-16:20:45       Export Changed Components (by CompMan.xlsb) for ErHDemo.xlsm      
+23-06-29-16:20:45 ------------------------------------------------------------------------
+23-06-29-16:20:45  UserForm        fMsg ...........: Unchanged hosted raw Common Component
+23-06-29-16:20:45  Standard-Module mBasic .........: Modified used Common Component!!!!! (because this is not the hosting Workbook a "due revert allert" has been registered!)
+23-06-29-16:20:45                                    Modified used Common Component e x p o r t e d !
+23-06-29-16:20:45  Standard-Module mCompManClient .: Modified used Common Component!!!!! (because this is not the hosting Workbook a "due revert allert" has been registered!)
+23-06-29-16:20:45                                    Modified used Common Component e x p o r t e d !
+23-06-29-16:20:45  Standard-Module mErH ...........: Modified used Common Component!!!!! (because this is not the hosting Workbook a "due revert allert" has been registered!)
+23-06-29-16:20:45                                    Modified used Common Component e x p o r t e d !
+23-06-29-16:20:45  Standard-Module mErHDemo .......: Unchanged VBComponent
+23-06-29-16:20:45  Standard-Module mMsg ...........: Unchanged hosted raw Common Component
+23-06-29-16:20:45  Workbook        wbErHDemo ......: Unchanged VBComponent
+23-06-29-16:20:45  Worksheet       wsErHDemo ......: Unchanged VBComponent
+23-06-29-16:44:41 ========================================================================
+23-06-29-16:44:41       Export Changed Components (by CompMan.xlsb) for ErHDemo.xlsm      
+23-06-29-16:44:41 ------------------------------------------------------------------------
+23-06-29-16:44:41  UserForm        fMsg ...........: Unchanged hosted raw Common Component
+23-06-29-16:44:41  Standard-Module mBasic .........: Unchanged used Common Component
+23-06-29-16:44:41  Standard-Module mCompManClient .: Unchanged used Common Component
+23-06-29-16:44:41  Standard-Module mErH ...........: Modified used Common Component!!!!! (because this is not the hosting Workbook a "due revert allert" has been registered!)
+23-06-29-16:44:41                                    Modified used Common Component e x p o r t e d !
+23-06-29-16:44:41  Standard-Module mErHDemo .......: Unchanged VBComponent
+23-06-29-16:44:41  Standard-Module mMsg ...........: Unchanged hosted raw Common Component
+23-06-29-16:44:41  Workbook        wbErHDemo ......: Unchanged VBComponent
+23-06-29-16:44:41  Worksheet       wsErHDemo ......: Unchanged VBComponent
+23-06-29-16:52:10 ========================================================================
+23-06-29-16:52:10       Export Changed Components (by CompMan.xlsb) for ErHDemo.xlsm      
+23-06-29-16:52:10 ------------------------------------------------------------------------
+23-06-29-16:52:10  UserForm        fMsg ...........: Unchanged hosted raw Common Component
+23-06-29-16:52:10  Standard-Module mBasic .........: Unchanged used Common Component
+23-06-29-16:52:10  Standard-Module mCompManClient .: Unchanged used Common Component
+23-06-29-16:52:10  Standard-Module mErH ...........: Modified used Common Component!!!!! (because this is not the hosting Workbook a "due revert allert" has been registered!)
+23-06-29-16:52:10                                    Modified used Common Component e x p o r t e d !
+23-06-29-16:52:10  Standard-Module mErHDemo .......: Unchanged VBComponent
+23-06-29-16:52:10  Standard-Module mMsg ...........: Unchanged hosted raw Common Component
+23-06-29-16:52:10  Workbook        wbErHDemo ......: Unchanged VBComponent
+23-06-29-16:52:10  Worksheet       wsErHDemo ......: Unchanged VBComponent
+23-06-29-16:52:10 ======================================================================
+23-06-29-16:52:10  Update Outdated Common Components (by CompMan.xlsb) for ErHDemo.xlsm 
+23-06-29-16:52:10 ----------------------------------------------------------------------
+23-06-29-16:52:10  Standard-Module mBasic .........: Used Common Component is up-to-date
+23-06-29-16:52:10  Standard-Module mCompManClient .: Component is up-to-date! Revision-Number has been set to to 2023-06-28.001 (the raw's in the Common Components Folder)
+23-06-29-16:52:10                                    Used Common Component is up-to-date
+23-06-29-16:52:39  Standard-Module mErH ...........: Outdated used Commpon Component: Update skipped for now!
+23-06-29-16:53:11 ========================================================================
+23-06-29-16:53:11       Export Changed Components (by CompMan.xlsb) for ErHDemo.xlsm      
+23-06-29-16:53:11 ------------------------------------------------------------------------
+23-06-29-16:53:11  UserForm        fMsg ...........: Unchanged hosted raw Common Component
+23-06-29-16:53:12  Standard-Module mBasic .........: Unchanged used Common Component
+23-06-29-16:53:12  Standard-Module mCompManClient .: Unchanged used Common Component
+23-06-29-16:53:12  Standard-Module mErH ...........: Unchanged used Common Component
+23-06-29-16:53:12  Standard-Module mErHDemo .......: Unchanged VBComponent
+23-06-29-16:53:12  Standard-Module mMsg ...........: Unchanged hosted raw Common Component
+23-06-29-16:53:12  Workbook        wbErHDemo ......: Unchanged VBComponent
+23-06-29-16:53:12  Worksheet       wsErHDemo ......: Unchanged VBComponent
+23-06-29-16:53:19 ========================================================================
+23-06-29-16:53:19       Export Changed Components (by CompMan.xlsb) for ErHDemo.xlsm      
+23-06-29-16:53:19 ------------------------------------------------------------------------
+23-06-29-16:53:19  UserForm        fMsg ...........: Unchanged hosted raw Common Component
+23-06-29-16:53:19  Standard-Module mBasic .........: Unchanged used Common Component
+23-06-29-16:53:19  Standard-Module mCompManClient .: Unchanged used Common Component
+23-06-29-16:53:19  Standard-Module mErH ...........: Unchanged used Common Component
+23-06-29-16:53:19  Standard-Module mErHDemo .......: Unchanged VBComponent
+23-06-29-16:53:19  Standard-Module mMsg ...........: Unchanged hosted raw Common Component
+23-06-29-16:53:19  Workbook        wbErHDemo ......: Unchanged VBComponent
+23-06-29-16:53:19  Worksheet       wsErHDemo ......: Unchanged VBComponent
+23-06-29-16:53:19 ======================================================================
+23-06-29-16:53:19  Update Outdated Common Components (by CompMan.xlsb) for ErHDemo.xlsm 
+23-06-29-16:53:19 ----------------------------------------------------------------------
+23-06-29-16:53:19  Standard-Module mBasic .........: Used Common Component is up-to-date
+23-06-29-16:53:19  Standard-Module mCompManClient .: Used Common Component is up-to-date
+23-06-29-16:53:34  Standard-Module mErH ...........: Outdated used Commpon Component: Update skipped for now!
+23-06-29-16:55:23 ========================================================================
+23-06-29-16:55:23       Export Changed Components (by CompMan.xlsb) for ErHDemo.xlsm      
+23-06-29-16:55:23 ------------------------------------------------------------------------
+23-06-29-16:55:23  UserForm        fMsg ...........: Unchanged hosted raw Common Component
+23-06-29-16:55:23  Standard-Module mBasic .........: Unchanged used Common Component
+23-06-29-16:55:23  Standard-Module mCompManClient .: Unchanged used Common Component
+23-06-29-16:55:23  Standard-Module mErH ...........: Unchanged used Common Component
+23-06-29-16:55:23  Standard-Module mErHDemo .......: Unchanged VBComponent
+23-06-29-16:55:23  Standard-Module mMsg ...........: Unchanged hosted raw Common Component
+23-06-29-16:55:23  Workbook        wbErHDemo ......: Unchanged VBComponent
+23-06-29-16:55:23  Worksheet       wsErHDemo ......: Unchanged VBComponent
+23-06-29-16:59:55 ========================================================================
+23-06-29-16:59:55       Export Changed Components (by CompMan.xlsb) for ErHDemo.xlsm      
+23-06-29-16:59:55 ------------------------------------------------------------------------
+23-06-29-16:59:55  UserForm        fMsg ...........: Unchanged hosted raw Common Component
+23-06-29-16:59:55  Standard-Module mBasic .........: Unchanged used Common Component
+23-06-29-16:59:55  Standard-Module mCompManClient .: Unchanged used Common Component
+23-06-29-16:59:55  Standard-Module mErH ...........: Unchanged used Common Component
+23-06-29-16:59:55  Standard-Module mErHDemo .......: Unchanged VBComponent
+23-06-29-16:59:55  Standard-Module mMsg ...........: Unchanged hosted raw Common Component
+23-06-29-16:59:55  Workbook        wbErHDemo ......: Unchanged VBComponent
+23-06-29-16:59:55  Worksheet       wsErHDemo ......: Unchanged VBComponent
+23-06-29-17:00:09 ========================================================================
+23-06-29-17:00:09       Export Changed Components (by CompMan.xlsb) for ErHDemo.xlsm      
+23-06-29-17:00:09 ------------------------------------------------------------------------
+23-06-29-17:00:09  UserForm        fMsg ...........: Unchanged hosted raw Common Component
+23-06-29-17:00:09  Standard-Module mBasic .........: Unchanged used Common Component
+23-06-29-17:00:09  Standard-Module mCompManClient .: Unchanged used Common Component
+23-06-29-17:00:09  Standard-Module mErH ...........: Unchanged used Common Component
+23-06-29-17:00:09  Standard-Module mErHDemo .......: Unchanged VBComponent
+23-06-29-17:00:09  Standard-Module mMsg ...........: Unchanged hosted raw Common Component
+23-06-29-17:00:09  Workbook        wbErHDemo ......: Unchanged VBComponent
+23-06-29-17:00:09  Worksheet       wsErHDemo ......: Unchanged VBComponent
+23-06-29-17:00:09 ======================================================================
+23-06-29-17:00:09  Update Outdated Common Components (by CompMan.xlsb) for ErHDemo.xlsm 
+23-06-29-17:00:09 ----------------------------------------------------------------------
+23-06-29-17:00:09  Standard-Module mBasic .........: Used Common Component is up-to-date
+23-06-29-17:00:09  Standard-Module mCompManClient .: Used Common Component is up-to-date
+23-06-29-17:00:09  Standard-Module mErH ...........: Used Common Component is up-to-date
+23-06-29-17:00:55 ========================================================================
+23-06-29-17:00:55       Export Changed Components (by CompMan.xlsb) for ErHDemo.xlsm      
+23-06-29-17:00:55 ------------------------------------------------------------------------
+23-06-29-17:00:55  UserForm        fMsg ...........: Unchanged hosted raw Common Component
+23-06-29-17:00:55  Standard-Module mBasic .........: Unchanged used Common Component
+23-06-29-17:00:55  Standard-Module mCompManClient .: Unchanged used Common Component
+23-06-29-17:00:55  Standard-Module mErH ...........: Unchanged used Common Component
+23-06-29-17:00:55  Standard-Module mErHDemo .......: Unchanged VBComponent
+23-06-29-17:00:55  Standard-Module mMsg ...........: Unchanged hosted raw Common Component
+23-06-29-17:00:55  Workbook        wbErHDemo ......: Unchanged VBComponent
+23-06-29-17:00:55  Worksheet       wsErHDemo ......: Unchanged VBComponent

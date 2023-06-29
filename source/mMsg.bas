@@ -23,13 +23,14 @@ Option Explicit
 ' W. Rauschenberger, Berlin June 2023
 ' See: https://github.com/warbe-maker/VBA-Message
 ' ------------------------------------------------------------------------------
-Const LOGPIXELSX                                As Long = 88        ' -------------
-Const LOGPIXELSY                                As Long = 90        ' Constants for
-Const SM_CXVIRTUALSCREEN                        As Long = &H4E&     ' calculating
-Const SM_CYVIRTUALSCREEN                        As Long = &H4F&     ' the
-Const SM_XVIRTUALSCREEN                         As Long = &H4C&     ' display's
-Const SM_YVIRTUALSCREEN                         As Long = &H4D&     ' DPI in points
-Const TWIPSPERINCH                              As Long = 1440      ' -------------
+Private Const LOGPIXELSX            As Long = 88        ' -------------
+Private Const LOGPIXELSY            As Long = 90        ' Constants for
+Private Const SM_CXVIRTUALSCREEN    As Long = &H4E&     ' calculating
+Private Const SM_CYVIRTUALSCREEN    As Long = &H4F&     ' the
+Private Const SM_XVIRTUALSCREEN     As Long = &H4C&     ' display's
+Private Const SM_YVIRTUALSCREEN     As Long = &H4D&     ' DPI in points
+Private Const TWIPSPERINCH          As Long = 1440      ' -------------
+Private Const GITHUB_REPO_URL       As String = "https://github.com/warbe-maker/VBA-Message"
 
 ' Timer means
 Private Declare PtrSafe Function getFrequency Lib "kernel32" _
@@ -145,6 +146,17 @@ Private Function AppErr(ByVal app_err_no As Long) As Long
 ' ------------------------------------------------------------------------------
     If app_err_no >= 0 Then AppErr = app_err_no + vbObjectError Else AppErr = Abs(app_err_no - vbObjectError)
 End Function
+
+Public Sub README(Optional ByVal r_bookmark As String = vbNullString)
+    
+    If r_bookmark = vbNullString Then
+        mBasic.ShellRun GITHUB_REPO_URL
+    Else
+        r_bookmark = Replace("#" & r_bookmark, "##", "#") ' add # if missing
+        mBasic.ShellRun GITHUB_REPO_URL & r_bookmark
+    End If
+        
+End Sub
 
 Public Sub AssertWidthAndHeight(Optional ByRef a_width_min As Long = 0, _
                                 Optional ByRef a_width_max As Long = 0, _
@@ -736,13 +748,6 @@ Public Function ErrMsg(ByVal err_source As String, _
         .Text.Text = ErrDesc
     End With
     With ErrMsgText.Section(2)
-        With .Label
-            .Text = "Error source:"
-            .FontColor = rgbBlue
-        End With
-        .Text.Text = err_source
-    End With
-    With ErrMsgText.Section(3)
         If ErrAbout = vbNullString Then
             .Label.Text = vbNullString
             .Text.Text = vbNullString
@@ -753,14 +758,14 @@ Public Function ErrMsg(ByVal err_source As String, _
         .Label.FontColor = rgbBlue
     End With
 #If Debugging = 1 Then
-    With ErrMsgText.Section(4)
+    With ErrMsgText.Section(3)
         With .Label
-            .Text = "About 'Resume Error Line':"
+            .Text = "Resume Error Line:"
             .FontColor = rgbBlue
         End With
-        .Text.Text = "The additional debugging option button is displayed because the " & _
-                     "Conditional Compile Argument 'Debugging = 1'. Pressing this button " & _
-                     "and twice F8 ends up at the code line which raised the error"
+        .Text.Text = "Debugging option. Button is displayed because the " & _
+                     "Cond. Comp. Argument 'Debugging = 1'. Pressing this button " & _
+                     "and twice F8 leads straight to the code line which raised the error."
     End With
 #End If
     mMsg.Dsply dsply_title:=ErrTitle _

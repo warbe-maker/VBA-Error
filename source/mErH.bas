@@ -488,7 +488,7 @@ Private Function ErrMsgDsply(ByVal err_source As String, _
 ' the second case the extent of detail depends on which (how many) procedures do
 ' call the BoP/EoP service.
 '
-' W. Rauschenberger, Berlin, Nov 2020
+' W. Rauschenberger, Berlin, Jun 2023
 ' ------------------------------------------------------------------------------
     
     Dim sErrPath    As String
@@ -496,12 +496,14 @@ Private Function ErrMsgDsply(ByVal err_source As String, _
     Dim sLine       As String
     Dim sDetails    As String
     Dim sDscrptn    As String
-    Dim sInfo       As String
+    Dim sAbout      As String
     Dim sSource     As String
     Dim sType       As String
     Dim lNo         As Long
     Dim ErrMsgText  As TypeMsg
     Dim SctnText    As TypeMsgText
+    Dim sMsg        As String ' The MsgBox Prompt string
+    Dim lBttns      As Long
     
 #If XcTrc_clsTrc = 1 Then
     '~~ When this component is used with clsTrc installed and activated (Cond. Comp.Arg. `XcTrc_clsTrc = 1`
@@ -520,7 +522,7 @@ Private Function ErrMsgDsply(ByVal err_source As String, _
                , msg_details:=sDetails _
                , msg_source:=sSource _
                , msg_dscrptn:=sDscrptn _
-               , msg_info:=sInfo _
+               , msg_info:=sAbout _
                , msg_type:=sType _
                , msg_no:=lNo
     sErrPath = ErrPathErrMsg(sType & lNo & " " & sLine)
@@ -529,8 +531,8 @@ Private Function ErrMsgDsply(ByVal err_source As String, _
     '~~ In case no error line is provided with the error message (commonly the case)
     '~~ a hint regarding the Cond. Comp. Arg. which may be used to get
     '~~ an option which supports 'resuming' it will be displayed.
-    If sInfo <> vbNullString Then sInfo = sInfo & vbLf & vbLf
-    sInfo = sInfo & "*) When the code line which raised the error is missing set the Cond. Comp. Arg. 'Debugging = 1'." & _
+    If sAbout <> vbNullString Then sAbout = sAbout & vbLf & vbLf
+    sAbout = sAbout & "*) When the code line which raised the error is missing set the Cond. Comp. Arg. 'Debugging = 1'." & _
                     "The addtionally displayed button <Resume error Line> replies with vbResume and the the error handling: " & _
                     "    If mErH.ErrMsg(ErrSrc(PROC) = vbResume Then Stop: Resume   makes debugging extremely quick and easy."
 #End If
@@ -545,51 +547,76 @@ Private Function ErrMsgDsply(ByVal err_source As String, _
             .FontColor = rgbBlue
         End With
         .Text.Text = sDscrptn
+        sMsg = "Error description:" & vbLf & sDscrptn
     End With
-    With ErrMsgText.Section(2)
-        With .Label
-            .Text = "Error source:"
-            .FontColor = rgbBlue
+    If BoPArguments <> vbNullString Then
+        With ErrMsgText.Section(2)
+            With .Label
+                .Text = "Error source:"
+                .FontColor = rgbBlue
+            End With
+            sSource = sSource & " " & sLine & vbLf & BoPArguments
+            .Text.Text = sSource
+            .Text.MonoSpaced = True
+            sMsg = sMsg & vbLf & vbLf & "Error source:" & vbLf & sSource
         End With
-        If BoPArguments = vbNullString _
-        Then .Text.Text = sSource & " " & sLine: SctnText.MonoSpaced = True _
-        Else .Text.Text = sSource & " " & sLine & vbLf & BoPArguments
-        .Text.MonoSpaced = True
-    End With
+    End If
     With ErrMsgText.Section(3)
         With .Label
             .Text = "Error path:"
             .FontColor = rgbBlue
+            .OpenWhenClicked = GITHUB_REPO_URL & "#the-path-to-the-error"
+            sMsg = sMsg & vbLf & vbLf & "Error path:" & vbLf
         End With
         If sErrPath <> vbNullString Then
             .Text.Text = sErrPath
             .Text.MonoSpaced = True
+            sMsg = sMsg & sErrPath
         Else
-            .Text.Text = "Please note: The 'path to the error is either taken from the 'call stack' which is maintained by BoP/EoP statements or " & _
-                         "assembled when the error is passed on to the known! 'Entry Procedure'. Neither of the two was possible though." & vbLf & _
-                         "Either the/an 'Entry Procedure' is un-known because not at least one BoP statement had been executed (a BoP statement in the 'Entry Procedure' would solve that)" & vbLf & vbLf & _
-                         "Or the error message had been displayed directly with the procedure in which the error had been raised " & _
-                         "because there are more than one reply button choices which is the case for example when the Debugging option is active."
+            .Text.Text = "A path to the error is not avialable. Click the label above for more information"
             .Text.MonoSpaced = False
+            sMsg = sMsg & "A path to the error is not avialable."
         End If
     End With
     With ErrMsgText.Section(4)
-        If sInfo = vbNullString Then
+        If sAbout = vbNullString Then
             .Label.Text = vbNullString
             .Text.Text = vbNullString
         Else
             .Label.Text = "About the error:"
-            .Text.Text = sInfo
+            .Text.Text = sAbout
             .Text.FontSize = 8.5
+            sMsg = sMsg & vbLf & vbLf & "About the error:" & vbLf & sAbout
         End If
         .Label.FontColor = rgbBlue
     End With
     
-    mMsg.Dsply dsply_title:=sTitle _
-             , dsply_msg:=ErrMsgText _
-             , dsply_buttons:=mMsg.Buttons(err_buttons)
+#If Debugging = 1 Then
+    With ErrMsgText.Section(5)
+        With .Label
+            .Text = "Resume Error Line:"
+            .FontColor = rgbBlue
+        End With
+        .Text.Text = "Pressing this button and twice F8 leads straight to the code line which raised the error. " & _
+                     "(button is displayed because the Cond. Comp. Argument 'Debugging = 1')."
+    End With
+#End If
     
-    ErrMsgDsply = mMsg.RepliedWith
+#If MsgComp = 1 Then
+    ErrMsgDsply = mMsg.Dsply(dsply_title:=sTitle _
+                           , dsply_msg:=ErrMsgText _
+                           , dsply_buttons:=mMsg.Buttons(err_buttons))
+#Else
+#If Debugging = 1 Then
+    lBttns = vbYesNo
+    sMsg = sMsg & vbLf & vbLf & "Debugging:" & vbLf & "Yes    = Resume Error Line" & vbLf & "No     = Terminate"
+#Else
+    lBttns = vbCritical
+#End If
+    ErrMsgDsply = VBA.MsgBox(Title:=sTitle _
+                            , Prompt:=sMsg _
+                            , Buttons:=lBttns)
+#End If
 
 xt:
 #If XcTrc_mTrc = 1 Then
@@ -599,6 +626,10 @@ xt:
     Trc.EoP err_source, sType & lNo & " " & sLine
     Trc.Continue ' when the user has replied by pressinbg a button the execution timer continues
 #End If
+
+End Function
+
+Private Function ErrMsgDsplyMyMsgBox(B) As Variant
 
 End Function
 

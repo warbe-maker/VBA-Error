@@ -87,10 +87,9 @@ End Enum
 Private Enum enTraceInfo
     enItmDir = 1
     enItmId
-    enItmInf
     enItmLvl
     enItmTcks
-    enPosItmArgs
+    enItmArgs
 End Enum
 
 Private Declare PtrSafe Function apiShellExecute Lib "shell32.dll" _
@@ -207,30 +206,24 @@ Public Property Let FileName(ByVal s As String)
     sFileName = s
 End Property
 
-Private Property Get ItmArgs(Optional ByRef trc_entry As Collection) As Variant
-    ItmArgs = trc_entry("I")(enPosItmArgs)
+Private Property Get ItmArgs(Optional ByRef t_entry As Collection) As Variant
+    ItmArgs = t_entry("I")(enItmArgs)
 End Property
 
-Private Property Get ItmDir(Optional ByRef trc_entry As Collection) As String
-    ItmDir = trc_entry("I")(enItmDir)
+Private Property Get ItmDir(Optional ByRef t_entry As Collection) As String
+    ItmDir = t_entry("I")(enItmDir)
 End Property
 
-Private Property Get ItmId(Optional ByRef trc_entry As Collection) As String
-    ItmId = trc_entry("I")(enItmId)
+Private Property Get ItmId(Optional ByRef t_entry As Collection) As String
+    ItmId = t_entry("I")(enItmId)
 End Property
 
-Private Property Get ItmInf(Optional ByRef trc_entry As Collection) As String
-    On Error Resume Next ' in case this has never been collected
-    ItmInf = trc_entry("I")(enItmInf)
-    If Err.Number <> 0 Then ItmInf = vbNullString
+Private Property Get ItmLvl(Optional ByRef t_entry As Collection) As Long
+    ItmLvl = t_entry("I")(enItmLvl)
 End Property
 
-Private Property Get ItmLvl(Optional ByRef trc_entry As Collection) As Long
-    ItmLvl = trc_entry("I")(enItmLvl)
-End Property
-
-Private Property Get ItmTcks(Optional ByRef trc_entry As Collection) As Currency
-    ItmTcks = trc_entry("I")(enItmTcks)
+Private Property Get ItmTcks(Optional ByRef t_entry As Collection) As Currency
+    ItmTcks = t_entry("I")(enItmTcks)
 End Property
 
 Private Property Get KeepDays() As Long
@@ -272,7 +265,7 @@ Public Property Let LogInfo(ByVal tl_inf As String)
 ' Write an info line (tl_inf) to the trace-log-file (FileFullName)
 ' ----------------------------------------------------------------------------
     
-    Log = LogLinePrefix & String(Len(TRC_LOG_SEC_FRMT) * 2, " ") & RepeatStrng("|  ", LogInfoLvl) & "|  " & tl_inf
+    Log = LogNow & String(Len(TRC_LOG_SEC_FRMT) * 2, " ") & RepeatStrng("|  ", LogInfoLvl) & "|  " & tl_inf
 
 End Property
 
@@ -280,19 +273,19 @@ Public Property Get LogSuspended() As Boolean:              LogSuspended = bLogT
 
 Public Property Let LogSuspended(ByVal b As Boolean):       bLogToFileSuspended = b:                        End Property
 
-Private Property Let NtryItm(Optional ByVal trc_entry As Collection, ByVal v As Variant)
-    trc_entry.Add v, "I"
+Private Property Let NtryItm(Optional ByVal t_entry As Collection, ByVal v As Variant)
+    t_entry.Add v, "I"
 End Property
 
-Private Property Get NtryTcksOvrhdNtry(Optional ByRef trc_entry As Collection) As Currency
+Private Property Get NtryTcksOvrhdNtry(Optional ByRef t_entry As Collection) As Currency
     On Error Resume Next
-    NtryTcksOvrhdNtry = trc_entry("TON")
+    NtryTcksOvrhdNtry = t_entry("TON")
     If Err.Number <> 0 Then NtryTcksOvrhdNtry = 0
 End Property
 
-Private Property Let NtryTcksOvrhdNtry(Optional ByRef trc_entry As Collection, ByRef cy As Currency)
-    If trc_entry Is Nothing Then Set trc_entry = New Collection
-    trc_entry.Add cy, "TON"
+Private Property Let NtryTcksOvrhdNtry(Optional ByRef t_entry As Collection, ByRef cy As Currency)
+    If t_entry Is Nothing Then Set t_entry = New Collection
+    t_entry.Add cy, "TON"
 End Property
 
 Public Property Get Path() As Variant
@@ -325,6 +318,7 @@ Public Property Let Path(ByVal v As Variant)
                                                    "folder's path, nor a Workbook object, nor a Folder object!"
             End If
     End Select
+    FileFullName = Path & "\" & FileName ' re-establishes it when not already existing
     
 End Property
 
@@ -370,7 +364,7 @@ Public Sub BoC(ByVal b_id As String, _
     Dim cll As Collection
     
     cyTcksOvrhdTrcStrt = SysCrrntTcks
-    TrcBgn trc_id:=b_id, trc_dir:=DIR_BEGIN_CODE, trc_args:=b_args, trc_cll:=cll
+    TrcBgn t_id:=b_id, t_dir:=DIR_BEGIN_CODE, t_args:=b_args, t_cll:=cll
     cyTcksOvrhdTrc = SysCrrntTcks - cyTcksOvrhdTrcStrt ' overhead ticks caused by the collection of the begin trace entry
 
 End Sub
@@ -392,7 +386,7 @@ Public Sub BoP(ByVal b_id As String, _
             Initialize
         End If
     End If
-    TrcBgn trc_id:=b_id, trc_dir:=DIR_BEGIN_PROC, trc_args:=b_args, trc_cll:=cll
+    TrcBgn t_id:=b_id, t_dir:=DIR_BEGIN_PROC, t_args:=b_args, t_cll:=cll
     cyTcksOvrhdTrc = SysCrrntTcks - cyTcksOvrhdTrcStrt ' overhead ticks caused by the collection of the begin trace entry
 
 End Sub
@@ -414,7 +408,7 @@ Public Sub BoP_ErH(ByVal b_id As String, _
             Initialize
         End If
     End If
-    TrcBgn trc_id:=b_id, trc_dir:=DIR_BEGIN_PROC, trc_args:=b_args, trc_cll:=cll
+    TrcBgn t_id:=b_id, t_dir:=DIR_BEGIN_PROC, t_args:=b_args, t_cll:=cll
     cyTcksOvrhdTrc = SysCrrntTcks - cyTcksOvrhdTrcStrt ' overhead ticks caused by the collection of the begin trace entry
 
 End Sub
@@ -446,7 +440,7 @@ Private Function DsplyArgName(ByVal s As String) As Boolean
     Then DsplyArgName = True
 End Function
 
-Private Function DsplyArgs(ByVal trc_entry As Collection) As String
+Private Function DsplyArgs(ByVal t_entry As Collection) As String
 ' ------------------------------------------------------------------------------
 ' Returns a string with the collection of the traced arguments. Any entry ending
 ' with a ":" or "=" is an arguments name with its value in the subsequent item.
@@ -457,7 +451,7 @@ Private Function DsplyArgs(ByVal trc_entry As Collection) As String
     Dim sR      As String
     
     On Error Resume Next
-    va = ItmArgs(trc_entry)
+    va = ItmArgs(t_entry)
     If Err.Number <> 0 Then Exit Function
     i = LBound(va)
     If Err.Number <> 0 Then Exit Function
@@ -495,7 +489,7 @@ Public Sub EoC(ByVal eoc_id As String, _
     
     cyTcksOvrhdTrcStrt = SysCrrntTcks
     If StckIsEmpty(TraceStack) Then Exit Sub
-    TrcEnd trc_id:=eoc_id, trc_dir:=DIR_END_CODE, trc_args:=eoc_inf, trc_cll:=cll
+    TrcEnd t_id:=eoc_id, t_dir:=DIR_END_CODE, t_args:=eoc_inf, t_cll:=cll
     cyTcksOvrhdTrc = SysCrrntTcks - cyTcksOvrhdTrcStrt ' overhead ticks caused by the collection of the begin trace entry
 
 End Sub
@@ -510,7 +504,7 @@ Public Sub EoP(ByVal e_id As String, _
     cyTcksOvrhdTrcStrt = SysCrrntTcks
     If StckIsEmpty(TraceStack) Then Exit Sub        ' Nothing to trace any longer. Stack has been emptied after an error to finish the trace
     
-    TrcEnd trc_id:=e_id, trc_dir:=DIR_END_PROC, trc_args:=e_args, trc_cll:=cll
+    TrcEnd t_id:=e_id, t_dir:=DIR_END_PROC, t_args:=e_args, t_cll:=cll
     cyTcksOvrhdTrc = SysCrrntTcks - cyTcksOvrhdTrcStrt ' overhead ticks caused by the collection of the end-of-trace entry
 End Sub
 
@@ -628,66 +622,73 @@ Public Sub Initialize()
     
 End Sub
 
-Private Function itm(ByVal itm_drctv As String, _
-                     ByVal itm_id As String, _
-                     ByVal itm_inf As String, _
-                     ByVal itm_lvl As Long, _
-                     ByVal itm_tckssys As Currency, _
-                     ByVal itm_args As Variant) As Variant()
+Private Function Itm(ByVal i_id As String, _
+                     ByVal i_dir As String, _
+                     ByVal i_lvl As Long, _
+                     ByVal i_tcks As Currency, _
+                     ByVal i_args As String) As Variant()
 ' ----------------------------------------------------------------------------
 ' Returns an array with the arguments ordered by their enumerated position.
 ' ----------------------------------------------------------------------------
-    Dim av(1 To 6) As Variant
+    Dim av(1 To 5) As Variant
     
-    av(enItmDir) = itm_drctv
-    av(enItmId) = itm_id
-    av(enItmInf) = itm_inf
-    av(enItmLvl) = itm_lvl
-    av(enItmTcks) = itm_tckssys
-    av(enPosItmArgs) = itm_args
-    itm = av
+    av(enItmId) = i_id
+    av(enItmDir) = i_dir
+    av(enItmLvl) = i_lvl
+    av(enItmTcks) = i_tcks
+    av(enItmArgs) = i_args
+    Itm = av
     
 End Function
 
 Private Sub LogBgn(ByVal l_ntry As Collection, _
           Optional ByVal l_args As String = vbNullString)
 ' ----------------------------------------------------------------------------
-' Write an begin trace line to the trace-log-file (FileFullName).
+' Writes a begin trace line to the trace-log-file (sFileFullName).
 ' ----------------------------------------------------------------------------
     Const PROC = "LogBgn"
     
     On Error GoTo eh
-    Dim sLogText             As String
+    Dim sLogText            As String
     Dim ElapsedSecsTotal    As String
+    Dim ElapsedSecs         As String
+    Dim TopNtry             As Collection
     Dim s                   As String
     
+    Set TopNtry = StckTop(TraceStack)
+    If TopNtry Is Nothing _
+    Then ElapsedSecsTotal = vbNullString _
+    Else ElapsedSecsTotal = LogElapsedSecsTotal(ItmTcks(l_ntry))
     StckPush TraceStack, l_ntry
     
     If TraceStack.Count = 1 Then
-        '~~ When the very first trace entry had been pushed on the stack
-        '~~ Provide a trace separator and a trace header
         cyTcksAtStart = ItmTcks(l_ntry)
     
-        If fso.GetFile(FileFullName).Size > 0 Then
-            Log = vbNullString ' empty separator line when appended
-        End If
-        
         '~~ Trace-Log header
-        sLogText = LogLinePrefix & "Execution trace by 'Common VBA Execution Trace Service (mTrc)' (" & GITHUB_REPO_URL & ")"
-        Log = sLogText
+        s = LogText(l_elpsd_total:="Elapsed " _
+                  , l_elpsd_secs:="Length  " _
+                  , l_strng:="Execution trace by 'Common VBA Execution Trace Service (mTrc)' (" & GITHUB_REPO_URL & ")")
+        If fso.GetFile(FileFullName).Size > 0 Then Log = String(Len(s), "=")
+        Log = s
         
-        sLogText = LogLinePrefix & String((Len(TRC_LOG_SEC_FRMT)) * 2, " ") & ItmDir(l_ntry)
-        If sTitle = vbNullString _
-        Then sLogText = sLogText & " Begin execution trace " _
-        Else sLogText = sLogText & " " & sTitle
-        Log = sLogText
+        '~~ Trace-Log title
+        If sTitle = vbNullString Then
+            Log = LogText(l_elpsd_total:="seconds " _
+                        , l_elpsd_secs:="seconds " _
+                        , l_strng:=ItmDir(l_ntry) & " Begin execution trace ")
+        Else
+            Log = LogText(l_elpsd_total:="seconds " _
+                        , l_elpsd_secs:="seconds " _
+                        , l_strng:=ItmDir(l_ntry) & " " & sTitle)
+        End If
         '~~ Keep the ticks at start for the calculation of the elepased ticks with each entry
     End If
         
     ElapsedSecsTotal = LogElapsedSecsTotal(ItmTcks(l_ntry))
-    sLogText = LogLinePrefix & ElapsedSecsTotal & String(Len(TRC_LOG_SEC_FRMT), " ") & RepeatStrng("|  ", ItmLvl(l_ntry)) & ItmDir(l_ntry) & " " & ItmId(l_ntry)
-    If l_args <> vbNullString Then sLogText = sLogText & " (" & Replace(l_args, ";", "; ") & ")"
-    Log = sLogText
+    Log = LogText(l_elpsd_total:=ElapsedSecsTotal _
+                , l_elpsd_secs:=ElapsedSecs _
+                , l_strng:=RepeatStrng("|  ", ItmLvl(l_ntry)) & ItmDir(l_ntry) & " " & ItmId(l_ntry) _
+                , l_args:=l_args)
     
 xt: Exit Sub
 
@@ -708,11 +709,11 @@ End Function
 
 Private Sub LogEnd(ByVal l_ntry As Collection, _
           Optional ByVal l_args As String = vbNullString)
-' ----------------------------------------------------------------------------
-' Write an end trace line to the trace-log-file (FileFullName) - provided one
+' ------------------------------------------------------------------------------
+' Write an end trace line to the trace-log-file (sFileFullName) - provided one
 ' had been specified - with the execution time calculated in seconds. When the
 ' TraceStack is empty write an additional End trace footer line.
-' ----------------------------------------------------------------------------
+' ------------------------------------------------------------------------------
     Const PROC = "LogEnd"
     
     On Error GoTo eh
@@ -722,26 +723,34 @@ Private Sub LogEnd(ByVal l_ntry As Collection, _
     Dim ElapsedSecsTotal    As String
     
     StckPop TraceStack, l_ntry, BgnNtry
-    
     ElapsedSecsTotal = LogElapsedSecsTotal(ItmTcks(l_ntry))
     ElapsedSecs = LogElapsedSecs(et_ticks_end:=ItmTcks(l_ntry), et_ticks_start:=ItmTcks(BgnNtry))
     
-    sLogText = LogLinePrefix & ElapsedSecsTotal & ElapsedSecs & RepeatStrng("|  ", ItmLvl(l_ntry)) & ItmDir(l_ntry) & " " & ItmId(l_ntry) & ItmInf(l_ntry)
-    Log = sLogText
+    Log = LogText(l_elpsd_total:=ElapsedSecsTotal _
+                , l_elpsd_secs:=ElapsedSecs _
+                , l_strng:=RepeatStrng("|  ", ItmLvl(l_ntry)) _
+                        & ItmDir(l_ntry) _
+                        & " " _
+                        & ItmId(l_ntry) _
+               , l_args:=ItmArgs(l_ntry))
+    
     If TraceStack.Count = 1 Then
-        sLogText = LogLinePrefix & ElapsedSecsTotal & ElapsedSecs & ItmDir(l_ntry) & " "
-        If sTitle = vbNullString _
-        Then sLogText = sLogText & "End execution trace " _
-        Else sLogText = sLogText & sTitle
-        Log = sLogText
-        '~~ Service footer
-        sLogText = LogLinePrefix & String(Len(ElapsedSecsTotal & ElapsedSecs), " ") & "Impact on the overall performance (caused by the trace itself): " & Format(LogSecsOverhead * 1000, "#0.0") & " milliseconds!"
-        If l_args <> vbNullString Then sLogText = sLogText & " (" & Replace(l_args, ";", "; ") & ")"
-        Log = sLogText
-        sLogText = LogLinePrefix & "Execution trace by 'Common VBA Execution Trace Service (mTrc)' (" & GITHUB_REPO_URL & ")"
-        Log = sLogText
+        
+        '~~ Trace bottom title
+        If sTitle = vbNullString Then
+            Log = LogText(l_elpsd_total:=ElapsedSecsTotal _
+                        , l_elpsd_secs:=ElapsedSecs _
+                        , l_strng:=ItmDir(l_ntry) & " " & "End execution trace ")
+        Else
+            Log = LogText(l_elpsd_total:=ElapsedSecsTotal _
+                        , l_elpsd_secs:=ElapsedSecs _
+                        , l_strng:=ItmDir(l_ntry) & " " & sTitle)
+        End If
+        
+        '~~ Trace footer and summary
+        Log = LogText(l_strng:="Execution trace by 'Common VBA Execution Trace Service (mTrc)' (" & GITHUB_REPO_URL & ")")
+        Log = LogText(l_strng:="Impact on the overall performance (caused by the trace itself): " & Format(LogSecsOverhead * 1000, "#0.0") & " milliseconds!")
     End If
-
 xt: Exit Sub
 
 eh: Select Case ErrMsg(ErrSrc(PROC))
@@ -750,13 +759,12 @@ eh: Select Case ErrMsg(ErrSrc(PROC))
     End Select
 End Sub
 
-Private Sub LogEntry(ByVal trc_id As String, _
-                   ByVal trc_tcks As Currency, _
-                   ByVal trc_dir As String, _
-                   ByVal trc_lvl As Long, _
-          Optional ByVal trc_args As String = vbNullString, _
-          Optional ByVal trc_inf As String = vbNullString, _
-          Optional ByRef trc_ntry As Collection)
+Private Sub LogEntry(ByVal t_id As String, _
+                     ByVal t_dir As String, _
+                     ByVal t_lvl As Long, _
+                     ByVal t_tcks As Currency, _
+            Optional ByVal t_args As String = vbNullString, _
+            Optional ByRef t_ntry As Collection)
 ' ----------------------------------------------------------------------------
 ' Writes an entry to the trace-log-file by meand of LogBgn or LogEnd.
 ' ----------------------------------------------------------------------------
@@ -772,7 +780,7 @@ Private Sub LogEntry(ByVal trc_id As String, _
         '~~ When this is not the first entry added the overhead ticks caused by the previous entry is saved.
         '~~ Saving it with the next entry avoids a wrong overhead when saved with the entry itself because.
         '~~ Its maybe nitpicking but worth the try to get execution time figures as correct/exact as possible.
-        If sLastId = trc_id And lLastLvl = trc_lvl And sLastDrctv = trc_dir Then bAlreadyAdded = True
+        If sLastId = t_id And lLastLvl = t_lvl And sLastDrctv = t_dir Then bAlreadyAdded = True
         If Not bAlreadyAdded Then
             NtryTcksOvrhdNtry(LastNtry) = cyTcksOvrhdTrc
         Else
@@ -781,15 +789,15 @@ Private Sub LogEntry(ByVal trc_id As String, _
     End If
     
     If Not bAlreadyAdded Then
-        Set trc_ntry = Ntry(ntry_tcks:=trc_tcks, ntry_dir:=trc_dir, ntry_id:=trc_id, ntry_lvl:=trc_lvl, ntry_inf:=trc_inf, ntry_args:=trc_args)
-        If trc_dir Like DIR_BEGIN_CODE & "*" _
-        Then LogBgn trc_ntry, trc_args _
-        Else LogEnd trc_ntry, trc_args
+        Set t_ntry = Ntry(n_tcks:=t_tcks, n_dir:=t_dir, n_id:=t_id, n_lvl:=t_lvl, n_args:=t_args)
+        If t_dir Like DIR_BEGIN_CODE & "*" _
+        Then LogBgn t_ntry, t_args _
+        Else LogEnd t_ntry, t_args
         
-        Set LastNtry = trc_ntry
-        sLastDrctv = trc_dir
-        sLastId = trc_id
-        lLastLvl = trc_lvl
+        Set LastNtry = t_ntry
+        sLastDrctv = t_dir
+        sLastId = t_id
+        lLastLvl = t_lvl
     Else
         Debug.Print ItmId(LastNtry) & " already added"
     End If
@@ -810,12 +818,37 @@ Private Function LogInfoLvl() As Long
 
 End Function
 
-Private Function LogLinePrefix() As String
-    LogLinePrefix = Format(Now(), "YY-MM-DD hh:mm:ss ")
+Private Function LogNow() As String
+    LogNow = Format(Now(), "YY-MM-DD hh:mm:ss ")
 End Function
 
 Private Function LogSecsOverhead()
     LogSecsOverhead = Format(CDec(cyTcksOvrhdTrc / CDec(SysFrequency)), TRC_LOG_SEC_FRMT)
+End Function
+
+Private Function LogText(Optional ByVal l_elpsd_total As String = vbNullString, _
+                         Optional ByVal l_elpsd_secs As String = vbNullString, _
+                         Optional ByVal l_strng As String = vbNullString, _
+                         Optional ByVal l_args As String = vbNullString) As String
+' ----------------------------------------------------------------------------
+' Returns the uniformed assemled log text.
+' ----------------------------------------------------------------------------
+    LogText = LogNow
+    
+    If l_elpsd_total = vbNullString Then l_elpsd_total = String((Len(TRC_LOG_SEC_FRMT)), " ")
+    LogText = LogText & l_elpsd_total
+    
+    If l_elpsd_secs = vbNullString Then l_elpsd_secs = String((Len(TRC_LOG_SEC_FRMT)), " ")
+    LogText = LogText & l_elpsd_secs
+    
+    LogText = LogText & l_strng
+    
+    If l_args <> vbNullString Then
+        If InStr(l_args, "!!") <> 0 _
+        Then LogText = LogText & l_args _
+        Else LogText = LogText & " (" & l_args & ")"
+    End If
+    
 End Function
 
 Private Function Max(ParamArray va() As Variant) As Variant
@@ -844,12 +877,11 @@ Public Sub NewFile()
     
 End Sub
 
-Private Function Ntry(ByVal ntry_tcks As Currency, _
-                      ByVal ntry_dir As String, _
-                      ByVal ntry_id As String, _
-                      ByVal ntry_lvl As Long, _
-                      ByVal ntry_inf As String, _
-                      ByVal ntry_args As Variant) As Collection
+Private Function Ntry(ByVal n_id As String, _
+                      ByVal n_dir As String, _
+                      ByVal n_lvl As Long, _
+                      ByVal n_tcks As Currency, _
+                      ByVal n_args As Variant) As Collection
 ' ----------------------------------------------------------------------------
 ' Return the arguments as elements in an array as an item in a collection.
 ' ----------------------------------------------------------------------------
@@ -859,7 +891,7 @@ Private Function Ntry(ByVal ntry_tcks As Currency, _
     Dim cll As New Collection
     Dim VarItm  As Variant
     
-    VarItm = itm(itm_drctv:=ntry_dir, itm_id:=ntry_id, itm_inf:=ntry_inf, itm_lvl:=ntry_lvl, itm_tckssys:=ntry_tcks, itm_args:=ntry_args)
+    VarItm = Itm(i_id:=n_id, i_dir:=n_dir, i_lvl:=n_lvl, i_tcks:=n_tcks, i_args:=n_args)
     NtryItm(cll) = VarItm
     Set Ntry = cll
     
@@ -948,13 +980,13 @@ Private Function ShellRun(ByVal oue_string As String, _
 
 End Function
 
-Private Sub StckAdjust(ByVal trc_id As String)
+Private Sub StckAdjust(ByVal t_id As String)
     Dim cllNtry As Collection
     Dim i       As Long
     
     For i = TraceStack.Count To 1 Step -1
         Set cllNtry = TraceStack(i)
-        If ItmId(cllNtry) = trc_id Then
+        If ItmId(cllNtry) = t_id Then
             Exit For
         Else
             TraceStack.Remove (TraceStack.Count)
@@ -1064,10 +1096,10 @@ Public Sub Terminate()
     cyTcksPaused = 0
 End Sub
 
-Private Sub TrcBgn(ByVal trc_id As String, _
-                   ByVal trc_dir As String, _
-          Optional ByVal trc_args As String = vbNullString, _
-          Optional ByRef trc_cll As Collection)
+Private Sub TrcBgn(ByVal t_id As String, _
+                   ByVal t_dir As String, _
+          Optional ByVal t_args As String = vbNullString, _
+          Optional ByRef t_cll As Collection)
 ' ----------------------------------------------------------------------------
 ' Collect a trace begin entry with the current ticks count for the procedure
 ' or code (item).
@@ -1075,17 +1107,15 @@ Private Sub TrcBgn(ByVal trc_id As String, _
     Const PROC = "TrcEnd"
     
     On Error GoTo eh
-    Dim cy  As Currency:    cy = SysCrrntTcks - cyTcksPaused
            
     iTrcLvl = iTrcLvl + 1
-    LogEntry trc_id:=trc_id _
-         , trc_tcks:=cy _
-         , trc_dir:=trc_dir _
-         , trc_lvl:=iTrcLvl _
-         , trc_inf:=vbNullString _
-         , trc_args:=trc_args _
-         , trc_ntry:=trc_cll
-    StckPush TraceStack, trc_cll
+    LogEntry t_id:=t_id _
+           , t_dir:=t_dir _
+           , t_lvl:=iTrcLvl _
+           , t_tcks:=SysCrrntTcks - cyTcksPaused _
+           , t_args:=t_args _
+           , t_ntry:=t_cll
+    StckPush TraceStack, t_cll
 
 xt: Exit Sub
     
@@ -1095,10 +1125,10 @@ eh: Select Case ErrMsg(ErrSrc(PROC))
     End Select
 End Sub
 
-Private Sub TrcEnd(ByVal trc_id As String, _
-          Optional ByVal trc_dir As String = vbNullString, _
-          Optional ByVal trc_args As String = vbNullString, _
-          Optional ByRef trc_cll As Collection)
+Private Sub TrcEnd(ByVal t_id As String, _
+                   ByVal t_dir As String, _
+          Optional ByVal t_args As String = vbNullString, _
+          Optional ByRef t_cll As Collection)
 ' ----------------------------------------------------------------------------
 ' Collect an end trace entry with the current ticks count for the procedure or
 ' code (item).
@@ -1106,35 +1136,26 @@ Private Sub TrcEnd(ByVal trc_id As String, _
     Const PROC = "TrcEnd"
     
     On Error GoTo eh
-    Dim cy  As Currency:    cy = SysCrrntTcks - cyTcksPaused
     Dim Top As Collection:  Set Top = StckTop(TraceStack)
-    Dim itm As Collection
-    
-    If trc_args <> vbNullString Then
-        trc_args = TRC_INFO_DELIM & trc_args & TRC_INFO_DELIM
-    End If
+    Dim Itm As Collection
     
     '~~ Any end trace for an item not on the stack is ignored. On the other hand,
     '~~ if on the stack but not the last item the stack is adjusted because this
     '~~ indicates a begin without a corresponding end trace statement.
-    If Not StckEd(trc_id) Then
-        Exit Sub
-    Else
-        StckAdjust trc_id
-    End If
+    If Not StckEd(t_id) _
+    Then Exit Sub _
+    Else StckAdjust t_id
     
-    If ItmId(Top) <> trc_id And ItmLvl(Top) = iTrcLvl Then
-        StckPop TraceStack, Top
-    End If
+    If ItmId(Top) <> t_id And ItmLvl(Top) = iTrcLvl Then StckPop TraceStack, Top
 
-    LogEntry trc_id:=trc_id _
-         , trc_tcks:=cy _
-         , trc_dir:=trc_dir _
-         , trc_lvl:=iTrcLvl _
-         , trc_args:=trc_args _
-         , trc_ntry:=trc_cll
+    LogEntry t_id:=t_id _
+           , t_dir:=t_dir _
+           , t_lvl:=iTrcLvl _
+           , t_tcks:=SysCrrntTcks - cyTcksPaused _
+           , t_args:=t_args _
+           , t_ntry:=t_cll
          
-    StckPop stck:=TraceStack, stck_item:=trc_cll, stck_ppd:=itm
+    StckPop stck:=TraceStack, stck_item:=t_cll, stck_ppd:=Itm
     iTrcLvl = iTrcLvl - 1
 
 xt: Exit Sub

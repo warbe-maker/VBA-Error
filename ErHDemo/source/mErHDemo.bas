@@ -34,11 +34,11 @@ Private Sub BoP(ByVal b_proc As String, _
 ' Obligatory for any VB-Component using either of the two.
 ' ------------------------------------------------------------------------------
 #If ErHComp = 1 Then          ' serves the mTrc/clsTrc when installed and active
-    mErH.BoP b_proc, s
+    mErH.BoP b_proc, b_args
 #ElseIf XcTrc_clsTrc = 1 Then ' when only clsTrc is installed and active
-    Trc.BoP b_proc, s
+    Trc.BoP b_proc, b_args
 #ElseIf XcTrc_mTrc = 1 Then   ' when only mTrc is installed and activate
-    mTrc.BoP b_proc, s
+    mTrc.BoP b_proc, b_args
 #End If
 End Sub
 
@@ -52,15 +52,14 @@ Public Sub Demo_Application_Error()
     On Error GoTo eh
     
     BoP ErrSrc(PROC)
-    sErrDesc = "This is a programmed i.e. in the sense of the ""Common VBA Error Services"" an ""Application Error""!" & _
+    sErrDesc = "This is an ""Application Error"". I.e. a programmed error raised with ""Err.Raise AppErr(1), ....""." & _
                "||" & _
-               """Err.Raise AppErr(1) ..."" has been used to raise this error. The function turned the positive " & _
-               "into a negative number by adding the VB constant 'vbObjectError' to assure the error number not " & _
-               "conflict with any VB Runtime error. " & _
-               "The ErrMsg identified the negative number as an ""Application Error"" and converted it back to the " & _
-               "orginal positive number by means of the AppErr() function." & vbLf & vbLf & _
-               "Also note that this information is part of the raised error message but concatenated with two " & _
-               "vertical bars indicating that it is an additional information regarding this error."
+               """AppErr(1) ..."" turned the positive into a negative number by adding the VB constant 'vbObjectError' " & _
+               "to assure the error number not conflicts with any VB Runtime error number. The ""ErrMsg"" identified " & _
+               "the negative error number as an ""Application Error"" and used the ""AppErr"" function to turn it back into " & _
+               "the origin positive number." & vbLf & vbLf & _
+               "Also note that this information is part of the raised error decription which had it concatenated with " & _
+               "two vertical bars therby indicating it as an ""About"" information."
     Demo_Application_Error_a
 
 xt: EoP ErrSrc(PROC)
@@ -515,10 +514,10 @@ Private Function ErrMsg(ByVal err_source As String, _
     End Select
     
     If err_source <> vbNullString Then ErrSrc = " in: """ & err_source & """"   ' assemble ErrSrc from available information"
-    If err_line <> 0 Then ErrAtLine = " at line " & err_line                    ' assemble ErrAtLine from available information
+    If err_line <> 0 Then ErrAtLine = " (at line " & err_line & ")"             ' assemble ErrAtLine from available information
     ErrTitle = Replace(ErrType & ErrNo & ErrSrc & ErrAtLine, "  ", " ")         ' assemble ErrTitle from available information
        
-    ErrText = "Error: " & vbLf & ErrDesc & vbLf & vbLf & "Source: " & vbLf & err_source & ErrAtLine
+    ErrText = "Error: " & vbLf & ErrDesc
     If ErrAbout <> vbNullString Then ErrText = ErrText & vbLf & vbLf & "About: " & vbLf & ErrAbout
     
 #If Debugging = 1 Then
