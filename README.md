@@ -1,7 +1,7 @@
 ## Common VBA Error Services
-> The section [Exploring the matter](#exploring-the-matter) shows a possible approach with neither this _Common VBA Error Services_ Component nor any other component is installed, with a plea &nbsp; &nbsp;**f o r** &nbsp;&nbsp; using them all. The section aims for somehow bootstrapping the whole matter, last but not least towards a professional solution. Skip the section and continue reading straight when already convinced to go all the way.
+> The section [Exploring the matter](#exploring-the-matter) includes a [better-than-nothing](#a-minimum-popularly-better-than-nothing-approach) approach with neither uses this _Common VBA Error Services_ nor any other additional component - with a plea &nbsp; &nbsp;**f o r** &nbsp;&nbsp; using them all. The sections aim is to somehow bootstrap the matter, last but not least towards a professional solution. The section may be skipped when one is already convinced to go all the (professional) way.
 
-The promise of this _Common Component_ is error messages like the below:<br>
+The promise of this _Common Component_: Error messages like the one below:<br>
 ![](Assets/Demo_mMsg_Yes_mErH_Yes.png)
 
 | with                | details                                                                       |
