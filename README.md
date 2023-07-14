@@ -333,10 +333,11 @@ Private Function ErrSrc(ByVal sProc As String) As String
 End Function
 ```
 
-## Conflict management
-This _Common Component_ is used with in all my VB-Projects. However, it is **optional** with all my _Common Components_ in order to keep them autonomous and not depending on other components. See [Conflicts with personal and public _Common Components_][5] for more details.
+## Other
+### Conflict management
+This _Common Component_ has become a standard in all my VB-Projects. However, it is **optional** with all my _Common Components_ in order to keep them autonomous and not depending on other components. See [Conflicts with personal and public _Common Components_][5] for more details.
 
-## Contribution, development, test, maintenance
+### Contribution, development, test, maintenance
 Any contribution of any kind will be welcome. The dedicated _Common VBA Component Workbook_ **[ErH.xlsm][6]** is used for development, maintenance, and last but not least for the testing.
 
 [^1]: S=Sub, F=Function, P=Property (r=read/Get, w=write/Let)
