@@ -263,7 +263,7 @@ It may appear pretty strange when downloading first from a public GitHub repo bu
 
 ## Exploring the matter
 ### Used _Common Components_
-The best possible result (last example) requires the additional _Common VBA Message Service_ (fMsg/mMsg). The difference between using and not using it shown below.
+The best possible result (last example) requires the additional _[Common VBA Message Service](#using-the-optional-fmsgmmsg-components-for-a-better-designed-error-message)_. The difference between using and not using it shown below.
 <small>
 
 | ErrMsg&nbsp;[^3]| mErH | mMsg | Example result                         | Error<br>path |Resume<br>caption| Lay-<br>out|
@@ -341,7 +341,7 @@ Any contribution of any kind will be welcome. The dedicated _Common VBA Componen
 
 [^1]: S=Sub, F=Function, P=Property (r=read/Get, w=write/Let)
 [^2]: All (my) Common Components make use of these `Private` procedures in order to keep the autonomous. I.e. they are independent from any other component but will use them when installed and activated.  
-[^3]: The [_ErrMsg_ function](#the-universal-interface-errmsg-function) is the universal interface which allows to keep the _[mErH][1]_ component and the [_Common VBA Message Service_][9] () optional while still providing a debugging option when neither is installed/activated. These procedures may also be copied from the _[mBasic.bas][9]_ component as `Private` function (as used within all _Common Components_) or used directly when downloaded and imported.
+[^3]: The [_ErrMsg_ function](#the-universal-interface-errmsg-function) is the universal interface which allows to keep the _[mErH][1]_ component and the [_Common VBA Message Service_](#using-the-optional-fmsgmmsg-components-for-a-better-designed-error-message) optional while still providing a debugging option when neither is installed/activated. These procedures may also be copied from the _[mBasic.bas][9]_ component as `Private` function (as used within all _Common Components_) or used directly when downloaded and imported.
 [^4]: All my (public) _Common Components_ provide a built-in README service which displays the component's corresponding README in the public GitHub repo.
 
 [1]:https://github.com/warbe-maker/VBA-Error/blob/master/source/mErH.bas
