@@ -9,18 +9,17 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
 ' ----------------------------------------------------------------------------
-' Class Module clsTrc: Common VBA Execution Trace Service to trace the highest
-' ====================== execution of procedures and code snippets with the
-' possible precision regarding the measured elapsed execution time. The trace
-' log is written to a file which ensures at least a partial trace in case the
-' execution terminates by exception. When this module is installed the
-' availability of the sevice is triggered/activated by the Conditional Compile
-' Argument 'XcTrc_mTrc = 1'. When the Cond. Comp. Arg. is 0
-' all services are disabled even when the module is installed, avoiding any
-' negative effect on the performance though this effect very little anyway.
+' Class Module clsTrc: Common VBA Execution Trace Service. Traces the elapsed
+' ==================== execution of procedures and code snippets with the
+' highest possible precision. The trace log is written to a file which ensures
+' at least a partial trace in case the execution terminates by exception. When
+' this module is installed the availability of the sevice is triggered/
+' activated by the Conditional Compile Argument 'XcTrc_clsTrc = 1'. When the
+' Cond. Comp. Arg. is 0 all services are disabled even when the module is
+' installed, avoiding any negative effect on the performance though this
+' effect very little anyway.
 '
 ' Public Methods:
-' Public services:
 ' ----------------
 ' BoC      Indicates the (B)egin (o)f the execution trace of a (C)ode
 '          snippet.
@@ -65,7 +64,7 @@ Option Explicit
 ' ---------
 ' Reference to 'Microsoft Scripting Runtime'
 '
-' W. Rauschenberger, Berlin, June 2023
+' W. Rauschenberger, Berlin, Aug 2023
 ' See: https://github.com/warbe-maker/VBA-Trace
 ' ----------------------------------------------------------------------------
 Private Const GITHUB_REPO_URL   As String = "https://github.com/warbe-maker/VBA-Trace"

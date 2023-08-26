@@ -543,7 +543,7 @@ Private Function ErrMsgDsply(ByVal err_source As String, _
     '~~ Display the error message via the Common Component procedure mMsg.Dsply
     With ErrMsgText.Section(1)
         With .Label
-            .Text = "Error description:"
+            .Text = "Error:"
             .FontColor = rgbBlue
         End With
         .Text.Text = sDscrptn
@@ -552,7 +552,7 @@ Private Function ErrMsgDsply(ByVal err_source As String, _
     If BoPArguments <> vbNullString Then
         With ErrMsgText.Section(2)
             With .Label
-                .Text = "Error source:"
+                .Text = "Source:"
                 .FontColor = rgbBlue
             End With
             sSource = sSource & " " & sLine & vbLf & BoPArguments
@@ -563,7 +563,7 @@ Private Function ErrMsgDsply(ByVal err_source As String, _
     End If
     With ErrMsgText.Section(3)
         With .Label
-            .Text = "Error path:"
+            .Text = "Path:"
             .FontColor = rgbBlue
             .OpenWhenClicked = GITHUB_REPO_URL & "#the-path-to-the-error"
             sMsg = sMsg & vbLf & vbLf & "Error path:" & vbLf
@@ -583,7 +583,7 @@ Private Function ErrMsgDsply(ByVal err_source As String, _
             .Label.Text = vbNullString
             .Text.Text = vbNullString
         Else
-            .Label.Text = "About the error:"
+            .Label.Text = "About:"
             .Text.Text = sAbout
             .Text.FontSize = 8.5
             sMsg = sMsg & vbLf & vbLf & "About the error:" & vbLf & sAbout
@@ -594,7 +594,7 @@ Private Function ErrMsgDsply(ByVal err_source As String, _
 #If Debugging = 1 Then
     With ErrMsgText.Section(5)
         With .Label
-            .Text = "Resume Error Line:"
+            .Text = "Resume Error Line"
             .FontColor = rgbBlue
         End With
         .Text.Text = "Pressing this button and twice F8 leads straight to the code line which raised the error. " & _
@@ -605,6 +605,7 @@ Private Function ErrMsgDsply(ByVal err_source As String, _
 #If MsgComp = 1 Then
     ErrMsgDsply = mMsg.Dsply(dsply_title:=sTitle _
                            , dsply_msg:=ErrMsgText _
+                           , dsply_label_spec:="30R" _
                            , dsply_buttons:=mMsg.Buttons(err_buttons))
 #Else
 #If Debugging = 1 Then
@@ -629,7 +630,7 @@ xt:
 
 End Function
 
-Private Function ErrMsgDsplyMyMsgBox(B) As Variant
+Private Function ErrMsgDsplyMyMsgBox(b) As Variant
 
 End Function
 

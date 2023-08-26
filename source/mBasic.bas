@@ -3,7 +3,8 @@ Option Explicit
 ' ----------------------------------------------------------------------------
 ' Standard Module mBasic: Declarations, procedures, methods and function
 ' ======================= likely to be required in any VB-Project, optionally
-'                         just being copied.
+' just being copied.
+'
 ' Note: All services run completely autonomous, i.e. do not require any other
 '       installed module. However, when the Common VBA Message Services
 '       (fMsg/mMsg) and or the Common VBA Error Services (mErH) are installed
@@ -17,11 +18,12 @@ Option Explicit
 '                   run time error or any other system error number.
 '                   Returns the origin positive error number when called
 '                   with the negative Application Error number. 3)
-' AppIsInstalled    Returns TRUE when a named exec is found in the system path.
+' AppIsInstalled    Returns TRUE when a named exec is found in the system
+'                   path.
 ' ArrayCompare      Returns a Dictionary with the provided number of items
-'                   (defaults to all) which differ between two one dimensional
-'                   arrays. When no difference is encountered the returned
-'                   Dictionary is empty (Count = 0).
+'                   (defaults to all) which differ between two one
+'                   dimensional arrays. When no difference is encountered
+'                   the returned Dictionary is empty (Count = 0).
 ' ArrayIsAllocated  Returns TRUE when the provided array has at least one item
 ' ArrayNoOfDims     Returns the number of dimensions of an array.
 ' ArrayRemoveItem   Removes an array's item by its index or element number.
@@ -31,12 +33,6 @@ Option Explicit
 ' Center            Returns a string centered within a string with a certain
 '                   length.
 ' CleanTrim         Clears a string from any unprinable characters.
-' BoP/EoP           1), 2)
-' BoC/EoC           1), 2)
-' ErrMsg            Displays a common error message
-'                   a) by means of the VB MsgBox
-'                   b) by fMsg/mMsg and mErH when installed and activated by
-'                      the corresp. Comd. Comp.Args., 1), 2)
 ' README            Displays the Common Component's README in the public
 '                   GitHub repo.
 ' KeySort           Returns a given Dictionary sorted by key.
@@ -46,35 +42,36 @@ Option Explicit
 '                   VBE's immediate window
 ' TimerBegin        Starts a timer (counting system ticks)
 ' TimerEnd          Returns the elapsed system ticks converted to milliseconds
+''''
 '
 ' Private procedures (for being copied into any module:
 ' -----------------------------------------------------
+' AppErr            Application Error number (Err.Raise AppErr(n)
 ' ErrSrc            Unambigous identification of a procedure - used with
 '                   BoP, EoP, and ErrMsg
+'
+' Public procedures which may be copied as Private 1):
+' -------------------------------------------------
+' BoP/EoP   Common 'Begin/End of Procedure' interface serving the
+'           'Common VBA Error Services' and - if not installed/activated the
+'           'Common VBA Execution Trace Service'.
+' BoC/EoC   Common 'Begin/End of Procedure' interface serving the
+'           'Common VBA Execution Trace Service' if installed/activated.
+' ErrMsg    Displays a common error message either by means of the VB MsgBox
+'           or by means of fMsg/mMsg and mErH depending on which is
+'           installed and activated by the corresp. Comd. Comp.Arguments.
+'
+' 1) The procedures may be copied as Private when the component aims for
+'    being indpendant from mBasic or mBasic is imported and and the
+'    procedures are used directly.
 '
 ' Requires Reference to:
 ' ----------------------
 ' Microsoft Scripting Runtime
 ' Microsoft Visual Basic Application Extensibility ..
 '
-' 1) Provides a comprehensive and well designed display of an error message,
-'    provided Common VBA Error Services (mErH) and the Common VBA Message
-'    Service (fMsg/mMsg) is installed and the Conditional Compile Arguments
-'    `ErHComp = 1` and `MsgComp = 1`, and serves the execution trace (when
-'    the Common VBA Execution Trace Service (mTrc) is installed and the
-'    Conditional Compile Argument `XcTrc_mTrc = 1` (when mTrc is installed),
-'    or `XcTrc_clsTrc = 1 `.
-' 2) The procedure(s) ensure that the Common VBA Error Services 4) and/or the
-'    Common VBA Execution Trace Service 5) are optional components which may
-'    or may not be installed. The procedures are Private by intention and may
-'    be copied into any component to use the mErH and the mTrc/clsTrc module.
-' 3) To be copied as Private procedure into any component which raises
-'    Application Errors by means of Err.Raise.
-' 4) https://github.com/warbe-maker/VBA-Error
-' 5) https://github.com/warbe-maker/VBA-Trace
-'
-' W. Rauschenberger, Berlin Feb. 2022
-' See https://github.com/warbe-maker/VBA-Basics (displayed with README proc)
+' W. Rauschenberger, Berlin Aug 2023
+' See https://github.com/warbe-maker/VBA-Basics (with README servie)
 ' ----------------------------------------------------------------------------
 Public Const DCONCAT    As String = "||"    ' For concatenating and error with a general message (info) to the error description
 Public Const DGT        As String = ">"
