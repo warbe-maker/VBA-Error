@@ -21,7 +21,7 @@ Option Explicit
 '
 ' Requires:   Reference to "Microsoft Scripting Runtime"
 '
-' W. Rauschenberger, Berlin Aug 2023
+' W. Rauschenberger, Berlin Sep 2023
 ' See: https://github.com/warbe-maker/VBA-Message
 ' ------------------------------------------------------------------------------
 Public Const MSG_LIMIT_WIDTH_MIN_PERCENTAGE     As Long = 15
@@ -33,6 +33,27 @@ Public Const MSG_LIMIT_HEIGHT_MAX_PERCENTAGE    As Long = 80
 ' to display additional debugging buttons
 Public Const vbResumeOk                         As Long = 7 ' Buttons value in mMsg.ErrMsg (pass on not supported)
 Public Const vbResume                           As Long = 6 ' return value (equates to vbYes)
+
+Public Enum enScreen
+    enHeightDPI         ' VerticalResolution (pixelsY)"
+    enHeightInches      ' HeightInches (inchesY)
+    enHeightPPI         ' PixelsPerInchY (ppiY)
+    enHeightWinDPI      ' WinDPIy (dpiY)
+    
+    enWidthDPI          ' HorizontalResolution (pixelsX)
+    enWidthInches       ' WidthInches (inchesX)
+    enWidthPPI          ' PixelsPerInchX (ppiX)
+    enWidthWinDPI       ' WinDPIx (dpiX)
+    
+    enAdjustmentfactor  ' AdjustmentFactor (zoomFac)
+    enDiagonalInches    ' DiagonalInches (inchesDiag)
+    enDiagonalPPI       ' PixelsPerInch (ppiDiag)
+    enDisplayName       ' DisplayName
+    enHelp              ' Help
+    enIsPrimary         ' IsPrimary
+    enUpdate            ' Update
+    enWinDPI            ' WinDPI (dpiWin)
+End Enum
 
 Public Enum enLabelPos ' pending implementation
     enLabelAboveSectionText = 1
@@ -46,7 +67,7 @@ Public Enum enDsplyDimension
     enDsplyDimensionHeight
 End Enum
 
-Public Type TypeMsgLabel
+Public Type udtMsgLabel
         FontBold        As Boolean
         FontColor       As XlRgbColor
         FontItalic      As Boolean
@@ -55,10 +76,10 @@ Public Type TypeMsgLabel
         FontUnderline   As Boolean
         MonoSpaced      As Boolean  ' FontName defaults to "Courier New"
         Text            As String
-        OpenWhenClicked As String   ' this extra option is the purpose of this sepcific Type
+        OnClickAction   As String   ' this extra option is only available when the control is implemented as msForms.Label
 End Type
 
-Public Type TypeMsgText
+Public Type udtMsgText
         FontBold        As Boolean
         FontColor       As XlRgbColor
         FontItalic      As Boolean
@@ -67,10 +88,11 @@ Public Type TypeMsgText
         FontUnderline   As Boolean
         MonoSpaced      As Boolean  ' FontName defaults to "Courier New"
         Text            As String
+        OnClickAction   As String   ' this extra option is only available when the control is implemented as msForms.Label
 End Type
 
-Public Type TypeMsgSect:    Label As TypeMsgLabel:  Text As TypeMsgText:    End Type
-Public Type TypeMsg:        Section(1 To 8) As TypeMsgSect:                 End Type '!!! 8 = Public Property NoOfMsgSects !!!
+Public Type udtMsgSect:    Label As udtMsgLabel:  Text As udtMsgText:   End Type
+Public Type udtMsg:        Section(1 To 8) As udtMsgSect:               End Type '!!! 8 = Public Property NoOfMsgSects !!!
 
 Public Enum enStartupPosition     ' ---------------------------
     enManual = 0                  ' Used to position the
@@ -87,19 +109,61 @@ Public Enum KindOfText  ' Used with the Get/Let Text Property
 End Enum
 Public RepliedWith          As Variant  ' provided by the UseForm when a button has been pressed/clicked
 
-Private Const LOGPIXELSX            As Long = 88        ' -------------
-Private Const LOGPIXELSY            As Long = 90        ' Constants for
+Private Const SM_CMONITORS              As Long = 80    ' number of display monitors
+Private Const MONITOR_CCHDEVICENAME     As Long = 32    ' device name fixed length
+Private Const MONITOR_PRIMARY           As Long = 1
+Private Const MONITOR_DEFAULTTONULL     As Long = 0
+Private Const MONITOR_DEFAULTTOPRIMARY  As Long = 1
+Private Const MONITOR_DEFAULTTONEAREST  As Long = 2
+Private Type RECT
+    Left As Long
+    Top As Long
+    Right As Long
+    Bottom As Long
+End Type
+Private Type MONITORINFOEX
+   cbSize As Long
+   rcMonitor As RECT
+   rcWork As RECT
+   dwFlags As Long
+   szDevice As String * MONITOR_CCHDEVICENAME
+End Type
+Private Enum DevCap     ' GetDeviceCaps nIndex (video displays)
+    HORZSIZE = 4        ' width in millimeters
+    VERTSIZE = 6        ' height in millimeters
+    HORZRES = 8         ' width in pixels
+    VERTRES = 10        ' height in pixels
+    BITSPIXEL = 12      ' color bits per pixel
+    LOGPIXELSX = 88     ' horizontal DPI (assumed by Windows)
+    LOGPIXELSY = 90     ' vertical DPI (assumed by Windows)
+    COLORRES = 108      ' actual color resolution (bits per pixel)
+    VREFRESH = 116      ' vertical refresh rate (Hz)
+End Enum
+
+Private Const ERROR_BAD_FORMAT = 11&
+Private Const ERROR_FILE_NOT_FOUND = 2&
+Private Const ERROR_NO_ASSOC = 31&
+Private Const ERROR_OUT_OF_MEM = 0&
+Private Const ERROR_PATH_NOT_FOUND = 3&
+Private Const ERROR_SUCCESS = 32&
+Private Const GITHUB_REPO_URL       As String = "https://github.com/warbe-maker/VBA-Message"
 Private Const SM_CXVIRTUALSCREEN    As Long = &H4E&     ' calculating
 Private Const SM_CYVIRTUALSCREEN    As Long = &H4F&     ' the
 Private Const SM_XVIRTUALSCREEN     As Long = &H4C&     ' display's
 Private Const SM_YVIRTUALSCREEN     As Long = &H4D&     ' DPI in points
 Private Const TWIPSPERINCH          As Long = 1440      ' -------------
-Private Const GITHUB_REPO_URL       As String = "https://github.com/warbe-maker/VBA-Message"
-' Timer means
-Private Declare PtrSafe Function getFrequency Lib "kernel32" _
-Alias "QueryPerformanceFrequency" (TimerSystemFrequency As Currency) As Long
-Private Declare PtrSafe Function getTickCount Lib "kernel32" _
-Alias "QueryPerformanceCounter" (cyTickCount As Currency) As Long
+
+Private Declare PtrSafe Function CreateDC Lib "gdi32" Alias "CreateDCA" (ByVal lpDriverName As String, ByVal lpDeviceName As String, ByVal lpOutput As String, lpInitData As LongPtr) As LongPtr
+Private Declare PtrSafe Function DeleteDC Lib "gdi32" (ByVal hDC As LongPtr) As Long
+Private Declare PtrSafe Function GetActiveWindow Lib "user32" () As LongPtr
+Private Declare PtrSafe Function GetDC Lib "user32" (ByVal hWnd As LongPtr) As LongPtr
+Private Declare PtrSafe Function GetDeviceCaps Lib "gdi32" (ByVal hDC As LongPtr, ByVal nIndex As Long) As Long
+Private Declare PtrSafe Function getFrequency Lib "kernel32" Alias "QueryPerformanceFrequency" (TimerSystemFrequency As Currency) As Long
+Private Declare PtrSafe Function GetMonitorInfo Lib "user32" Alias "GetMonitorInfoA" (ByVal hMonitor As LongPtr, ByRef lpMI As MONITORINFOEX) As Boolean
+Private Declare PtrSafe Function GetSystemMetrics Lib "user32" (ByVal nIndex As Long) As Long
+Private Declare PtrSafe Function getTickCount Lib "kernel32" Alias "QueryPerformanceCounter" (cyTickCount As Currency) As Long
+Private Declare PtrSafe Function MonitorFromWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal dwFlags As Long) As LongPtr
+Private Declare PtrSafe Function ReleaseDC Lib "user32" (ByVal hWnd As LongPtr, ByVal hDC As LongPtr) As Long
 
 #If VBA7 Then
     Private Declare PtrSafe Sub Sleep Lib "kernel32" (ByVal ms As LongPtr)
@@ -107,9 +171,6 @@ Alias "QueryPerformanceCounter" (cyTickCount As Currency) As Long
     Private Declare PtrSafe Sub Sleep Lib "kernel32" (ByVal ms As Long)
 #End If
 Private Declare PtrSafe Function GetSystemMetrics32 Lib "user32" Alias "GetSystemMetrics" (ByVal nIndex As Long) As Long
-Private Declare PtrSafe Function GetDC Lib "user32" (ByVal hWnd As Long) As Long
-Private Declare PtrSafe Function GetDeviceCaps Lib "gdi32" (ByVal hDC As Long, ByVal nIndex As Long) As Long
-Private Declare PtrSafe Function ReleaseDC Lib "user32" (ByVal hWnd As Long, ByVal hDC As Long) As Long
 Private Declare PtrSafe Function apiShellExecute Lib "shell32.dll" _
     Alias "ShellExecuteA" _
     (ByVal hWnd As Long, _
@@ -122,65 +183,25 @@ Private Declare PtrSafe Function apiShellExecute Lib "shell32.dll" _
 '***App Window Constants***
 Private Const WIN_NORMAL = 1         'Open Normal
 '***Error Codes***
-Private Const ERROR_SUCCESS = 32&
-Private Const ERROR_NO_ASSOC = 31&
-Private Const ERROR_OUT_OF_MEM = 0&
-Private Const ERROR_FILE_NOT_FOUND = 2&
-Private Const ERROR_PATH_NOT_FOUND = 3&
-Private Const ERROR_BAD_FORMAT = 11&
 Private bModeLess           As Boolean
 Private lPixelsPerInchX     As Long
 Private lPixelsPerInchY     As Long
 Private fMonitor            As fMsg
-Public MsgInstances            As Dictionary    ' Collection of (possibly still)  active form instances
+Public MsgInstances         As Dictionary    ' Collection of (possibly still)  active form instances
 
-Public Function LabelPos(ByVal l_spec As String) As enLabelPos
-    Const PROC = "LabelPos"
-    
-    On Error GoTo eh
-    Select Case True
-        Case l_spec = vbNullString:     LabelPos = enLabelAboveSectionText:  GoTo xt
-        Case InStr(l_spec, "L") <> 0:   LabelPos = enLposLeftAlignedLeft
-        Case InStr(l_spec, "C") <> 0:   LabelPos = enLposLeftAlignedCenter
-        Case InStr(l_spec, "R") <> 0:   LabelPos = enLposLeftAlignedRight
-        Case Else:                      Err.Raise AppErr(1), ErrSrc(PROC), "The label position specification'l_char is neither a vbNullString (the default = top pos) nor L, R, or C!"
-    End Select
+Public Property Get DsplyWidthDPI() As Variant:         DsplyWidthDPI = Screen(enWidthDPI):                                 End Property
 
-xt: Exit Function
+Public Property Get DsplyHeightDPI() As Variant:        DsplyHeightDPI = Screen(enHeightDPI):                               End Property
 
-eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
-End Function
+Public Property Get DsplyHeightPT() As Single:          DsplyDPItoPT DsplyHeightDPI, DsplyWidthDPI, x_pts:=DsplyHeightPT:   End Property
 
-Public Function LabelWidth(ByVal l_spec As String) As Long
-    If l_spec <> vbNullString _
-    Then LabelWidth = CInt(Replace(Replace(Replace(UCase(l_spec), "L", vbNullString), "C", vbNullString), "R", vbNullString))
-End Function
+Public Property Get DsplyWidthPT() As Single:           DsplyDPItoPT DsplyHeightDPI, DsplyWidthDPI, y_pts:=DsplyWidthPT:    End Property
 
-Public Property Get NoOfMsgSects() As Long:             NoOfMsgSects = 8:                               End Property
+Private Property Get ModeLess() As Boolean:             ModeLess = bModeLess:                                               End Property
 
-Public Property Get DpiX() As Long:                     DpiX = Format(GetSystemMetrics32(0), "#,##0"):  End Property
+Private Property Let ModeLess(ByVal b As Boolean):      bModeLess = b:                                                      End Property
 
-Public Property Get DpiY() As Long:                     DpiY = Format(GetSystemMetrics32(1), "#,##0"):  End Property
-
-Private Property Get ModeLess() As Boolean:             ModeLess = bModeLess:                           End Property
-
-Private Property Let ModeLess(ByVal b As Boolean):      bModeLess = b:                                  End Property
-
-Public Property Get PixelsPerInchX() As Long:           PixelsPerInchX = lPixelsPerInchX:               End Property
-
-Public Property Let PixelsPerInchX(ByVal l As Long):    lPixelsPerInchX = l:                            End Property
-
-Public Property Get PixelsPerInchY() As Long:           PixelsPerInchY = lPixelsPerInchY:               End Property
-
-Public Property Let PixelsPerInchY(ByVal l As Long):    lPixelsPerInchY = l:                            End Property
-
-Private Property Get ScreenHeight() As Single
-    ConvertPixelsToPoints y_dpi:=GetSystemMetrics32(SM_CYVIRTUALSCREEN), y_pts:=ScreenHeight
-End Property
-
-Private Property Get ScreenWidth() As Single
-    ConvertPixelsToPoints x_dpi:=GetSystemMetrics32(SM_CXVIRTUALSCREEN), x_pts:=ScreenWidth
-End Property
+Public Property Get NoOfMsgSects() As Long:             NoOfMsgSects = 8:                                                   End Property
 
 Private Function AppErr(ByVal app_err_no As Long) As Long
 ' ------------------------------------------------------------------------------
@@ -209,10 +230,10 @@ Public Sub AssertWidthAndHeight(Optional ByRef a_width_min As Long = 0, _
 ' ------------------------------------------------------------------------------
 
     '~~ Convert all default limits from percentage - i.e. a value < 100 - to pt
-    Dim MsgWidthMaxLimitPt  As Long:    MsgWidthMaxLimitPt = ValueAsPt(MSG_LIMIT_WIDTH_MAX_PERCENTAGE, mMsg.enDsplyDimensionWidth)
-    Dim MsgWidthMinLimitPt  As Long:    MsgWidthMinLimitPt = ValueAsPt(MSG_LIMIT_WIDTH_MIN_PERCENTAGE, mMsg.enDsplyDimensionWidth)
-    Dim MsgHeightMaxLimitPt As Long:    MsgHeightMaxLimitPt = ValueAsPt(MSG_LIMIT_HEIGHT_MAX_PERCENTAGE, mMsg.enDsplyDimensionHeight)
-    Dim MsgHeightMinLimitPt As Long:    MsgHeightMinLimitPt = ValueAsPt(MSG_LIMIT_HEIGHT_MIN_PERCENTAGE, mMsg.enDsplyDimensionHeight)
+    Dim MsgMaxWidthLimitPt  As Long:    MsgMaxWidthLimitPt = ValueAsPt(MSG_LIMIT_WIDTH_MAX_PERCENTAGE, mMsg.enDsplyDimensionWidth)
+    Dim MsgMinWidthLimitPt  As Long:    MsgMinWidthLimitPt = ValueAsPt(MSG_LIMIT_WIDTH_MIN_PERCENTAGE, mMsg.enDsplyDimensionWidth)
+    Dim MsgMaxHeightLimitPt As Long:    MsgMaxHeightLimitPt = ValueAsPt(MSG_LIMIT_HEIGHT_MAX_PERCENTAGE, mMsg.enDsplyDimensionHeight)
+    Dim MsgMinHeightLimitPt As Long:    MsgMinHeightLimitPt = ValueAsPt(MSG_LIMIT_HEIGHT_MIN_PERCENTAGE, mMsg.enDsplyDimensionHeight)
     
     '~~ Convert all percentage arguments - i.e. a value < 100 - to pt arguments
     If a_width_max <> 0 And a_width_max <= 100 Then a_width_max = ValueAsPt(a_width_max, mMsg.enDsplyDimensionWidth)
@@ -223,12 +244,12 @@ Public Sub AssertWidthAndHeight(Optional ByRef a_width_min As Long = 0, _
     '~~ Provide sensible values for all values invalid, improper, or useless
     If a_width_min > a_width_max Then a_width_min = a_width_max
     If a_height_min > a_height_max Then a_height_min = a_height_max
-    If a_width_min < MsgWidthMinLimitPt Then a_width_min = MsgWidthMinLimitPt
+    If a_width_min < MsgMinWidthLimitPt Then a_width_min = MsgMinWidthLimitPt
     If a_width_max <= a_width_min Then a_width_max = a_width_min
-    If a_width_max > MsgWidthMaxLimitPt Then a_width_max = MsgWidthMaxLimitPt
-    If a_height_min < MsgHeightMinLimitPt Then a_height_min = MsgHeightMinLimitPt
+    If a_width_max > MsgMaxWidthLimitPt Then a_width_max = MsgMaxWidthLimitPt
+    If a_height_min < MsgMinHeightLimitPt Then a_height_min = MsgMinHeightLimitPt
     If a_height_max = 0 Or a_height_max < a_height_min Then a_height_max = a_height_min
-    If a_height_max > MsgHeightMaxLimitPt Then a_height_max = MsgHeightMaxLimitPt
+    If a_height_max > MsgMaxHeightLimitPt Then a_height_max = MsgMaxHeightLimitPt
     
 End Sub
 
@@ -256,7 +277,7 @@ Public Function Box(ByVal Prompt As String, _
     Const PROC = "Box"
     
     On Error GoTo eh
-    Dim Message As TypeMsgText
+    Dim Message As udtMsgText
     Dim MsgForm As fMsg
 
     If Not BttnArgsAreValid(Buttons) _
@@ -283,14 +304,16 @@ Public Function Box(ByVal Prompt As String, _
     '~~ all services create and use their own instance identified by the message title.
     Set MsgForm = MsgInstance(Title)
     With MsgForm
-'        .VisualizeForTest = True
         .MsgTitle = Title
-        .Text(enSectText, 1) = Message
+        .MsgText(enSectText, 1) = Message
         .MsgBttns = mMsg.Buttons(Buttons)   ' Provide the buttons as Collection
-        .MsgHeightMax = mMsg.ValueAsPt(box_height_max, enDsplyDimensionHeight)     ' percentage of screen height in pt
-        .MsgHeightMin = mMsg.ValueAsPt(box_height_min, enDsplyDimensionHeight)     ' percentage of screen height in pt
-        .MsgWidthMax = mMsg.ValueAsPt(box_width_max, enDsplyDimensionWidth)       ' percentage of screen width in pt
-        .MsgWidthMin = mMsg.ValueAsPt(box_width_min, enDsplyDimensionWidth)        ' percentage of screen width in pt
+        
+        '~~ All width and height specifications by the user are "outside" dimensions !
+        .FormHeightOutsideMax = mMsg.ValueAsPt(box_height_max, enDsplyDimensionHeight)  ' percentage of screen height in pt
+        .FormHeightOutsideMin = mMsg.ValueAsPt(box_height_min, enDsplyDimensionHeight)  ' percentage of screen height in pt
+        .FormWidthOutsideMax = mMsg.ValueAsPt(box_width_max, enDsplyDimensionWidth)     ' percentage of screen width in pt
+        .FormWidthOutsideMin = mMsg.ValueAsPt(box_width_min, enDsplyDimensionWidth)     ' percentage of screen width in pt
+        
         .MsgButtonDefault = box_button_default
         .ModeLess = box_modeless
         If box_buttons_app_run Is Nothing Then Set box_buttons_app_run = New Dictionary
@@ -604,44 +627,44 @@ xt: If Not StckIsEmpty(StackItems) Then Exit Function
 eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
 End Function
 
-Sub DisplayMonitorInfo()
-    MsgBox DpiX & " x " & DpiY, vbInformation, "Monitor Size (width x height)"
-End Sub
-
-Private Sub ConvertPixelsToPoints(Optional ByVal x_dpi As Single, _
-                                  Optional ByVal y_dpi As Single, _
-                                  Optional ByRef x_pts As Single, _
-                                  Optional ByRef y_pts As Single)
+Private Sub DsplyDPItoPT(Optional ByVal x_dpi As Single, _
+                         Optional ByVal y_dpi As Single, _
+                         Optional ByRef x_pts As Single, _
+                         Optional ByRef y_pts As Single)
 ' ------------------------------------------------------------------------------
 ' Returns pixels (device dependent) to points.
 ' Results verified by: https://pixelsconverter.com/px-to-pt.
 ' ------------------------------------------------------------------------------
     
-    Dim hDC            As Long
+    Dim hDC            As Variant
     Dim RetVal         As Long
+    Dim PixelsPerInchX As Long
+    Dim PixelsPerInchY As Long
  
     On Error Resume Next
     hDC = GetDC(0)
     PixelsPerInchX = GetDeviceCaps(hDC, LOGPIXELSX)
     PixelsPerInchY = GetDeviceCaps(hDC, LOGPIXELSY)
     RetVal = ReleaseDC(0, hDC)
-    If Not IsMissing(x_dpi) And Not IsMissing(x_pts) Then
-        x_pts = x_dpi * TWIPSPERINCH / 20 / PixelsPerInchX
-    End If
-    If Not IsMissing(y_dpi) And Not IsMissing(y_pts) Then
-        y_pts = y_dpi * TWIPSPERINCH / 20 / PixelsPerInchY
-    End If
+    If Not IsMissing(x_dpi) And Not IsMissing(x_pts) Then x_pts = x_dpi * TWIPSPERINCH / 20 / PixelsPerInchX
+    If Not IsMissing(y_dpi) And Not IsMissing(y_pts) Then y_pts = y_dpi * TWIPSPERINCH / 20 / PixelsPerInchY
+
 End Sub
+
+Sub DisplayMonitorInfo()
+    MsgBox "Monitor Size (dpi) is: " & Screen(enWidthDPI) & " x " & Screen(enHeightDPI), vbInformation, " (width x height dpi) "
+End Sub
+
                
 Public Function Dsply(ByVal dsply_title As String, _
-                      ByRef dsply_msg As TypeMsg, _
-             Optional ByVal dsply_label_spec As String = vbNullString, _
+                      ByRef dsply_msg As udtMsg, _
+             Optional ByVal dsply_Label_spec As String = vbNullString, _
              Optional ByVal dsply_buttons As Variant = vbOKOnly, _
              Optional ByVal dsply_buttons_app_run As Dictionary = Nothing, _
              Optional ByVal dsply_button_default = 1, _
              Optional ByVal dsply_button_reply_with_index As Boolean = False, _
              Optional ByVal dsply_modeless As Boolean = False, _
-             Optional ByVal dsply_width_min As Long = 15, _
+             Optional ByVal dsply_width_min As Long = 250, _
              Optional ByVal dsply_width_max As Long = 85, _
              Optional ByVal dsply_height_min As Long = 25, _
              Optional ByVal dsply_height_max As Long = 85, _
@@ -654,7 +677,7 @@ Public Function Dsply(ByVal dsply_title As String, _
 ' ----------------------------- + ----------------------------------------------
 ' dsply_title                   | String, Title
 ' dsply_msg                     | UDT, Message
-' dsply_label_spec              | Label width and position
+' dsply_Label_spec              | Label width and position
 ' dsply_buttons                 | Button captions as Collection
 ' dsply_button_default          | Default button, either the index or the
 '                               | caption, defaults to 1 (= the first displayed
@@ -700,17 +723,19 @@ Public Function Dsply(ByVal dsply_title As String, _
     Set MsgForm = MsgInstance(dsply_title)
     
     With MsgForm
-        .LabelAllSpec = dsply_label_spec
+        .LabelAllSpec = dsply_Label_spec    ' !!! has to be provided first
         .ReplyWithIndex = dsply_button_reply_with_index
-        '~~ Use dimensions when explicitly specified
-        If dsply_height_max > 0 Then .MsgHeightMax = dsply_height_max   ' percentage of screen height in pt
-        If dsply_width_max > 0 Then .MsgWidthMax = dsply_width_max      ' percentage of screen width in pt
-        If dsply_width_min > 0 Then .MsgWidthMin = dsply_width_min      ' percentage of screen width in pt
+        
+        '~~ All width and height specifications by the user are "outside" dimensions !
+        If dsply_height_max > 0 Then .FormHeightOutsideMax = dsply_height_max   ' percentage of screen height in pt
+        If dsply_width_max > 0 Then .FormWidthOutsideMax = dsply_width_max     ' percentage of screen width in pt
+        If dsply_width_min > 0 Then .FormWidthOutsideMin = dsply_width_min      ' percentage of screen width in pt
+        
         .MsgTitle = dsply_title
         For i = 1 To NoOfMsgSects
-            '~~ Save the label and the text udt into a Dictionary by transfering it into an array
+            '~~ Save the Label and the text udt into a Dictionary by transfering it into an array
             .MsgLabel(i) = dsply_msg.Section(i).Label
-            .Text(enSectText, i) = dsply_msg.Section(i).Text
+            .MsgText(enSectText, i) = dsply_msg.Section(i).Text
         Next i
         
         If TypeName(dsply_buttons) = "Collection" _
@@ -763,7 +788,7 @@ Public Function ErrMsg(ByVal err_source As String, _
     Dim ErrDesc     As String
     Dim ErrType     As String
     Dim ErrAtLine   As String
-    Dim ErrMsgText  As TypeMsg
+    Dim ErrMsgText  As udtMsg
     Dim ErrAbout    As String
     Dim ErrTitle    As String
     Dim ErrButtons  As Collection
@@ -861,7 +886,7 @@ Public Function ErrMsg(ByVal err_source As String, _
 #End If
     mMsg.Dsply dsply_title:=ErrTitle _
              , dsply_msg:=ErrMsgText _
-             , dsply_label_spec:="R40" _
+             , dsply_Label_spec:="R40" _
              , dsply_buttons:=ErrButtons _
              , dsply_pos:=err_pos _
              , dsply_width_min:=15
@@ -871,6 +896,28 @@ End Function
 
 Private Function ErrSrc(ByVal sProc As String) As String
     ErrSrc = "mMsg." & sProc
+End Function
+
+Public Function LabelPos(ByVal l_spec As String) As enLabelPos
+    Const PROC = "LabelPos"
+    
+    On Error GoTo eh
+    Select Case True
+        Case l_spec = vbNullString:     LabelPos = enLabelAboveSectionText:  GoTo xt
+        Case InStr(l_spec, "L") <> 0:   LabelPos = enLposLeftAlignedLeft
+        Case InStr(l_spec, "C") <> 0:   LabelPos = enLposLeftAlignedCenter
+        Case InStr(l_spec, "R") <> 0:   LabelPos = enLposLeftAlignedRight
+        Case Else:                      Err.Raise AppErr(1), ErrSrc(PROC), "The Label position specification'l_char is neither a vbNullString (the default = top pos) nor L, R, or C!"
+    End Select
+
+xt: Exit Function
+
+eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
+End Function
+
+Public Function LabelWidth(ByVal l_spec As String) As Long
+    If l_spec <> vbNullString _
+    Then LabelWidth = CInt(Replace(Replace(Replace(UCase(l_spec), "L", vbNullString), "C", vbNullString), "R", vbNullString))
 End Function
 
 Private Function Max(ParamArray va() As Variant) As Variant
@@ -887,7 +934,7 @@ Private Function Max(ParamArray va() As Variant) As Variant
 End Function
 
 Public Sub Monitor(ByVal mon_title As String, _
-                   ByRef mon_text As TypeMsgText, _
+                   ByRef mon_text As udtMsgText, _
           Optional ByVal mon_steps_displayed As Long = 10, _
           Optional ByVal mon_height_max As Long = 80, _
           Optional ByVal mon_pos As Variant = 3, _
@@ -909,14 +956,14 @@ Public Sub Monitor(ByVal mon_title As String, _
             .MonitorProcess = mon_title
             .MonitorStepsDisplayed = mon_steps_displayed
             .SetupDone = True ' Bypass regular message setup
-            .MsgHeightMax = mMsg.ValueAsPt(mon_height_max, enDsplyDimensionHeight)
-            .MsgWidthMax = mMsg.ValueAsPt(mon_width_max, enDsplyDimensionWidth)
-            .MsgWidthMin = mMsg.ValueAsPt(mon_width_min, enDsplyDimensionWidth)
+            .FormHeightOutsideMax = mMsg.ValueAsPt(mon_height_max, enDsplyDimensionHeight)
+            .FormWidthOutsideMax = mMsg.ValueAsPt(mon_width_max, enDsplyDimensionWidth)
+            .FormWidthOutsideMin = mMsg.ValueAsPt(mon_width_min, enDsplyDimensionWidth)
             .MonitorInit
             .Show False
             .PositionOnScreen mon_pos
         End If
-        .Text(enMonStep) = mon_text
+        .MsgText(enMonStep) = mon_text
         .MonitorStep
     End With
     
@@ -926,7 +973,7 @@ eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
 End Sub
 
 Public Sub MonitorFooter(ByVal mon_title As String, _
-                         ByRef mon_text As TypeMsgText, _
+                         ByRef mon_text As udtMsgText, _
                 Optional ByVal mon_steps_displayed As Long = 10, _
                 Optional ByVal mon_height_max As Long = 80, _
                 Optional ByVal mon_pos As String = "5,5", _
@@ -949,14 +996,14 @@ Public Sub MonitorFooter(ByVal mon_title As String, _
             .MonitorProcess = mon_title
             .MonitorStepsDisplayed = mon_steps_displayed
             .SetupDone = True ' Bypass regular message setup
-            .MsgHeightMax = mMsg.ValueAsPt(mon_height_max, enDsplyDimensionHeight)
-            .MsgWidthMax = mMsg.ValueAsPt(mon_width_max, enDsplyDimensionWidth)
-            .MsgWidthMin = mMsg.ValueAsPt(mon_width_min, enDsplyDimensionWidth)
+            .FormHeightOutsideMax = mMsg.ValueAsPt(mon_height_max, enDsplyDimensionHeight)
+            .FormWidthOutsideMax = mMsg.ValueAsPt(mon_width_max, enDsplyDimensionWidth)
+            .FormWidthOutsideMin = mMsg.ValueAsPt(mon_width_min, enDsplyDimensionWidth)
             .MonitorInit
             .Show False
             .PositionOnScreen mon_pos
         End If
-        .Text(enMonFooter) = mon_text
+        .MsgText(enMonFooter) = mon_text
         .MonitorFooter
     End With
     
@@ -966,7 +1013,7 @@ eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
 End Sub
 
 Public Sub MonitorHeader(ByVal mon_title As String, _
-                         ByRef mon_text As TypeMsgText, _
+                         ByRef mon_text As udtMsgText, _
                 Optional ByVal mon_steps_displayed As Long = 10, _
                 Optional ByVal mon_height_max As Long = 80, _
                 Optional ByVal mon_pos As String = "5,5", _
@@ -988,14 +1035,14 @@ Public Sub MonitorHeader(ByVal mon_title As String, _
             .MonitorProcess = mon_title
             .MonitorStepsDisplayed = mon_steps_displayed
             .SetupDone = True ' Bypass regular message setup
-            .MsgHeightMax = mMsg.ValueAsPt(mon_height_max, enDsplyDimensionHeight)
-            .MsgWidthMax = mMsg.ValueAsPt(mon_width_max, enDsplyDimensionWidth)
-            .MsgWidthMin = mMsg.ValueAsPt(mon_width_min, enDsplyDimensionWidth)
+            .FormHeightOutsideMax = mMsg.ValueAsPt(mon_height_max, enDsplyDimensionHeight)
+            .FormWidthOutsideMax = mMsg.ValueAsPt(mon_width_max, enDsplyDimensionWidth)
+            .FormWidthOutsideMin = mMsg.ValueAsPt(mon_width_min, enDsplyDimensionWidth)
             .MonitorInit
             .Show False
             .PositionOnScreen mon_pos
         End If
-        .Text(enMonHeader) = mon_text
+        .MsgText(enMonHeader) = mon_text
         .MonitorHeader
     End With
     
@@ -1042,6 +1089,7 @@ Public Function MsgInstance(ByVal fi_key As String, _
         MsecsElapsed = (TicksCount() - cyStart) / CDec(TicksFrequency)
         MsecsWait = 10 - MsecsElapsed
         If MsecsWait > 0 Then Sleep MsecsWait
+        Set MsgInstance = Nothing
         Set MsgInstance = New fMsg
         MsgInstances.Add fi_key, MsgInstance
     Else
@@ -1086,6 +1134,114 @@ Private Function RoundUp(ByVal v As Variant) As Variant
 ' Returns (v) rounded up to the next integer. Note: to round down omit the "+ 0.5").
 ' -------------------------------------------------------------------------------------
     RoundUp = Int(v) + (v - Int(v) + 0.5) \ 1
+End Function
+
+Public Function Screen(ByVal Item As enScreen) As Variant
+' -------------------------------------------------------------------------
+' Return display screen Item for monitor displaying ActiveWindow
+' Patterned after Excel's built-in information functions CELL and INFO
+' Supported Item values (each must be a string, but alphabetic case is ignored):
+' HorizontalResolution or pixelsX
+' VerticalResolution or pixelsY
+' WidthInches or inchesX
+' HeightInches or inchesY
+' DiagonalInches or inchesDiag
+' PixelsPerInchX or ppiX
+' PixelsPerInchY or ppiY
+' PixelsPerInch or ppiDiag
+' WinDPIX or dpiX
+' WinDPIY or dpiY
+' WinDPI or dpiWin ' DPI assumed by Windows
+' AdjustmentFactor or zoomFac ' adjustment to match actual size (ppiDiag/dpiWin)
+' IsPrimary ' True if primary display
+' DisplayName ' name recognized by CreateDC
+' Update ' update cells referencing this UDF and return date/time
+' Help ' display all recognized Item string values
+' EXAMPLE: =Screen("pixelsX")
+' Function Returns #VALUE! for invalid Item
+' -------------------------------------------------------------------------
+    Dim xHSizeSq        As Double
+    Dim xVSizeSq        As Double
+    Dim xPix            As Double
+    Dim xDot            As Double
+    Dim hWnd            As LongPtr
+    Dim hDC             As LongPtr
+    Dim hMonitor        As LongPtr
+    Dim tMonitorInfo    As MONITORINFOEX
+    Dim nMonitors       As Integer
+    Dim vResult         As Variant
+    Dim sItem           As String
+    
+    Application.Volatile
+    nMonitors = GetSystemMetrics(SM_CMONITORS)
+    If nMonitors < 2 Then
+        nMonitors = 1                                       ' in case GetSystemMetrics failed
+        hWnd = 0
+    Else
+        hWnd = GetActiveWindow()
+        hMonitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTONULL)
+        If hMonitor = 0 Then
+            Debug.Print "ActiveWindow does not intersect a monitor"
+            hWnd = 0
+        Else
+            tMonitorInfo.cbSize = Len(tMonitorInfo)
+            If GetMonitorInfo(hMonitor, tMonitorInfo) = False Then
+                Debug.Print "GetMonitorInfo failed"
+                hWnd = 0
+            Else
+                hDC = CreateDC(tMonitorInfo.szDevice, 0, 0, 0)
+                If hDC = 0 Then
+                    Debug.Print "CreateDC failed"
+                    hWnd = 0
+                End If
+            End If
+        End If
+    End If
+    If hWnd = 0 Then
+        hDC = GetDC(hWnd)
+        tMonitorInfo.dwFlags = MONITOR_PRIMARY
+        tMonitorInfo.szDevice = "PRIMARY" & vbNullChar
+    End If
+    Select Case Item
+        Case enAdjustmentfactor:    xHSizeSq = GetDeviceCaps(hDC, DevCap.HORZSIZE) ^ 2
+                                    xVSizeSq = GetDeviceCaps(hDC, DevCap.VERTSIZE) ^ 2
+                                    xPix = GetDeviceCaps(hDC, DevCap.HORZRES) ^ 2 + GetDeviceCaps(hDC, DevCap.VERTRES) ^ 2
+                                    xDot = GetDeviceCaps(hDC, DevCap.LOGPIXELSX) ^ 2 * xHSizeSq + GetDeviceCaps(hDC, DevCap.LOGPIXELSY) ^ 2 * xVSizeSq
+                                    vResult = 25.4 * Sqr(xPix / xDot)
+        Case enWidthDPI:            vResult = GetDeviceCaps(hDC, DevCap.HORZRES)
+        Case enHeightDPI:           vResult = GetDeviceCaps(hDC, DevCap.VERTRES)
+        Case enWidthInches:         vResult = GetDeviceCaps(hDC, DevCap.HORZSIZE) / 25.4
+        Case enHeightInches:        vResult = GetDeviceCaps(hDC, DevCap.VERTSIZE) / 25.4
+        Case enDiagonalInches:      vResult = Sqr(GetDeviceCaps(hDC, DevCap.HORZSIZE) ^ 2 + GetDeviceCaps(hDC, DevCap.VERTSIZE) ^ 2) / 25.4
+        Case enWidthPPI:      vResult = 25.4 * GetDeviceCaps(hDC, DevCap.HORZRES) / GetDeviceCaps(hDC, DevCap.HORZSIZE)
+        Case enHeightPPI:      vResult = 25.4 * GetDeviceCaps(hDC, DevCap.VERTRES) / GetDeviceCaps(hDC, DevCap.VERTSIZE)
+        Case enDiagonalPPI:       xHSizeSq = GetDeviceCaps(hDC, DevCap.HORZSIZE) ^ 2
+                                    xVSizeSq = GetDeviceCaps(hDC, DevCap.VERTSIZE) ^ 2
+                                    xPix = GetDeviceCaps(hDC, DevCap.HORZRES) ^ 2 + GetDeviceCaps(hDC, DevCap.VERTRES) ^ 2
+                                    vResult = 25.4 * Sqr(xPix / (xHSizeSq + xVSizeSq))
+        Case enWidthWinDPI:     vResult = GetDeviceCaps(hDC, DevCap.LOGPIXELSX)
+        Case enHeightWinDPI:     vResult = GetDeviceCaps(hDC, DevCap.LOGPIXELSY)
+        Case enWinDPI:      xHSizeSq = GetDeviceCaps(hDC, DevCap.HORZSIZE) ^ 2
+                                    xVSizeSq = GetDeviceCaps(hDC, DevCap.VERTSIZE) ^ 2
+                                    xDot = GetDeviceCaps(hDC, DevCap.LOGPIXELSX) ^ 2 * xHSizeSq + GetDeviceCaps(hDC, DevCap.LOGPIXELSY) ^ 2 * xVSizeSq
+                                    vResult = Sqr(xDot / (xHSizeSq + xVSizeSq))
+        Case enIsPrimary:           vResult = CBool(tMonitorInfo.dwFlags And MONITOR_PRIMARY)
+        Case enDisplayName:         vResult = tMonitorInfo.szDevice & vbNullChar
+                                    vResult = Left(vResult, (InStr(1, vResult, vbNullChar) - 1))
+        Case enUpdate:              vResult = Now
+        Case enHelp:                vResult = "HorizontalResolution (pixelsX), VerticalResolution (pixelsY), " _
+                                            & "WidthInches (inchesX), HeightInches (inchesY), DiagonalInches (inchesDiag), " _
+                                            & "PixelsPerInchX (ppiX), PixelsPerInchY (ppiY), PixelsPerInch (ppiDiag), " _
+                                            & "WinDPIX (dpiX), WinDPIY (dpiY), WinDPI (dpiWin), " _
+                                            & "AdjustmentFactor (zoomFac), IsPrimary, DisplayName, Update, Help"
+        Case Else:                  vResult = CVErr(xlErrValue)                         ' return #VALUE! error (2015)
+    End Select
+    
+    If hWnd = 0 _
+    Then ReleaseDC hWnd, hDC _
+    Else DeleteDC hDC
+    Screen = vResult
+    
 End Function
 
 Public Function ShellRun(ByVal oue_string As String, _
@@ -1221,8 +1377,8 @@ Public Function ValueAsPercentage(ByVal p_value As Long, _
 ' ------------------------------------------------------------------------------
     If p_value > 100 Then
         Select Case p_dimension
-            Case enDsplyDimensionWidth:     ValueAsPercentage = Int(p_value / (ScreenWidth / 100))
-            Case enDsplyDimensionHeight:    ValueAsPercentage = Int(p_value / (ScreenHeight / 100))
+            Case enDsplyDimensionWidth:     ValueAsPercentage = Int(p_value / (DsplyWidthPT / 100))
+            Case enDsplyDimensionHeight:    ValueAsPercentage = Int(p_value / (DsplyHeightPT / 100))
         End Select
     Else
         ValueAsPercentage = p_value
@@ -1234,12 +1390,12 @@ Public Function ValueAsPt(ByVal p_value As Long, _
 ' ------------------------------------------------------------------------------
 ' Returns a value (p_value) as pt considering a dimensions width or height
 ' (p_dimension), whereby a value <= 100 is considered a percentage and therefore
-' is computed into pt. A value > 100 is regarded a pt value already.
+' is computed into pt. A p_value > 100 is regarded a pt value already.
 ' ------------------------------------------------------------------------------
     If p_value <= 100 Then
         Select Case p_dimension
-            Case enDsplyDimensionWidth:    ValueAsPt = RoundUp(ScreenWidth * (p_value / 100))
-            Case enDsplyDimensionHeight:   ValueAsPt = RoundUp(ScreenHeight * (p_value / 100))
+            Case enDsplyDimensionWidth:    ValueAsPt = RoundUp(DsplyWidthPT * (p_value / 100))
+            Case enDsplyDimensionHeight:   ValueAsPt = RoundUp(DsplyHeightPT * (p_value / 100))
         End Select
     Else
         ValueAsPt = p_value

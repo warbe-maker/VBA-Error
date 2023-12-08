@@ -32,7 +32,7 @@ Option Explicit
 ' ---------
 ' Reference to "Microsoft Scripting Runtime"
 '
-' W. Rauschenberger, Berlin, June 2023
+' W. Rauschenberger, Berlin, Oct 2023
 '
 ' See https://github.com/warbe-maker/VBA-Error
 ' See https://warbe-maker.github.io/vba/common/2020/10/02/Comprehensive-Common-VBA-Error-Handler.html
@@ -190,9 +190,10 @@ Public Sub BoP(ByVal b_id As String, _
         Set cllRecentErrors = Nothing: Set cllRecentErrors = New Collection
     End If
     StackPush ProcStack, b_id
-#If XcTrc_clsTrc = 1 Then   ' when clsTrc is installed and active
+#If XcTrc_clsTrc Then   ' when clsTrc is installed and active
+    If Trc Is Nothing Then Set Trc = New clsTrc
     Trc.BoP_ErH b_id, b_args
-#ElseIf XcTrc_mTrc = 1 Then ' when mTrc is installed and active
+#ElseIf XcTrc_mTrc Then ' when mTrc is installed and active
     mTrc.BoP_ErH b_id, b_args
 #End If
 End Sub
@@ -253,7 +254,7 @@ xt: Exit Property
 eh: If ErrMsg(ErrSrc(PROC)) = vbYes Then: Stop: Resume
 End Property
 
-Private Function ErrBttns(ByVal bttns As Variant) As Long
+Private Function ErrBttns(ByVal Bttns As Variant) As Long
 ' ------------------------------------------------------------------------------
 ' Returns the number of specified buttons in (bttns).
 ' ------------------------------------------------------------------------------
@@ -262,9 +263,9 @@ Private Function ErrBttns(ByVal bttns As Variant) As Long
     Dim i   As Long
     Dim cll As Collection
     
-    Select Case TypeName(bttns)
+    Select Case TypeName(Bttns)
         Case "Collection"
-            Set cll = bttns
+            Set cll = Bttns
             s = cll(1)
             For i = 2 To cll.Count
                 s = s & "," & cll(i)
@@ -272,7 +273,7 @@ Private Function ErrBttns(ByVal bttns As Variant) As Long
             ErrBttns = ErrBttns(s)
         Case "String"
             i = 0
-            For Each v In Split(bttns, ",")
+            For Each v In Split(Bttns, ",")
                 If IsNumeric(v) Then
                     Select Case v
                         Case vbOKOnly:                                          i = i + 1
@@ -500,8 +501,8 @@ Private Function ErrMsgDsply(ByVal err_source As String, _
     Dim sSource     As String
     Dim sType       As String
     Dim lNo         As Long
-    Dim ErrMsgText  As TypeMsg
-    Dim SctnText    As TypeMsgText
+    Dim ErrMsgText  As udtMsg
+    Dim SctnText    As udtMsgText
     Dim sMsg        As String ' The MsgBox Prompt string
     Dim lBttns      As Long
     
@@ -549,23 +550,26 @@ Private Function ErrMsgDsply(ByVal err_source As String, _
         .Text.Text = sDscrptn
         sMsg = "Error description:" & vbLf & sDscrptn
     End With
-    If BoPArguments <> vbNullString Then
+'    If BoPArguments <> vbNullString Then
         With ErrMsgText.Section(2)
             With .Label
                 .Text = "Source:"
                 .FontColor = rgbBlue
             End With
-            sSource = sSource & " " & sLine & vbLf & BoPArguments
+            If BoPArguments <> vbNullString Then
+                sSource = sSource & " " & sLine & vbLf & BoPArguments
+            Else
+                sSource = sSource & " " & sLine
+            End If
             .Text.Text = sSource
-            .Text.MonoSpaced = True
             sMsg = sMsg & vbLf & vbLf & "Error source:" & vbLf & sSource
         End With
-    End If
+'    End If
     With ErrMsgText.Section(3)
         With .Label
             .Text = "Path:"
             .FontColor = rgbBlue
-            .OpenWhenClicked = GITHUB_REPO_URL & "#the-path-to-the-error"
+            .OnClickAction = GITHUB_REPO_URL & "#the-path-to-the-error"
             sMsg = sMsg & vbLf & vbLf & "Error path:" & vbLf
         End With
         If sErrPath <> vbNullString Then
@@ -573,7 +577,7 @@ Private Function ErrMsgDsply(ByVal err_source As String, _
             .Text.MonoSpaced = True
             sMsg = sMsg & sErrPath
         Else
-            .Text.Text = "A path to the error is not avialable. Click the label above for more information"
+            .Text.Text = "A path to the error is not avialable. Click the Label above for more information"
             .Text.MonoSpaced = False
             sMsg = sMsg & "A path to the error is not avialable."
         End If
@@ -585,7 +589,7 @@ Private Function ErrMsgDsply(ByVal err_source As String, _
         Else
             .Label.Text = "About:"
             .Text.Text = sAbout
-            .Text.FontSize = 8.5
+            .Text.FontSize = 9
             sMsg = sMsg & vbLf & vbLf & "About the error:" & vbLf & sAbout
         End If
         .Label.FontColor = rgbBlue
@@ -605,7 +609,8 @@ Private Function ErrMsgDsply(ByVal err_source As String, _
 #If MsgComp = 1 Then
     ErrMsgDsply = mMsg.Dsply(dsply_title:=sTitle _
                            , dsply_msg:=ErrMsgText _
-                           , dsply_label_spec:="30R" _
+                           , dsply_width_max:=60 _
+                           , dsply_label_spec:="R50" _
                            , dsply_buttons:=mMsg.Buttons(err_buttons))
 #Else
 #If Debugging = 1 Then

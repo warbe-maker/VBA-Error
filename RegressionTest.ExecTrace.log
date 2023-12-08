@@ -1,25 +1,25 @@
-23-06-23 16:32:16 Elapsed Length  Execution trace by 'Common VBA Execution Trace Service (mTrc)' (https://github.com/warbe-maker/VBA-Trace)
-23-06-23 16:32:16 seconds seconds >> Regression Test mErH
-23-06-23 16:32:16 00,0000         |  >> mErHTest.Test_0_Regression
-23-06-23 16:32:16 00,0056         |  |  >> mErHTest.Test_1_Application_Error
-23-06-23 16:32:16 00,0061         |  |  |  >> mErHTest.Test_1_Application_Error_TestProc_2a
-23-06-23 16:32:16 00,0063         |  |  |  |  >> mErHTest.Test_1_Application_Error_TestProc_2b
-23-06-23 16:32:16 00,0066         |  |  |  |  |  >> mErHTest.Test_1_Application_Error_TestProc_2c
-23-06-23 16:32:16 00,0450 00,0384 |  |  |  |  |  << mErHTest.Test_1_Application_Error_TestProc_2c (Application Error 1 at line 181)
-23-06-23 16:32:16 00,0439 00,0376 |  |  |  |  << mErHTest.Test_1_Application_Error_TestProc_2b
-23-06-23 16:32:16 00,0442 00,0381 |  |  |  << mErHTest.Test_1_Application_Error_TestProc_2a
-23-06-23 16:32:16 00,0447 00,0391 |  |  << mErHTest.Test_1_Application_Error
-23-06-23 16:32:16 00,0451         |  |  >> mErHTest.Test_2_VB_Runtime_Error
-23-06-23 16:32:16 00,0454         |  |  |  >> mErHTest.Test_2_VB_Runtime_Error_TestProc_3a
-23-06-23 16:32:16 00,0457         |  |  |  |  >> mErHTest.Test_2_VB_Runtime_Error_TestProc_3b
-23-06-23 16:32:16 00,0460         |  |  |  |  |  >> mErHTest.Test_2_VB_Runtime_Error_TestProc_3c
-23-06-23 16:32:16 00,0464         |  |  |  |  |  |  >> mErHTest.Test_2_VB_Runtime_Error_TestProc_3d (test_arg1=Test string, test_arg2=20,5)
-23-06-23 16:32:16 00,0472 00,0008 |  |  |  |  |  |  << mErHTest.Test_2_VB_Runtime_Error_TestProc_3d (VB-Runtime Error 11 )
-23-06-23 16:32:16 00,0472 00,0012 |  |  |  |  |  << mErHTest.Test_2_VB_Runtime_Error_TestProc_3c
-23-06-23 16:32:16 00,0475 00,0017 |  |  |  |  << mErHTest.Test_2_VB_Runtime_Error_TestProc_3b
-23-06-23 16:32:16 00,0477 00,0023 |  |  |  << mErHTest.Test_2_VB_Runtime_Error_TestProc_3a
-23-06-23 16:32:16 00,0480 00,0029 |  |  << mErHTest.Test_2_VB_Runtime_Error
-23-06-23 16:32:16 00,0482 00,0482 |  << mErHTest.Test_0_Regression
-23-06-23 16:32:16 00,0482 00,0482 << Regression Test mErH
-23-06-23 16:32:16                 Execution trace by 'Common VBA Execution Trace Service (mTrc)' (https://github.com/warbe-maker/VBA-Trace)
-23-06-23 16:32:16                 Impact on the overall performance (caused by the trace itself): 0,2 milliseconds!
+23-10-10 14:11:55 Elapsed Length  Execution trace by 'Common VBA Execution Trace Service (mTrc)' (https://github.com/warbe-maker/VBA-Trace)
+23-10-10 14:11:55 seconds seconds >> Regression Test mErH
+23-10-10 14:11:55 00,0000         |  >> mErHTest.Test_0_Regression
+23-10-10 14:11:55 00,0057         |  |  >> mErHTest.Test_1_Application_Error
+23-10-10 14:11:55 00,0066         |  |  |  >> mErHTest.Test_1_Application_Error_TestProc_2a
+23-10-10 14:11:55 00,0069         |  |  |  |  >> mErHTest.Test_1_Application_Error_TestProc_2b
+23-10-10 14:11:55 00,0075         |  |  |  |  |  >> mErHTest.Test_1_Application_Error_TestProc_2c
+23-10-10 14:11:55 00,0105 00,0030 |  |  |  |  |  << mErHTest.Test_1_Application_Error_TestProc_2c (Application Error 1 at line 181)
+23-10-10 14:11:55 00,0099 00,0029 |  |  |  |  << mErHTest.Test_1_Application_Error_TestProc_2b
+23-10-10 14:11:55 00,0103 00,0037 |  |  |  << mErHTest.Test_1_Application_Error_TestProc_2a
+23-10-10 14:11:55 00,0105 00,0048 |  |  << mErHTest.Test_1_Application_Error
+23-10-10 14:11:55 00,0109         |  |  >> mErHTest.Test_2_VB_Runtime_Error
+23-10-10 14:11:55 00,0112         |  |  |  >> mErHTest.Test_2_VB_Runtime_Error_TestProc_3a
+23-10-10 14:11:55 00,0115         |  |  |  |  >> mErHTest.Test_2_VB_Runtime_Error_TestProc_3b
+23-10-10 14:11:55 00,0117         |  |  |  |  |  >> mErHTest.Test_2_VB_Runtime_Error_TestProc_3c
+23-10-10 14:11:55 00,0119         |  |  |  |  |  |  >> mErHTest.Test_2_VB_Runtime_Error_TestProc_3d (test_arg1=Test string, test_arg2=20,5)
+23-10-10 14:11:55 00,0124 00,0005 |  |  |  |  |  |  << mErHTest.Test_2_VB_Runtime_Error_TestProc_3d (VB-Runtime Error 11 )
+23-10-10 14:11:55 00,0124 00,0007 |  |  |  |  |  << mErHTest.Test_2_VB_Runtime_Error_TestProc_3c
+23-10-10 14:11:55 00,0125 00,0010 |  |  |  |  << mErHTest.Test_2_VB_Runtime_Error_TestProc_3b
+23-10-10 14:11:55 00,0126 00,0014 |  |  |  << mErHTest.Test_2_VB_Runtime_Error_TestProc_3a
+23-10-10 14:11:55 00,0128 00,0019 |  |  << mErHTest.Test_2_VB_Runtime_Error
+23-10-10 14:11:55 00,0129 00,0129 |  << mErHTest.Test_0_Regression
+23-10-10 14:11:55 00,0129 00,0129 << Regression Test mErH
+23-10-10 14:11:55                 Execution trace by 'Common VBA Execution Trace Service (mTrc)' (https://github.com/warbe-maker/VBA-Trace)
+23-10-10 14:11:55                 Impact on the overall performance (caused by the trace itself): 0,1 milliseconds!

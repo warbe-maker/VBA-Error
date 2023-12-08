@@ -5,11 +5,11 @@ Option Explicit
 ' ======================= likely to be required in any VB-Project, optionally
 ' just being copied.
 '
-' Note: All services run completely autonomous, i.e. do not require any other
-'       installed module. However, when the Common VBA Message Services
-'       (fMsg/mMsg) and or the Common VBA Error Services (mErH) are installed
-'       an error message is passed on to their corresponding procedure which
-'       provides a much better service.
+' Note: All provided public services run completely autonomous. I.e. they do
+'       not require any other installed module. However, when the Common VBA
+'       Message Services (fMsg/mMsg) and or the Common VBA Error Services
+'       (mErH) are installed an error message is passed on to their corres-
+'       ponding service which provides a much better designed error message.
 '
 ' Public Procedures, Functions, Services:
 ' ---------------------------------------
@@ -62,15 +62,15 @@ Option Explicit
 '           installed and activated by the corresp. Comd. Comp.Arguments.
 '
 ' 1) The procedures may be copied as Private when the component aims for
-'    being indpendant from mBasic or mBasic is imported and and the
+'    being independant from mBasic or mBasic is imported and and the
 '    procedures are used directly.
 '
-' Requires Reference to:
-' ----------------------
-' Microsoft Scripting Runtime
-' Microsoft Visual Basic Application Extensibility ..
+' Requires:
+' ---------
+' Reference to "Microsoft Scripting Runtime"
+' Reference to "Microsoft Visual Basic Application Extensibility .."
 '
-' W. Rauschenberger, Berlin Aug 2023
+' W. Rauschenberger, Berlin Oct 2023
 ' See https://github.com/warbe-maker/VBA-Basics (with README servie)
 ' ----------------------------------------------------------------------------
 Public Const DCONCAT    As String = "||"    ' For concatenating and error with a general message (info) to the error description
@@ -119,16 +119,16 @@ Private Declare PtrSafe Function ReleaseDC Lib "user32" (ByVal hWnd As Long, ByV
 Private Const LOGPIXELSX = 88               ' Pixels/inch in X
 Private Const POINTS_PER_INCH As Long = 72  ' A point is defined as 1/72 inches
 Private Declare PtrSafe Function GetForegroundWindow _
-  Lib "User32.dll" () As Long
+  Lib "user32.dll" () As Long
 
 Private Declare PtrSafe Function GetWindowLongPtr _
-  Lib "User32.dll" Alias "GetWindowLongA" _
+  Lib "user32.dll" Alias "GetWindowLongA" _
     (ByVal hWnd As LongPtr, _
      ByVal nIndex As Long) _
   As LongPtr
 
 Private Declare PtrSafe Function SetWindowLongPtr _
-  Lib "User32.dll" Alias "SetWindowLongA" _
+  Lib "user32.dll" Alias "SetWindowLongA" _
     (ByVal hWnd As LongPtr, _
      ByVal nIndex As LongPtr, _
      ByVal dwNewLong As LongPtr) _
@@ -664,11 +664,12 @@ Public Sub BoP(ByVal b_proc As String, _
 ' Obligatory copy Private for any VB-Component using the service but not having
 ' the mBasic common component installed.
 ' ------------------------------------------------------------------------------
-#If ErHComp = 1 Then          ' serves the mTrc/clsTrc when installed and active
+#If ErHComp Then          ' serves the mTrc/clsTrc when installed and active
     mErH.BoP b_proc, b_args
-#ElseIf XcTrc_clsTrc = 1 Then ' when only clsTrc is installed and active
+#ElseIf XcTrc_clsTrc Then ' when only clsTrc is installed and active
+    If Trc Is Nothing Then Set Trc = New clsTrc
     Trc.BoP b_proc, b_args
-#ElseIf XcTrc_mTrc = 1 Then   ' when only mTrc is installed and activate
+#ElseIf XcTrc_mTrc Then   ' when only mTrc is installed and activate
     mTrc.BoP b_proc, b_args
 #End If
 End Sub
@@ -779,7 +780,7 @@ Public Function ErrMsg(ByVal err_source As String, _
 ' See: https://github.com/warbe-maker/VBA-Error
 ' ------------------------------------------------------------------------------
 #If ErHComp = 1 Then
-    '~~ When Common VBA Error Services (mErH) is availabel in the VB-Project
+    '~~ When Common VBA Error Services (mErH) is avaiLabel in the VB-Project
     '~~ (which includes the mMsg component) the mErh.ErrMsg service is invoked.
     ErrMsg = mErH.ErrMsg(err_source, err_no, err_dscrptn, err_line): GoTo xt
     GoTo xt
