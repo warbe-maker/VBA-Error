@@ -6,10 +6,10 @@ Option Explicit
 '
 ' Uses (for the test only): mBasic, fMsg/mMsg, mTrc
 '
-' W. Rauschenberger Berlin, June 2023
+' W. Rauschenberger Berlin, Jan 2024
 ' See: "https://github.com/warbe-maker/VBA-Error"
 ' ----------------------------------------------------------------------------
-#If XcTrc_clsTrc = 1 Then
+#If clsTrc = 1 Then
     Public Trc As New clsTrc
 #End If
 

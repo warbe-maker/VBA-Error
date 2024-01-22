@@ -1,28 +1,98 @@
-23-12-08-14:57:14 =========================================================================================================================================================
-23-12-08-14:57:14                                                Update Outdated Common Components (by Add-in) for ErH.xlsm                                                
-23-12-08-14:57:14 ---------------------------------------------------------------------------------------------------------------------------------------------------------
-23-12-08-14:57:14  Class-Module    clsTrc .........: Component is up-to-date! Revision-Number has been set to to 2023-08-26.001 (the raw's in the Common Components Folder)
-23-12-08-14:57:14                                    Used Common Component is up-to-date
-23-12-08-14:57:15  Standard-Module mTrc ...........: Component is up-to-date! Revision-Number has been set to to 2023-06-23.002 (the raw's in the Common Components Folder)
-23-12-08-14:57:15                                    Used Common Component is up-to-date
-23-12-08-14:57:20  UserForm        fMsg ...........: Outdated used Common Component - last modified in   c l s L o g   - updated by re-import of the Export-File in the Common-Components folder
-23-12-08-14:57:22  Standard-Module mBasic .........: Outdated used Common Component - last modified in   c l s L o g   - updated by re-import of the Export-File in the Common-Components folder
-23-12-08-14:57:24  Standard-Module mCompManClient .: Outdated used Common Component - last modified in   c l s L o g   - updated by re-import of the Export-File in the Common-Components folder
-23-12-08-14:57:26  Standard-Module mErH ...........: Outdated hosted Common Component - last modified in   c l s L o g   - updated by re-import of the Export-File in the Common-Components folder
-23-12-08-14:57:28  Standard-Module mMsg ...........: Outdated used Common Component - last modified in   c l s L o g   - updated by re-import of the Export-File in the Common-Components folder
-23-12-08-14:57:43 ==================================================================
-23-12-08-14:57:43         Export Changed Components (by Add-in) for ErH.xlsm        
-23-12-08-14:57:43 ------------------------------------------------------------------
-23-12-08-14:57:43  Class-Module    clsTrc .........: Unchanged Common Component used
-23-12-08-14:57:43  UserForm        fMsg ...........: Unchanged Common Component used
-23-12-08-14:57:43  Standard-Module mAnyModule .....: Unchanged VBComponent ignored
-23-12-08-14:57:44  Standard-Module mBasic .........: Unchanged Common Component used
-23-12-08-14:57:44  Standard-Module mCompManClient .: Unchanged Common Component used
-23-12-08-14:57:44  Standard-Module mErH ...........: Unchanged Common Component hosted ignored
-23-12-08-14:57:44  Standard-Module mErHDemo .......: Unchanged VBComponent ignored
-23-12-08-14:57:44  Standard-Module mErHTest .......: Unchanged VBComponent ignored
-23-12-08-14:57:44  Standard-Module mMsg ...........: Unchanged Common Component used
-23-12-08-14:57:44  Standard-Module mTrc ...........: Unchanged Common Component used
-23-12-08-14:57:44  Workbook        wbErrHndlrTest .: Unchanged VBComponent ignored
-23-12-08-14:57:44  Worksheet       wsAbout ........: Unchanged VBComponent ignored
-23-12-08-14:57:44  Worksheet       wsTest .........: Unchanged VBComponent ignored
+23-12-27-19:22:20 =========================================================================================================================================================
+23-12-27-19:22:20                                             Update Outdated Common Components (by CompMan.xlsb) for ErH.xlsm                                             
+23-12-27-19:22:20 ---------------------------------------------------------------------------------------------------------------------------------------------------------
+23-12-27-19:22:20  Class-Module    clsTrc .........: Component is up-to-date! Revision-Number has been set to to 2023-08-26.001 (the raw's in the Common Components Folder)
+23-12-27-19:22:20                                    Used Common Component is up-to-date
+23-12-27-19:22:27  UserForm        fMsg ...........: Component is up-to-date! Revision-Number has been set to to 2023-12-15-18-45-36 (UTC) (the raw's in the Common Components Folder)
+23-12-27-19:22:27                                    Used Common Component is up-to-date
+23-12-27-19:22:28  Standard-Module mBasic .........: Component is up-to-date! Revision-Number has been set to to 2023-12-08-12-19-08 (UTC) (the raw's in the Common Components Folder)
+23-12-27-19:22:28                                    Used Common Component is up-to-date
+23-12-27-19:22:28  Standard-Module mCompManClient .: Component is up-to-date! Revision-Number has been set to to 2023-12-08-12-19-08 (UTC) (the raw's in the Common Components Folder)
+23-12-27-19:22:28                                    Used Common Component is up-to-date
+23-12-27-19:22:28  Standard-Module mErH ...........: The component has been collected as a potential Release candidate
+23-12-27-19:22:28                                    Component is up-to-date! Revision-Number has been set to to 2023-12-08-12-19-08 (UTC) (the raw's in the Common Components Folder)
+23-12-27-19:22:28                                    Used Common Component is up-to-date
+23-12-27-19:22:29  Standard-Module mMsg ...........: Component is up-to-date! Revision-Number has been set to to 2023-12-08-13-52-06 (UTC) (the raw's in the Common Components Folder)
+23-12-27-19:22:29                                    Used Common Component is up-to-date
+23-12-27-19:22:29  Standard-Module mTrc ...........: Component is up-to-date! Revision-Number has been set to to 2023-06-23.002 (the raw's in the Common Components Folder)
+23-12-27-19:22:29                                    Used Common Component is up-to-date
+23-12-28-12:44:20 =========================================================================================================================================================
+23-12-28-12:44:20                                             Update Outdated Common Components (by CompMan.xlsb) for ErH.xlsm                                             
+23-12-28-12:44:20 ---------------------------------------------------------------------------------------------------------------------------------------------------------
+23-12-28-12:44:20  Class-Module    clsTrc .........: Component is up-to-date! Revision-Number has been set to to 2023-08-26.001 (the raw's in the Common Components Folder)
+23-12-28-12:44:20                                    Used Common Component is up-to-date
+23-12-28-12:44:26  UserForm        fMsg ...........: Component is up-to-date! Revision-Number has been set to to 2023-12-15-18-45-36 (UTC) (the raw's in the Common Components Folder)
+23-12-28-12:44:26                                    Used Common Component is up-to-date
+23-12-28-12:44:27  Standard-Module mBasic .........: Component is up-to-date! Revision-Number has been set to to 2023-12-08-12-19-08 (UTC) (the raw's in the Common Components Folder)
+23-12-28-12:44:27                                    Used Common Component is up-to-date
+23-12-28-12:45:10  Standard-Module mErH ...........: Used Common Component is up-to-date
+23-12-28-12:45:10  Standard-Module mMsg ...........: Component is up-to-date! Revision-Number has been set to to 2023-12-08-13-52-06 (UTC) (the raw's in the Common Components Folder)
+23-12-28-12:45:10                                    Used Common Component is up-to-date
+23-12-28-12:45:11  Standard-Module mTrc ...........: Component is up-to-date! Revision-Number has been set to to 2023-06-23.002 (the raw's in the Common Components Folder)
+23-12-28-12:45:11                                    Used Common Component is up-to-date
+23-12-29-15:32:58 =========================================================================================================================================================
+23-12-29-15:32:58                                                Update Outdated Common Components (by Add-in) for ErH.xlsm                                                
+23-12-29-15:32:58 ---------------------------------------------------------------------------------------------------------------------------------------------------------
+23-12-29-15:32:58  Class-Module    clsTrc .........: Component is up-to-date! Revision-Number has been set to to 2023-08-26.001 (the raw's in the Common Components Folder)
+23-12-29-15:32:58                                    Used Common Component is up-to-date
+23-12-29-15:33:04  UserForm        fMsg ...........: Component is up-to-date! Revision-Number has been set to to 2023-12-15-18-45-36 (UTC) (the raw's in the Common Components Folder)
+23-12-29-15:33:04                                    Used Common Component is up-to-date
+23-12-29-15:33:04  Standard-Module mBasic .........: Component is up-to-date! Revision-Number has been set to to 2023-12-08-12-19-08 (UTC) (the raw's in the Common Components Folder)
+23-12-29-15:33:05                                    Used Common Component is up-to-date
+23-12-29-15:33:05  Standard-Module mCompManClient .: Component is up-to-date! Revision-Number has been set to to 2023-12-28-08-43-41 (UTC) (the raw's in the Common Components Folder)
+23-12-29-15:33:05                                    Used Common Component is up-to-date
+23-12-29-15:33:05  Standard-Module mErH ...........: Component is up-to-date! Revision-Number has been set to to 2023-12-23-14-40-18 (UTC) (the raw's in the Common Components Folder)
+23-12-29-15:33:05                                    Used Common Component is up-to-date
+23-12-29-15:33:06  Standard-Module mMsg ...........: Component is up-to-date! Revision-Number has been set to to 2023-12-08-13-52-06 (UTC) (the raw's in the Common Components Folder)
+23-12-29-15:33:06                                    Used Common Component is up-to-date
+23-12-29-15:33:06  Standard-Module mTrc ...........: Component is up-to-date! Revision-Number has been set to to 2023-06-23.002 (the raw's in the Common Components Folder)
+23-12-29-15:33:06                                    Used Common Component is up-to-date
+23-12-30-15:30:32 =========================================================================================================================================================
+23-12-30-15:30:32                                             Update Outdated Common Components (by CompMan.xlsb) for ErH.xlsm                                             
+23-12-30-15:30:32 ---------------------------------------------------------------------------------------------------------------------------------------------------------
+23-12-30-15:30:32  Class-Module    clsTrc .........: Component is up-to-date! Revision-Number has been set to to 2023-08-26.001 (the raw's in the Common Components Folder)
+23-12-30-15:30:32                                    Used Common Component is up-to-date
+23-12-30-15:30:39  UserForm        fMsg ...........: Component is up-to-date! Revision-Number has been set to to 2023-12-15-18-45-36 (UTC) (the raw's in the Common Components Folder)
+23-12-30-15:30:39                                    Used Common Component is up-to-date
+23-12-30-15:30:39  Standard-Module mBasic .........: Component is up-to-date! Revision-Number has been set to to 2023-12-08-12-19-08 (UTC) (the raw's in the Common Components Folder)
+23-12-30-15:30:39                                    Used Common Component is up-to-date
+23-12-30-15:30:40  Standard-Module mCompManClient .: Component is up-to-date! Revision-Number has been set to to 2023-12-28-08-43-41 (UTC) (the raw's in the Common Components Folder)
+23-12-30-15:30:40                                    Used Common Component is up-to-date
+23-12-30-15:30:40  Standard-Module mErH ...........: Component is up-to-date! Revision-Number has been set to to 2023-12-23-14-40-18 (UTC) (the raw's in the Common Components Folder)
+23-12-30-15:30:40                                    Used Common Component is up-to-date
+23-12-30-15:30:40  Standard-Module mMsg ...........: Component is up-to-date! Revision-Number has been set to to 2023-12-08-13-52-06 (UTC) (the raw's in the Common Components Folder)
+23-12-30-15:30:40                                    Used Common Component is up-to-date
+23-12-30-15:30:41  Standard-Module mTrc ...........: Component is up-to-date! Revision-Number has been set to to 2023-06-23.002 (the raw's in the Common Components Folder)
+23-12-30-15:30:41                                    Used Common Component is up-to-date
+24-01-22-15:47:40 ===================================================================
+24-01-22-15:47:40      Export Changed Components (by CompMan.xlsb) for ErH.xlsm      
+24-01-22-15:47:40 -------------------------------------------------------------------
+24-01-22-15:47:40  Standard-Module mErHTest .: Modified VBComponent e x p o r t e d !
+24-01-22-15:47:41  Standard-Module mErH .....: Modified Common Component: e x p o r t e d !
+24-01-22-15:47:41                              Modified Common Component: Last modification info changed from 2023-12-23-14-40-18 (UTC) to 2024-01-22-14-47-41 (UTC)
+24-01-22-15:47:41                              Modified Common Component: Pending Release registered
+24-01-22-16:00:28 ====================================================================================================================================================================
+24-01-22-16:00:28                                                   Update Outdated Common Components (by CompMan.xlsb) for ErH.xlsm                                                  
+24-01-22-16:00:28 --------------------------------------------------------------------------------------------------------------------------------------------------------------------
+24-01-22-16:00:28  Standard-Module mErH ...........: Component is up-to-date! Revision-Number has been set to to 2024-01-22-14-47-41 (UTC) (the raw's in the Common Components Folder)
+24-01-22-16:00:28                                    Used Common Component is up-to-date
+24-01-22-16:13:48  UserForm        fMsg ...........: Outdated used Common Component - last modified in   C o m p M a n . x l s b   - updated by re-import of the Export-File in the Common-Components folder
+24-01-22-16:14:08  Standard-Module mBasic .........: Outdated used Common Component - last modified in   C o m p M a n . x l s b   - updated by re-import of the Export-File in the Common-Components folder
+24-01-22-16:22:31 ===============================================================================
+24-01-22-16:22:31            Export Changed Components (by CompMan.xlsb) for ErH.xlsm            
+24-01-22-16:22:31 -------------------------------------------------------------------------------
+24-01-22-16:22:31  Standard-Module mCompManClient .: Modified Common Component: e x p o r t e d !
+24-01-22-16:22:31                                    Modified Common Component: Last modification info changed from 2023-12-28-08-43-41 (UTC) to 2024-01-22-15-22-31 (UTC)
+24-01-22-16:22:31                                    Modified Common Component: Pending Release registered
+24-01-22-16:22:47 ====================================================================================================================================================================
+24-01-22-16:22:47                                                   Update Outdated Common Components (by CompMan.xlsb) for ErH.xlsm                                                  
+24-01-22-16:22:47 --------------------------------------------------------------------------------------------------------------------------------------------------------------------
+24-01-22-16:22:47  UserForm        fMsg ...........: Component is up-to-date! Revision-Number has been set to to 2024-01-22-14-50-35 (UTC) (the raw's in the Common Components Folder)
+24-01-22-16:22:47                                    Used Common Component is up-to-date
+24-01-22-16:22:47  Standard-Module mBasic .........: Component is up-to-date! Revision-Number has been set to to 2024-01-22-14-42-21 (UTC) (the raw's in the Common Components Folder)
+24-01-22-16:22:47                                    Used Common Component is up-to-date
+24-01-22-16:22:47  Standard-Module mCompManClient .: Used Common Component is up-to-date
+24-01-22-16:22:47  Standard-Module mErH ...........: Component is up-to-date! Revision-Number has been set to to 2024-01-22-14-47-41 (UTC) (the raw's in the Common Components Folder)
+24-01-22-16:22:47                                    Used Common Component is up-to-date
+24-01-22-16:22:50  Standard-Module mMsg ...........: Outdated used Common Component - last modified in   C o m p M a n . x l s b   - updated by re-import of the Export-File in the Common-Components folder
+24-01-22-16:22:53  Standard-Module mTrc ...........: Outdated used Common Component - last modified in   C o m p M a n . x l s b   - updated by re-import of the Export-File in the Common-Components folder

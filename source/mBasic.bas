@@ -70,7 +70,7 @@ Option Explicit
 ' Reference to "Microsoft Scripting Runtime"
 ' Reference to "Microsoft Visual Basic Application Extensibility .."
 '
-' W. Rauschenberger, Berlin Oct 2023
+' W. Rauschenberger, Berlin Jan 2024
 ' See https://github.com/warbe-maker/VBA-Basics (with README servie)
 ' ----------------------------------------------------------------------------
 Public Const DCONCAT    As String = "||"    ' For concatenating and error with a general message (info) to the error description
@@ -119,16 +119,16 @@ Private Declare PtrSafe Function ReleaseDC Lib "user32" (ByVal hWnd As Long, ByV
 Private Const LOGPIXELSX = 88               ' Pixels/inch in X
 Private Const POINTS_PER_INCH As Long = 72  ' A point is defined as 1/72 inches
 Private Declare PtrSafe Function GetForegroundWindow _
-  Lib "user32.dll" () As Long
+  Lib "User32.dll" () As Long
 
 Private Declare PtrSafe Function GetWindowLongPtr _
-  Lib "user32.dll" Alias "GetWindowLongA" _
+  Lib "User32.dll" Alias "GetWindowLongA" _
     (ByVal hWnd As LongPtr, _
      ByVal nIndex As Long) _
   As LongPtr
 
 Private Declare PtrSafe Function SetWindowLongPtr _
-  Lib "user32.dll" Alias "SetWindowLongA" _
+  Lib "User32.dll" Alias "SetWindowLongA" _
     (ByVal hWnd As LongPtr, _
      ByVal nIndex As LongPtr, _
      ByVal dwNewLong As LongPtr) _
@@ -209,7 +209,7 @@ Public Function KeySort(ByRef s_dct As Dictionary) As Dictionary
     '~~ Transfer based on sorted keys
     For i = LBound(arr) To UBound(arr)
         vKey = arr(i)
-        dct.Add Key:=vKey, Item:=s_dct.Item(vKey)
+        dct.Add Key:=vKey, item:=s_dct.item(vKey)
     Next i
     
 xt: Set s_dct = dct
@@ -649,9 +649,9 @@ Public Sub BoC(ByVal b_id As String, _
 ' Obligatory copy Private for any VB-Component using the service but not having
 ' the mBasic common component installed.
 ' ------------------------------------------------------------------------------
-#If XcTrc_mTrc = 1 Then         ' when mTrc is installed and active
+#If mTrc = 1 Then         ' when mTrc is installed and active
     mTrc.BoC b_id, b_args
-#ElseIf XcTrc_clsTrc = 1 Then   ' when clsTrc is installed and active
+#ElseIf clsTrc = 1 Then   ' when clsTrc is installed and active
     Trc.BoC b_id, b_args
 #End If
 End Sub
@@ -664,7 +664,7 @@ Public Sub BoP(ByVal b_proc As String, _
 ' Obligatory copy Private for any VB-Component using the service but not having
 ' the mBasic common component installed.
 ' ------------------------------------------------------------------------------
-#If ErHComp Then          ' serves the mTrc/clsTrc when installed and active
+#If mErH Then          ' serves the mTrc/clsTrc when installed and active
     mErH.BoP b_proc, b_args
 #ElseIf XcTrc_clsTrc Then ' when only clsTrc is installed and active
     If Trc Is Nothing Then Set Trc = New clsTrc
@@ -733,9 +733,9 @@ Public Sub EoC(ByVal e_id As String, _
 ' Obligatory copy Private for any VB-Component using the service but not having
 ' the mBasic common component installed.
 ' ------------------------------------------------------------------------------
-#If XcTrc_mTrc = 1 Then         ' when mTrc is installed and active
+#If mTrc = 1 Then         ' when mTrc is installed and active
     mTrc.EoC e_id, e_args
-#ElseIf XcTrc_clsTrc = 1 Then   ' when clsTrc is installed and active
+#ElseIf clsTrc = 1 Then   ' when clsTrc is installed and active
     Trc.EoC e_id, e_args
 #End If
 End Sub
@@ -748,11 +748,11 @@ Public Sub EoP(ByVal e_proc As String, _
 ' Obligatory copy Private for any VB-Component using the service but not having
 ' the mBasic common component installed.
 ' ------------------------------------------------------------------------------
-#If ErHComp = 1 Then          ' serves the mTrc/clsTrc when installed and active
+#If mErH = 1 Then          ' serves the mTrc/clsTrc when installed and active
     mErH.EoP e_proc, e_args
-#ElseIf XcTrc_clsTrc = 1 Then ' when only clsTrc is installed and active
+#ElseIf clsTrc = 1 Then ' when only clsTrc is installed and active
     Trc.EoP e_proc, e_args
-#ElseIf XcTrc_mTrc = 1 Then   ' when only mTrc is installed and activate
+#ElseIf mTrc = 1 Then   ' when only mTrc is installed and activate
     mTrc.EoP e_proc, e_args
 #End If
 End Sub
@@ -765,12 +765,12 @@ Public Function ErrMsg(ByVal err_source As String, _
 ' Universal error message display service. Obligatory copy Private for any
 ' VB-Component using the common error service but not having the mBasic common
 ' component installed.
-' Displays: - a debugging option button when the Cond. Comp. Arg. 'Debugging = 1'
+' Displays: - a debugging option button
 '           - an optional additional "About:" section when the err_dscrptn has
 '             an additional string concatenated by two vertical bars (||)
 '           - the error message by means of the Common VBA Message Service
 '             (fMsg/mMsg) when installed and active (Cond. Comp. Arg.
-'             `MsgComp = 1`)
+'             `mMsg = 1`)
 '
 ' Uses: AppErr  For programmed application errors (Err.Raise AppErr(n), ....)
 '               to turn them into a negative and in the error message back into
@@ -779,12 +779,12 @@ Public Function ErrMsg(ByVal err_source As String, _
 ' W. Rauschenberger Berlin, June 2023
 ' See: https://github.com/warbe-maker/VBA-Error
 ' ------------------------------------------------------------------------------
-#If ErHComp = 1 Then
-    '~~ When Common VBA Error Services (mErH) is avaiLabel in the VB-Project
+#If mErH = 1 Then
+    '~~ When Common VBA Error Services (mErH) is availabel in the VB-Project
     '~~ (which includes the mMsg component) the mErh.ErrMsg service is invoked.
     ErrMsg = mErH.ErrMsg(err_source, err_no, err_dscrptn, err_line): GoTo xt
     GoTo xt
-#ElseIf MsgComp = 1 Then
+#ElseIf mMsg = 1 Then
     '~~ When (only) the Common Message Service (mMsg, fMsg) is available in the
     '~~ VB-Project, mMsg.ErrMsg is invoked for the display of the error message.
     ErrMsg = mMsg.ErrMsg(err_source, err_no, err_dscrptn, err_line): GoTo xt
@@ -806,7 +806,7 @@ Public Function ErrMsg(ByVal err_source As String, _
     '~~ Obtain error information from the Err object for any argument not provided
     If err_no = 0 Then err_no = Err.Number
     If err_line = 0 Then ErrLine = Erl
-    If err_source = vbNullString Then err_source = Err.source
+    If err_source = vbNullString Then err_source = Err.Source
     If err_dscrptn = vbNullString Then err_dscrptn = Err.Description
     If err_dscrptn = vbNullString Then err_dscrptn = "--- No error description available ---"
     '~~ About
@@ -835,12 +835,8 @@ Public Function ErrMsg(ByVal err_source As String, _
     '~~ About
     If ErrAbout <> vbNullString Then ErrText = ErrText & vbLf & vbLf & "About: " & vbLf & ErrAbout
     
-#If Debugging = 1 Then
     ErrBttns = vbYesNo
     ErrText = ErrText & vbLf & vbLf & "Debugging:" & vbLf & "Yes    = Resume Error Line" & vbLf & "No     = Terminate"
-#Else
-    ErrBttns = vbCritical
-#End If
     ErrMsg = MsgBox(Title:=ErrTitle, Prompt:=ErrText, Buttons:=ErrBttns)
 xt:
 End Function
@@ -1152,10 +1148,9 @@ Public Function StackPop(ByVal stck As Collection) As Variant
     On Error GoTo eh
     If StackIsEmpty(stck) Then GoTo xt
     
-    On Error Resume Next
-    Set StackPop = stck(stck.Count)
-    If Err.Number <> 0 _
-    Then StackPop = stck(stck.Count)
+    If IsObject(stck(stck.Count)) _
+    Then Set StackPop = stck(stck.Count) _
+    Else StackPop = stck(stck.Count)
     stck.Remove stck.Count
 
 xt: Exit Function

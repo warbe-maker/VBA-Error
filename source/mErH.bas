@@ -24,9 +24,9 @@ Option Explicit
 '
 ' Uses components:
 ' ----------------
-' fMsg/mMsg   Used only when installed and activated by the Cond. Comp. Arg. `MsgComp = 1`
-' mTrc        Used only by the test environment and only when activated by the Cond. Comp.
-'             Arg. `XcTrc_mTrc = 1`
+' fMsg/mMsg   Used only when installed and activated by the Cond. Comp. Arg. `mMsg = 1`
+' mTrc/clsTrc Used only by the test environment and only when activated by the Cond. Comp.
+'             Arg. `mTrc = 1` or `clsTrc = 1`
 '
 ' Requires:
 ' ---------
@@ -605,12 +605,13 @@ Private Function ErrMsgDsply(ByVal err_source As String, _
                      "(button is displayed because the Cond. Comp. Argument 'Debugging = 1')."
     End With
 #End If
-    
+
+    Application.EnableEvents = True ' set to TRUE in case FALSE
 #If MsgComp = 1 Then
     ErrMsgDsply = mMsg.Dsply(dsply_title:=sTitle _
                            , dsply_msg:=ErrMsgText _
                            , dsply_width_max:=60 _
-                           , dsply_label_spec:="R50" _
+                           , dsply_Label_spec:="R50" _
                            , dsply_buttons:=mMsg.Buttons(err_buttons))
 #Else
 #If Debugging = 1 Then

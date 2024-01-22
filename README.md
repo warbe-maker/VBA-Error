@@ -12,7 +12,7 @@ The promise of this _Common Component_: Error messages like the one below:<br>
 |**Error source**     | procedure which raised the error|
 |**Error path**       | see [The path to the error](#the-path-to-the-error) for the required conditions|
 |**About**            | Optional additional info about an error** (when concatenated to the error description with `||`)|
-|***Resume Error Line*** button| optional when the _Conditional Compile Argument_ `Debugging = 1`|
+|***Resume Error Line*** button| obligatory |
 |**Error line**       | when (pretty unlikely) available)|
   
 ### Services
@@ -27,14 +27,13 @@ The promise of this _Common Component_: Error messages like the one below:<br>
 ## Installation
 1. Download [_mErH.bas_][1]
 2. Import _mErH_
-3. Activate the error services by the _Conditional Compile Argument_ `ErHComp = 1`
-4. Activate the [Debugging option](#activating-the-debugging-option-for-the-resume-error-line-button) by the  _Conditional Compile Argument_ `Debugging = 1`
+3. Activate the error services by the _Conditional Compile Argument_ `mErH = 1` in the Project properties.
 
 ## Optional installation of the _Common VBA Message Service_
 Not required but significantly improves the display of errors - thereby providing a message display service with less limits. 
 1. Download [mMsg.bas][4], [fMsg.frm][2], and [fMsg.frx][3]
 2. Import _mMsg_, _fMsg.frm_ to your VB-Project
-3. Activate the message service by the _Conditional Compile Argument_ `MsgComp = 1`
+3. Activate the message service by the _Conditional Compile Argument_ `mMsg = 1` in the Project properties.
 
 ## Usage
 ### Universal service interfaces
@@ -47,11 +46,11 @@ Public Sub BoP(ByVal b_proc As String, _
 ' Common 'Begin of Procedure' interface serving the 'Common VBA Error Services'
 ' and - if not installed/activated the 'Common VBA Execution Trace Service'.
 ' ------------------------------------------------------------------------------
-#If ErHComp = 1 Then          ' serves the mTrc/clsTrc when installed and active
+#If mErH = 1 Then          ' serves the mTrc/clsTrc when installed and active
     mErH.BoP b_proc, b_args
-#ElseIf XcTrc_clsTrc = 1 Then ' when only clsTrc is installed and active
+#ElseIf clsTrc = 1 Then ' when only clsTrc is installed and active
     Trc.BoP b_proc, b_args
-#ElseIf XcTrc_mTrc = 1 Then   ' when only mTrc is installed and activate
+#ElseIf mTrc = 1 Then   ' when only mTrc is installed and activate
     mTrc.BoP b_proc, b_args
 #End If
 End Sub
@@ -62,18 +61,18 @@ Public Sub EoP(ByVal e_proc As String, _
 ' Common 'End of Procedure' interface serving the 'Common VBA Error Services'
 ' and - if not installed/activated the 'Common VBA Execution Trace Service'.
 ' ------------------------------------------------------------------------------
-#If ErHComp = 1 Then          ' serves the mTrc/clsTrc when installed and active
+#If mErH = 1 Then          ' serves the mTrc/clsTrc when installed and active
     mErH.EoP e_proc, e_args
-#ElseIf XcTrc_clsTrc = 1 Then ' when only clsTrc is installed and active
+#ElseIf clsTrc = 1 Then ' when only clsTrc is installed and active
     Trc.EoP e_proc, e_args
-#ElseIf XcTrc_mTrc = 1 Then   ' when only mTrc is installed and activate
+#ElseIf mTrc = 1 Then   ' when only mTrc is installed and activate
     mTrc.EoP e_proc, e_args
 #End If
 End Sub
 ```
 > Please not that is absolutely **essential** that BoP/EoP services are always called **paired** with identical arguments within a procedure (Sub, Function, Property)!
 
-#### The _ErrMsg_ function as universal interface
+#### The universal _ErrMsg_ interface
 The below function may be copied into any component which uses at least one error message call. Alternatively, the _[Common VBA Basics Components][9]_ may be installed and the procedure called `mBasic.ErrMsg`. It functions as a universal interface which keeps the use of the _mErH_ and _mMsg_ components optional while still providing a reasonable debugging option.&nbsp;[^2]
 ```vb
 Private Function ErrMsg(ByVal err_source As String, _
@@ -84,12 +83,12 @@ Private Function ErrMsg(ByVal err_source As String, _
 ' Universal error message display service. Obligatory copy Private for any
 ' VB-Component using the common error service but not having the mBasic common
 ' component installed.
-' Displays: - a debugging option button when the Cond. Comp. Arg. 'Debugging = 1'
+' Displays: - a debugging option
 '           - an optional additional "About:" section when the err_dscrptn has
 '             an additional string concatenated by two vertical bars (||)
 '           - the error message by means of the Common VBA Message Service
 '             (fMsg/mMsg) when installed and active (Cond. Comp. Arg.
-'             `MsgComp = 1`)
+'             `mMsg = 1`)
 '
 ' Uses: AppErr  For programmed application errors (Err.Raise AppErr(n), ....)
 '               to turn them into a negative and in the error message back into
@@ -98,12 +97,12 @@ Private Function ErrMsg(ByVal err_source As String, _
 ' W. Rauschenberger Berlin, June 2023
 ' See: https://github.com/warbe-maker/VBA-Error
 ' ------------------------------------------------------------------------------
-#If ErHComp = 1 Then
+#If mErH = 1 Then
     '~~ When Common VBA Error Services (mErH) is availabel in the VB-Project
     '~~ (which includes the mMsg component) the mErh.ErrMsg service is invoked.
     ErrMsg = mErH.ErrMsg(err_source, err_no, err_dscrptn, err_line): GoTo xt
     GoTo xt
-#ElseIf MsgComp = 1 Then
+#ElseIf mMsg = 1 Then
     '~~ When (only) the Common Message Service (mMsg, fMsg) is available in the
     '~~ VB-Project, mMsg.ErrMsg is invoked for the display of the error message.
     ErrMsg = mMsg.ErrMsg(err_source, err_no, err_dscrptn, err_line): GoTo xt
@@ -154,12 +153,8 @@ Private Function ErrMsg(ByVal err_source As String, _
     '~~ About
     If ErrAbout <> vbNullString Then ErrText = ErrText & vbLf & vbLf & "About: " & vbLf & ErrAbout
     
-#If Debugging = 1 Then
     ErrBttns = vbYesNo
     ErrText = ErrText & vbLf & vbLf & "Debugging:" & vbLf & "Yes    = Resume Error Line" & vbLf & "No     = Terminate"
-#Else
-    ErrBttns = vbCritical
-#End If
     ErrMsg = MsgBox(Title:=ErrTitle, Prompt:=ErrText, Buttons:=ErrBttns)
 xt:
 End Function
@@ -228,9 +223,6 @@ End Sub
 ```
 When an error is displayed and the _Resume Error Line_ button is pressed the following two F8 key strokes end up at the error line. When it is again executed without any change the same error message will pop-up again of course. 
 
-### Activating the Debugging option for the _Resume Error Line_ button
-Set the _Conditional Compile Argument_ `Debuggig = 1` (may of course be set to 0 when the VB-Project becomes productive)
-
 ### The _Entry Procedure_
 The 'registration' of the _Entry Procedure_ is crucial for the error display service. The _Entry Procedure_ is the one which calls other procedures but itself is not called by a procedure - but by an event or via Application.Run instead for example. When these procedures have a _BoP/EoP_ service call the the _[path-to-the-error](#the-path-to-the-error)_ may be complete provided the [Debugging option](#activating-the-debugging-option-for-the-resume-error-line-button) is not activated.  
 
@@ -239,8 +231,8 @@ Irrespective of the approach which assembles a "path-to-the-error": The knowledg
 
 | Approach | Description | Pro | Con |
 |----------|-------------|-----|-----|
-| ***Bottom up***| The path is assembled when the error is passed on up to the _[Entry Procedure](#the-entry-procedure)_. | This approach assembles the path provided the _Entry Procedure_ is known, i.e. has `BoP/EoP` statements. The completeness of the path does not depend on other passed `BoP/EoP` code lines on the way down to the error raising procedure. However, the completeness depend on procedures having an `On Error Goto ...` statement with the corresponding error handling.| The path will not be available when either the  _[Entry Procedure](#the-entry-procedure)_ is unknown or the _Conditional Compile Argument_ `Debugging = 1` because the error is displayed immediately within the error raising procedure in order to enable the _Resume the Error Line_ option button.| 
-| ***Top down***| A call stack is maintained with each `BoP/EoP` service call. | The _path-to-the-error_ is as complete as the passed `BoP/EoP` service calls on the the way down to the error raising procedure, disregarding the `Debugging = 1` option.| The completeness/extent of the path- to-the-error depends on the paased `BoP/EoP` statements.|
+| ***Bottom up***| The path is assembled when the error is passed on up to the _[Entry Procedure](#the-entry-procedure)_. | This approach assembles the path provided the _Entry Procedure_ is known, i.e. has `BoP/EoP` statements. The completeness of the path does not depend on other passed `BoP/EoP` code lines on the way down to the error raising procedure. | This approach is contradicted by the debugging ( _Resume the Error Line_ ) option which is provided with each error message.| 
+| ***Top down***| A call stack is maintained with each `BoP/EoP` service call. | The _path-to-the-error_ is as complete as the passed `BoP/EoP` service calls on the the way down to the error raising procedure. This approach provides a complete path to the error regardless the fact that the error message is directly displayed within the error raising procedure (or by the last procedure passed which had an `On Error Goto ..` statement.| The completeness/extent of the path- to-the-error depends on the passed `BoP/EoP` statements.|
 
 > ***Conclusion***: Procedures with an error handling (those with `On Error Goto eh`) should also have `BoP/EoP` statements - quasi as a default). Providing potential_[Entry Procedure](#the-entry-procedure)_ with `BoP/EoP` statements should be obligatory.
 
@@ -255,7 +247,7 @@ Example: When the tested error is a programmed _Application Error_ (raised by: `
 When the two components are installed and activated they are automatically used by the _[ErrMsg](#the-errmsg-function-as-universal-interface)_ function to display the error message not only significantly better designed but also more clear for how to use the _Debugging option_. If desired follow the below steps.
 1. Download _[fMsg.frm][2]_, _[fMsg.frx][3]_, _[mMsg.bas][4]_
 2. Import into your VB-Project ***fMsg.frm*** and ***mMsg.bas***
-3. Activate them by the Cond. Comp. Arg. `MsgComp = 1`
+3. Activate them by the Cond. Comp. Arg. `mMsg = 1`
 
 ### Download from public GitHub repo
 It may appear pretty strange when downloading first from a public GitHub repo but is is quite straight forward as the below image shows.  

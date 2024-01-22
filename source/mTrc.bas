@@ -7,7 +7,7 @@ Option Explicit
 ' The trace log is written to a file which ensures at least a partial trace
 ' in case the execution terminates by exception. When this module is installed
 ' the availability of the sevice is triggered/activated by the Conditional
-' Compile Argument 'XcTrc_mTrc = 1'. When the Conditional Compile
+' Compile Argument 'mTrc = 1'. When the Conditional Compile
 ' Argument is 0 all services are disabled even when the module is installed,
 ' avoiding any effect on the performance though the effect very little anyway.
 '
@@ -63,7 +63,7 @@ Private Const GITHUB_REPO_URL As String = "https://github.com/warbe-maker/VBA-Tr
 
 Private fso As New FileSystemObject
 
-#If Not MsgComp = 1 Then
+#If Not mMsg = 1 Then
     ' ------------------------------------------------------------------------
     ' The 'minimum error handling' aproach implemented with this module and
     ' provided by the ErrMsg function uses the VBA.MsgBox to display an error
@@ -71,7 +71,7 @@ Private fso As New FileSystemObject
     ' provided the Cond. Comp. Arg. 'Debugging = 1'.
     ' This declaration allows the mTrc module to work completely autonomous.
     ' It becomes obsolete when the mMsg/fMsg module is installed 1) which must
-    ' be indicated by the Cond. Comp. Arg. MsgComp = 1
+    ' be indicated by the Cond. Comp. Arg. mMsg = 1
     '
     ' 1) See https://github.com/warbe-maker/VBA-Message for install and use.
     ' ------------------------------------------------------------------------
@@ -519,7 +519,7 @@ Private Function ErrMsg(ByVal err_source As String, _
 '   additional string concatenated by two vertical bars (||)
 ' - the error message by means of the Common VBA Message Service (fMsg/mMsg)
 '   Common Component
-'   mMsg (Conditional Compile Argument "MsgComp = 1") is installed.
+'   mMsg (Conditional Compile Argument "mMsg = 1") is installed.
 '
 ' Uses:
 ' - AppErr  For programmed application errors (Err.Raise AppErr(n), ....)
@@ -528,16 +528,15 @@ Private Function ErrMsg(ByVal err_source As String, _
 ' - ErrSrc  To provide an unambiguous procedure name by prefixing is with
 '           the module name.
 '
-' W. Rauschenberger Berlin, Apr 2023
-'
+' W. Rauschenberger Berlin, Jan 2024
 ' See: https://github.com/warbe-maker/VBA-Error
 ' ------------------------------------------------------------------------------
-#If ErHComp = 1 Then
+#If mErH = 1 Then
     '~~ When Common VBA Error Services (mErH) is availabel in the VB-Project
     '~~ (which includes the mMsg component) the mErh.ErrMsg service is invoked.
     ErrMsg = mErH.ErrMsg(err_source, err_no, err_dscrptn, err_line): GoTo xt
     GoTo xt
-#ElseIf MsgComp = 1 Then
+#ElseIf mMsg = 1 Then
     '~~ When (only) the Common Message Service (mMsg, fMsg) is available in the
     '~~ VB-Project, mMsg.ErrMsg is invoked for the display of the error message.
     ErrMsg = mMsg.ErrMsg(err_source, err_no, err_dscrptn, err_line): GoTo xt
@@ -559,7 +558,7 @@ Private Function ErrMsg(ByVal err_source As String, _
     '~~ Obtain error information from the Err object for any argument not provided
     If err_no = 0 Then err_no = Err.Number
     If err_line = 0 Then ErrLine = Erl
-    If err_source = vbNullString Then err_source = Err.source
+    If err_source = vbNullString Then err_source = Err.Source
     If err_dscrptn = vbNullString Then err_dscrptn = Err.Description
     If err_dscrptn = vbNullString Then err_dscrptn = "--- No error description available ---"
     
@@ -592,12 +591,8 @@ Private Function ErrMsg(ByVal err_source As String, _
     ErrText = "Error: " & vbLf & ErrDesc & vbLf & vbLf & "Source: " & vbLf & err_source & ErrAtLine
     If ErrAbout <> vbNullString Then ErrText = ErrText & vbLf & vbLf & "About: " & vbLf & ErrAbout
     
-#If Debugging = 1 Then
     ErrBttns = vbYesNo
     ErrText = ErrText & vbLf & vbLf & "Debugging:" & vbLf & "Yes    = Resume Error Line" & vbLf & "No     = Terminate"
-#Else
-    ErrBttns = vbCritical
-#End If
     ErrMsg = MsgBox(Title:=ErrTitle, Prompt:=ErrText, Buttons:=ErrBttns)
 xt:
 End Function
